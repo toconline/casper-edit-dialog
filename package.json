@@ -7,6 +7,7 @@
     "registry": "https://npm.pkg.github.com/"
   },
   "dependencies": {
+    "@cloudware-casper/casper-timed-status": "^0.x",
     "lit": "^2.x"
   }
 }

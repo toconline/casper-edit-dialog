@@ -2,6 +2,21 @@
 # yarn lockfile v1
 
 
+"@cloudware-casper/casper-icons@^3.x":
+  version "3.2.6"
+  resolved "https://npm.pkg.github.com/download/@cloudware-casper/casper-icons/3.2.6/28daa19537ea59d79ad2a345eb4719140845c7f6#28daa19537ea59d79ad2a345eb4719140845c7f6"
+  integrity sha512-6oX//1iJDU2DS8kO9vSk/wdCEFLNMXDrnnp1Qx6iHpuwmY/pWgzx9I7plWSRQzo655E9eNLAw0hStfzLwZyVpw==
+  dependencies:
+    ink-ripple alex-saunders/ink-ripple
+    lit "^2.x"
+
+"@cloudware-casper/casper-timed-status@^0.0.14":
+  version "0.0.14"
+  resolved "https://npm.pkg.github.com/download/@cloudware-casper/casper-timed-status/0.0.14/0c9ced21661334e394e0b4ea0009bb125989f4ec#0c9ced21661334e394e0b4ea0009bb125989f4ec"
+  integrity sha512-r5zfNjZoOg0NydZVVvFI4ig5CO+OvSGiG56wT+0bUNbxdmiMAZIEBjD1dZhdxPkEufLH1K3IOCpCbv5gsEuVYg==
+  dependencies:
+    "@cloudware-casper/casper-icons" "^3.x"
+
 "@lit-labs/ssr-dom-shim@^1.0.0", "@lit-labs/ssr-dom-shim@^1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@lit-labs/ssr-dom-shim/-/ssr-dom-shim-1.1.0.tgz#3361d6b8c4cb2ac426d5794ac7cd9776cd2f0814"
@@ -18,6 +33,10 @@
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/@types/trusted-types/-/trusted-types-2.0.3.tgz#a136f83b0758698df454e328759dbd3d44555311"
   integrity sha512-NfQ4gyz38SL8sDNrSixxU2Os1a5xcdFxipAFxYEuLUlvU2uDwS4NUpsImcf1//SlWItCVMMLiylsxbmNMToV/g==
+
+"ink-ripple@github:alex-saunders/ink-ripple":
+  version "0.0.0"
+  resolved "https://codeload.github.com/alex-saunders/ink-ripple/tar.gz/88e4d753bba9f7b57b372c62a4517bb091c7f713"
 
 lit-element@^3.3.0:
   version "3.3.1"
