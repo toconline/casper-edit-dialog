@@ -1,7 +1,6 @@
 import { html, css, LitElement } from 'lit';
 
-
-class CasperEditDialog extends LitElement {
+export class CasperEditDialog extends LitElement {
   static properties = {
     _title: {
       type: String
@@ -233,7 +232,7 @@ class CasperEditDialog extends LitElement {
   constructor () {
     super();
 
-    this.data = {};
+    //this.data = {};
 
     this.statusPage = {
       tag_name: 'casper-edit-dialog-status-page',
@@ -310,31 +309,28 @@ class CasperEditDialog extends LitElement {
     });
   }
 
+  setOptions (options) {
+    this._options = options;
+  }
+
   //***************************************************************************************//
   //                              ~~~ Public methods  ~~~                                  //
   //***************************************************************************************//
 
-  async open (options) {
-    if (!options) return;
+  async open () {
 
-    this._options = options;
-    this._title = this._options.general_title;
-
+    this._title = this._options.title;
     try {
-      for (let i = 0; i < this._options.pages.length; i++) {
-        const page = this._options.pages[i];
-
-        const filePath = window.app?.digest
-          ? `/src/${window.app.digest}.${page.tag_name}.js`
-          : `/src/${page.tag_name}.js`;
-
-        const module = await import(filePath);
-        page.class = module[page.class_name];
-        page.label = page.class.label;
-        page.title = page.class.title;
+      for (const page of this._options.pages) {
+        const idx = page.lastIndexOf('/') + 1;
+        const module = await import(`/src/${page.slice(0,idx)}${window.app.digest ? `${window.app.digest}.` : ''}${page.slice(idx)}.js`);
+        this._pages.push({
+          label: module.label, // TODO fallbacks
+          title: module.title, // TODO fallbacks
+          tag_name: page.slice(idx) // TODO fallbacks
+        });
       }
-
-      this._pages = this._options.pages;
+      this.requestUpdate();
     } catch (error) {
       console.error(error);
       return;
@@ -363,7 +359,7 @@ class CasperEditDialog extends LitElement {
           : `/src/${this.statusPage.path}.js`;
 
       await import(filePath);
-      
+
       this._statusPageEl = document.createElement(this.statusPage.tag_name);
       this._statusPageEl.classList.add('edit-dialog__status-page');
       this._statusPageEl.hidden = true;
@@ -394,12 +390,26 @@ class CasperEditDialog extends LitElement {
   //                              ~~~ Private methods  ~~~                                 //
   //***************************************************************************************//
   
-  _createAndActivatePage (index) {
+  async _createAndActivatePage (index) {
     const newPage = document.createElement(this._pages[index].tag_name);
     newPage.setAttribute('name', `page-${index}`);
     newPage.setAttribute('active', '');
     newPage.editDialog = this;
+
+    if ( ! this.data ) {
+      try {
+        const response = await app.broker.get(this._options.urn, 10000);
+        this.data  = response.data;
+        this._id   = response.id;
+        this._type = response._type;  
+      } catch (error) {
+        // TODO borrar a pintura
+        console.log(error);
+      }
+    }
     this._pagesContainerEl.appendChild(newPage);
+    await newPage.updateComplete;
+    newPage.load(this.data);
   }
 
   _labelClickHandler (event) {
