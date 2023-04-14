@@ -31,7 +31,7 @@ export class CasperEditDialog extends LitElement {
       overflow: hidden;
       display: grid;
       grid-template-areas: 
-        ". header"
+        "labels header"
         "labels page"
         "labels footer";
     }
@@ -44,38 +44,56 @@ export class CasperEditDialog extends LitElement {
       grid-area: labels;
       margin: 0;
 
-      padding: 20px;
-      padding-left: 40px;
+      padding: 10px;
       color: #FFF;
+      list-style-type: none;
+      box-shadow: rgba(0, 0, 0, 0.06) -15px -7px 10px inset;
+      padding-top: 90px;
     }
 
     .edit-dialog__label {
-      padding: 1rem 0;
+      padding: 0.4rem 1rem;
       opacity: 0.6;
       cursor: pointer;
       transition: opacity 0.5s;
-      padding-right: 0.5rem;
+      margin-bottom: 10px;
+      position: relative;
     }
 
     .edit-dialog__label[active] {
       opacity: 1;
       pointer-events: none;
-      position: relative;
+    }
+
+    .edit-dialog__label-number {
+      margin-right: 10px;
+      background: transparent;
+      border: solid 1px rgba(216, 242, 242, 0.53);
+      width: 30px;
+      height: 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+
+    .edit-dialog__label[active] .edit-dialog__label-number {
+      background: rgba(216, 242, 242, 0.33);
+      border: none;
     }
 
     .edit-dialog__label::after {
       content: "";
+      display: block;
+      height: 20px;
+      width: 20px;
+      background-color: #FFF;
       position: absolute;
-      right: 0;
       top: 50%;
-      transform: translate(20px, -50%);
-
-      width: 0;
-      height: 0;
-      border-top: 12px solid transparent;
-      border-right: 16px solid #FFF;
-      border-bottom: 12px solid transparent;
-
+      right: -10px;
+      clip-path: polygon(0% 0%, 100% 100%, 0% 100%);
+      transform: translate(50%, -50%) rotate(45deg);
+      border-radius: 0 0 0 0.2rem;
       opacity: 0;
       transition: opacity 0.5s;
     }
@@ -99,13 +117,16 @@ export class CasperEditDialog extends LitElement {
       position: relative;
       z-index: 1;
       background-color: #FFF;
+      border-top-left-radius: 6px;
     }
 
     .edit-dialog__header-text {
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 5px;
       margin-top: 16px;
+      flex-grow: 1;
+      border-bottom: solid 1px var(--primary-color);
     }
 
     .edit-dialog__header-text > * {
@@ -122,6 +143,7 @@ export class CasperEditDialog extends LitElement {
 
     .edit-dialog__subtitle {
       font-size: 14px;
+      font-weight: 400;
       color: grey;
     }
 
@@ -156,9 +178,8 @@ export class CasperEditDialog extends LitElement {
       align-items: stretch;
       position: relative;
 
-      padding: 0 20px;
+      padding: 20px;
       border-radius: 6px;
-      background-color: rgb(243 243 243 / 56%);
     }
 
     .edit-dialog__pages-container > * {
@@ -194,6 +215,10 @@ export class CasperEditDialog extends LitElement {
       align-items: center;
       justify-content: flex-end;
       gap: 0.5rem;
+      box-shadow: rgba(0, 0, 0, 0.05) 0px -4px 12px;
+      border-top: solid 1px rgba(0, 0, 0, 0.05);
+      z-index: 20;
+      border-bottom-left-radius: 6px;
     }
 
     .edit-dialog__button {
@@ -232,7 +257,6 @@ export class CasperEditDialog extends LitElement {
   constructor () {
     super();
 
-    //this.data = {};
 
     this.statusPage = {
       tag_name: 'casper-edit-dialog-status-page',
@@ -268,15 +292,15 @@ export class CasperEditDialog extends LitElement {
       <dialog id="editDialog" class="edit-dialog">
         <ol class="edit-dialog__labels-list">
           ${(this._pages.length > 0)
-            ? this._pages.map((page, index) => html`<li class="edit-dialog__label" ?active=${index === this._activeIndex} .index=${index} @click=${this._labelClickHandler}>${page?.label}</li>`)
+            ? this._pages.map((page, index) => html`<li class="edit-dialog__label" ?active=${index === this._activeIndex} .index=${index} @click=${this._labelClickHandler}><span class="edit-dialog__label-number">${index + 1}</span>${page?.label}</li>`)
             : ''}
         </ol>
         
         <div class="edit-dialog__header">
           <hgroup class="edit-dialog__header-text">
-            <h1 class="edit-dialog__title">${this._title}</h1>
+            <h1 class="edit-dialog__subtitle">${this._title}</h1>
             ${(this._pages.length > 0)
-              ? html`<p class="edit-dialog__subtitle">${this._pages[this._activeIndex].title}</p>`
+              ? html`<p class="edit-dialog__title">${this._pages[this._activeIndex].title}</p>`
               : ''
             }
           </hgroup>
@@ -318,7 +342,6 @@ export class CasperEditDialog extends LitElement {
   //***************************************************************************************//
 
   async open () {
-
     this._title = this._options.title;
     try {
       for (const page of this._options.pages) {
