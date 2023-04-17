@@ -268,12 +268,6 @@ export class CasperEditDialog extends LitElement {
     super();
 
 
-    this.statusPage = {
-      tag_name: 'casper-edit-dialog-status-page',
-      class_name: 'CasperEditDialogStatusPage',
-      path: './casper-edit-dialog-status-page'
-    };
-
     this._state = 'normal';
     this._title = '';
     this._pages = [];
@@ -391,14 +385,13 @@ export class CasperEditDialog extends LitElement {
   async showStatusPage (notification) {
     if (this._state === 'show-status' || !notification) return;
 
+
     if (!this._statusPageEl) {
-      const filePath = window.app?.digest
-          ? `/src/${window.app.digest}.${this.statusPage.path}.js`
-          : `/src/${this.statusPage.path}.js`;
+      const statusPageTagName = 'casper-edit-dialog-status-page';
+      
+      await import(`./components/${statusPageTagName}.js`);
 
-      await import(filePath);
-
-      this._statusPageEl = document.createElement(this.statusPage.tag_name);
+      this._statusPageEl = document.createElement(statusPageTagName);
       this._statusPageEl.classList.add('edit-dialog__status-page');
       this._statusPageEl.hidden = true;
       this._contentWrapperEl.appendChild(this._statusPageEl);
