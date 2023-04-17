@@ -52,6 +52,8 @@ export class CasperEditDialog extends LitElement {
     }
 
     .edit-dialog__label {
+      display: flex;
+      align-items: center;
       padding: 0.4rem 1rem;
       opacity: 0.6;
       cursor: pointer;
@@ -66,9 +68,10 @@ export class CasperEditDialog extends LitElement {
     }
 
     .edit-dialog__label-number {
+      flex-shrink: 0;
       margin-right: 10px;
       background: transparent;
-      border: solid 1px rgba(216, 242, 242, 0.53);
+      border: solid 1px rgba(216, 242, 242, 0.66);
       width: 30px;
       height: 30px;
       display: inline-flex;
@@ -80,6 +83,13 @@ export class CasperEditDialog extends LitElement {
     .edit-dialog__label[active] .edit-dialog__label-number {
       background: rgba(216, 242, 242, 0.33);
       border: none;
+    }
+
+    .edit-dialog__label-text {
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
     }
 
     .edit-dialog__label::after {
@@ -292,7 +302,12 @@ export class CasperEditDialog extends LitElement {
       <dialog id="editDialog" class="edit-dialog">
         <ol class="edit-dialog__labels-list">
           ${(this._pages.length > 0)
-            ? this._pages.map((page, index) => html`<li class="edit-dialog__label" ?active=${index === this._activeIndex} .index=${index} @click=${this._labelClickHandler}><span class="edit-dialog__label-number">${index + 1}</span>${page?.label}</li>`)
+            ? this._pages.map((page, index) => html`
+              <li class="edit-dialog__label" ?active=${index === this._activeIndex} .index=${index} @click=${this._labelClickHandler}>
+                <span class="edit-dialog__label-number">${index + 1}</span>
+                <span class="edit-dialog__label-text">${page?.label}</span>
+              </li>
+            `)
             : ''}
         </ol>
         
