@@ -340,6 +340,23 @@ export class CasperEditDialog extends LitElement {
         this.close();
       }
     });
+
+    // Fired when user presses the 'esc' key
+    this._dialogEl.addEventListener('cancel', function (event) {
+      if (!event) return;
+
+      // Needed otherwise it would call the dialog's native close method
+      event.preventDefault();
+      this.close();
+    }.bind(this));
+
+    // The casper-select dropdown has to be moved to the stacking context of the top-layer, otherwise it wouldn't be visible
+    this.addEventListener('casper-select-opened', function (event) {
+      if (!event?.detail?.dropdown) return;
+
+      event.stopPropagation();
+      this._contentWrapperEl.appendChild(event.detail.dropdown);
+    });
   }
 
   setOptions (options) {
