@@ -46,47 +46,56 @@ export class CasperEditDialog extends LitElement {
 
     .edit-dialog__labels-list {
       grid-area: labels;
-      margin: 0;
-
-      padding: 10px;
-      color: #FFF;
       list-style-type: none;
+      margin: 0;
+      padding: 5rem var(--ced-horizontal-padding);
       box-shadow: rgba(0, 0, 0, 0.06) -15px -7px 10px inset;
-      padding-top: 90px;
+      color: #FFF;
+
+      --ced-label-number-color-rgb: 255, 255, 255;
+      --ced-label-transition-duration: 0.5s;
     }
 
     .edit-dialog__label {
+      position: relative;
+      font-size: 1rem;
+      margin-bottom: 1.375em;
       display: flex;
       align-items: center;
-      padding: 0.4rem 1rem;
-      opacity: 0.6;
       cursor: pointer;
-      transition: opacity 0.5s;
-      margin-bottom: 10px;
-      position: relative;
+      opacity: 0.6;
+      transition: opacity var(--ced-label-transition-duration);
+    }
+
+    .edit-dialog__label:hover {
+      opacity: 1;
     }
 
     .edit-dialog__label[active] {
       opacity: 1;
+      font-weight: 500;
       pointer-events: none;
     }
 
     .edit-dialog__label-number {
       flex-shrink: 0;
-      margin-right: 10px;
-      background: transparent;
-      border: solid 1px rgba(216, 242, 242, 0.66);
-      width: 30px;
-      height: 30px;
+      width: 1.875em;
+      height: 1.875em;
+      margin-right: 0.625em;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       border-radius: 50%;
+      background: transparent;
+      border: solid 1px rgba(var(--ced-label-number-color-rgb), 56%);
+      transition: all var(--ced-label-transition-duration);
     }
 
     .edit-dialog__label[active] .edit-dialog__label-number {
-      background: rgba(216, 242, 242, 0.33);
-      border: none;
+      background: rgba(var(--ced-label-number-color-rgb), 28%);
+      border: solid 1px transparent;
+      box-shadow: rgba(0, 0, 0, 5%) 1px 1px 4px;
+      transform: scale(1.1);
     }
 
     .edit-dialog__label-text {
@@ -98,18 +107,18 @@ export class CasperEditDialog extends LitElement {
 
     .edit-dialog__label::after {
       content: "";
-      display: block;
-      height: 20px;
-      width: 20px;
-      background-color: #FFF;
       position: absolute;
       top: 50%;
-      right: -10px;
-      clip-path: polygon(0% 0%, 100% 100%, 0% 100%);
+      right: calc(var(--ced-horizontal-padding) * -1);
       transform: translate(50%, -50%) rotate(45deg);
-      border-radius: 0 0 0 0.2rem;
+      display: block;
+      height: 1.25em;
+      width: 1.25em;
+      clip-path: polygon(0% 0%, 100% 100%, 0% 100%);
+      border-radius: 0 0 0 0.2em;
+      background-color: #FFF;
       opacity: 0;
-      transition: opacity 0.5s;
+      transition: opacity var(--ced-label-transition-duration);
     }
 
     .edit-dialog__label[active]::after {
