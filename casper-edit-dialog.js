@@ -40,6 +40,7 @@ export class CasperEditDialog extends LitElement {
         "labels page"
         "labels footer";
       grid-template-columns: 13.75rem calc(100% - 13.75rem);
+      grid-template-rows: min-content 1fr min-content;
     }
 
     .edit-dialog::backdrop {
@@ -131,7 +132,6 @@ export class CasperEditDialog extends LitElement {
     }
 
     .edit-dialog > *:not(.edit-dialog__labels-list) {
-      padding: var(--ced-vertical-padding) var(--ced-horizontal-padding);
       background-color: var(--ced-background-color);
     }
 
@@ -140,6 +140,8 @@ export class CasperEditDialog extends LitElement {
       display: flex;
       flex-direction: column;
       border-top-left-radius: var(--ced-border-radius);
+      padding: var(--ced-vertical-padding) var(--ced-horizontal-padding);
+      padding-bottom: 0;
 
       --ced-close-button-width: 1.5625rem;
     }
@@ -194,11 +196,14 @@ export class CasperEditDialog extends LitElement {
     .edit-dialog__content-wrapper {
       grid-area: page;
       position: relative;
+      padding: calc(var(--ced-vertical-padding) * 3) calc(var(--ced-horizontal-padding) * 2);
     }
 
     .edit-dialog__pages-container {
       width: 800px;
       height: 418px;
+      max-width: 100%;
+      max-height: 100%;
       overflow: hidden;
 
       display: flex;
@@ -222,11 +227,10 @@ export class CasperEditDialog extends LitElement {
 
     .edit-dialog__status-page {
       position: absolute;
-      top: var(--ced-vertical-padding);
-      left: var(--ced-horizontal-padding);
-      width: calc(100% - 2 * var(--ced-horizontal-padding));
-      height: calc(100% - 2 * var(--ced-vertical-padding));
-      border-radius: 6px;
+      top: calc(var(--ced-vertical-padding) * 3);
+      left: calc(var(--ced-horizontal-padding) * 2);
+      width: calc(100% - 4 * var(--ced-horizontal-padding));
+      height: calc(100% - 6 * var(--ced-vertical-padding));
     }
 
     .edit-dialog__status-page[hidden] {
@@ -240,9 +244,11 @@ export class CasperEditDialog extends LitElement {
       align-items: center;
       justify-content: flex-end;
       gap: 0.5rem;
+      padding: var(--ced-vertical-padding) var(--ced-horizontal-padding);
       box-shadow: rgba(0, 0, 0, 0.05) 0px -4px 12px;
       border-top: solid 1px rgba(0, 0, 0, 0.05);
-      z-index: 20;
+      /* Needed so that the shadow displays above the previous sibling */
+      z-index: 1;
       border-bottom-left-radius: var(--ced-border-radius);
     }
 
@@ -250,12 +256,12 @@ export class CasperEditDialog extends LitElement {
       background-color: var(--button-primary-color);
       border: 2px solid var(--button-primary-color);
       color: #FFF;
-      padding: 10px;
-      border-radius: 20px;
-      font-size: 14px;
+      font-size: 0.875rem;
       font-weight: 600;
+      padding: 0.714em;
+      border-radius: 1.428em;
       outline: none;
-      transition: background-color 0.5s, color 0.5s;
+      transition: all 0.5s;
     }
 
     .edit-dialog__button.reverse {
@@ -267,7 +273,6 @@ export class CasperEditDialog extends LitElement {
       cursor: pointer;
       background-color: var(--light-primary-color);
       color: var(--button-primary-color);
-      transition: background-color 1s, color 0.5s;
     }
 
     .edit-dialog__button[disabled] {
@@ -325,7 +330,7 @@ export class CasperEditDialog extends LitElement {
           <hgroup class="edit-dialog__header-text">
             <h1 class="edit-dialog__general-title">${this._title}</h1>
             ${(this._pages.length > 0)
-              ? html`<h2 class="edit-dialog__page-title">${this._pages[this._activeIndex].title}</h2>`
+              ? html`<h2 class="edit-dialog__page-title">${this._pages[this._activeIndex].title ? this._pages[this._activeIndex].title : this._pages[this._activeIndex].label}</h2>`
               : ''
             }
           </hgroup>
