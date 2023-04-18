@@ -17,6 +17,8 @@ export class CasperEditDialog extends LitElement {
     :host {
       --ced-vertical-padding: 10px;
       --ced-horizontal-padding: 20px;
+      --ced-background-color: #FFF;
+      --ced-border-radius: var(--radius-primary, 8px);
     }
 
     * {
@@ -30,7 +32,7 @@ export class CasperEditDialog extends LitElement {
       box-shadow: rgba(0, 0, 0, 15%) 0 5px 20px;
       border: none;
       padding: 0;
-      border-radius: 10px;
+      border-radius: var(--ced-border-radius);
       overflow: hidden;
       display: grid;
       grid-template-areas: 
@@ -49,7 +51,10 @@ export class CasperEditDialog extends LitElement {
       list-style-type: none;
       margin: 0;
       padding: 5rem var(--ced-horizontal-padding);
-      box-shadow: rgba(0, 0, 0, 0.06) -15px -7px 10px inset;
+      /* Trick to add shadow beneath the left rounded corners */
+      padding-right: calc(var(--ced-border-radius) + var(--ced-horizontal-padding));
+      margin-right: calc(var(--ced-border-radius) * -1);
+      box-shadow: rgba(0, 0, 0, 6%) calc(-15px - var(--ced-border-radius)) -7px 10px inset;
       color: #FFF;
 
       --ced-label-number-color-rgb: 255, 255, 255;
@@ -116,7 +121,7 @@ export class CasperEditDialog extends LitElement {
       width: 1.25em;
       clip-path: polygon(0% 0%, 100% 100%, 0% 100%);
       border-radius: 0 0 0 0.2em;
-      background-color: #FFF;
+      background-color: var(--ced-background-color);
       opacity: 0;
       transition: opacity var(--ced-label-transition-duration);
     }
@@ -127,7 +132,7 @@ export class CasperEditDialog extends LitElement {
 
     .edit-dialog > *:not(.edit-dialog__labels-list) {
       padding: var(--ced-vertical-padding) var(--ced-horizontal-padding);
-      background-color: #FFF;
+      background-color: var(--ced-background-color);
     }
 
     .edit-dialog__header {
@@ -140,7 +145,7 @@ export class CasperEditDialog extends LitElement {
       position: relative;
       z-index: 1;
       background-color: #FFF;
-      border-top-left-radius: 6px;
+      border-top-left-radius: var(--ced-border-radius);
     }
 
     .edit-dialog__header-text {
@@ -200,9 +205,6 @@ export class CasperEditDialog extends LitElement {
       justify-content: center;
       align-items: stretch;
       position: relative;
-
-      padding: 20px;
-      border-radius: 6px;
     }
 
     .edit-dialog__pages-container > * {
@@ -241,7 +243,7 @@ export class CasperEditDialog extends LitElement {
       box-shadow: rgba(0, 0, 0, 0.05) 0px -4px 12px;
       border-top: solid 1px rgba(0, 0, 0, 0.05);
       z-index: 20;
-      border-bottom-left-radius: 6px;
+      border-bottom-left-radius: var(--ced-border-radius);
     }
 
     .edit-dialog__button {
@@ -251,8 +253,7 @@ export class CasperEditDialog extends LitElement {
       padding: 10px;
       border-radius: 20px;
       font-size: 14px;
-      font-weight: bold;
-      -webkit-font-smoothing: antialiased;
+      font-weight: 600;
       outline: none;
       transition: background-color 0.5s, color 0.5s;
     }
