@@ -24,7 +24,10 @@ export class CasperEditDialog extends LitElement {
     }
 
     .edit-dialog {
+      max-width: 90vw;
+      max-height: 90vh;
       background-color: var(--primary-color);
+      box-shadow: rgba(0, 0, 0, 15%) 0 5px 20px;
       border: none;
       padding: 0;
       border-radius: 10px;
@@ -34,10 +37,11 @@ export class CasperEditDialog extends LitElement {
         "labels header"
         "labels page"
         "labels footer";
+      grid-template-columns: 13.75rem calc(100% - 13.75rem);
     }
 
     .edit-dialog::backdrop {
-      background-color: rgba(204, 204, 204, 0.6);
+      background-color: rgba(204, 204, 204, 65%);
     }
 
     .edit-dialog__labels-list {
