@@ -137,24 +137,39 @@ export class CasperEditDialog extends LitElement {
 
     .edit-dialog__header {
       grid-area: header;
-      font-size: 18px;
       display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 1em;
-      position: relative;
-      z-index: 1;
-      background-color: #FFF;
+      flex-direction: column;
       border-top-left-radius: var(--ced-border-radius);
+
+      --ced-close-button-width: 1.5625rem;
+    }
+
+    .edit-dialog__close {
+      align-self: flex-end;
+      background-color: transparent;
+      color: inherit;
+      border: none;
+      padding: 0;
+      flex-shrink: 0;
+      width: var(--ced-close-button-width);
+      height: var(--ced-close-button-width);
+      transition: all 1s;
+    }
+
+    .edit-dialog__close:hover {
+      background-color: rgba(0, 0, 0, 0.1);
+      transform: scale(1.05);
     }
 
     .edit-dialog__header-text {
+      font-size: 1rem;
       display: flex;
       flex-direction: column;
-      gap: 5px;
-      margin-top: 16px;
-      flex-grow: 1;
+      gap: 0.3125rem;
+      padding-bottom: 0.3125rem;
       border-bottom: solid 1px var(--primary-color);
+      /* Space reserved to prevent text from colliding with the button */
+      padding-right: calc(var(--ced-close-button-width) + 0.625rem);
     }
 
     .edit-dialog__header-text > * {
@@ -164,32 +179,17 @@ export class CasperEditDialog extends LitElement {
       text-overflow: ellipsis;
     }
 
-    .edit-dialog__title {
-      font-size: 1em;
+    .edit-dialog__general-title {
+      font-size: 0.875em;
+      font-weight: 400;
+      color: #808080;
+    }
+
+    .edit-dialog__page-title {
+      font-size: 1.125em;
       font-weight: 700;
     }
 
-    .edit-dialog__subtitle {
-      font-size: 14px;
-      font-weight: 400;
-      color: grey;
-    }
-
-    .edit-dialog__close {
-      background: transparent;
-      color: inherit;
-      border: none;
-      padding: 0;
-      flex-shrink: 0;
-      z-index: 4;
-      width: 1.388em;
-      height: 1.388em;
-      transition: background-color 1s;
-    }
-
-    .edit-dialog__close:hover {
-      background-color: rgba(0, 0, 0, 0.1);
-    }
 
     .edit-dialog__content-wrapper {
       grid-area: page;
@@ -320,15 +320,15 @@ export class CasperEditDialog extends LitElement {
         </ol>
         
         <div class="edit-dialog__header">
+          <casper-icon-button tooltip="Fechar" class="edit-dialog__close" icon="fa-light:times-circle" @click=${this.close.bind(this)}></casper-icon-button>
+
           <hgroup class="edit-dialog__header-text">
-            <h1 class="edit-dialog__subtitle">${this._title}</h1>
+            <h1 class="edit-dialog__general-title">${this._title}</h1>
             ${(this._pages.length > 0)
-              ? html`<p class="edit-dialog__title">${this._pages[this._activeIndex].title}</p>`
+              ? html`<h2 class="edit-dialog__page-title">${this._pages[this._activeIndex].title}</h2>`
               : ''
             }
           </hgroup>
-      
-          <casper-icon-button tooltip="Fechar" class="edit-dialog__close" icon="fa-light:times-circle" @click=${this.close.bind(this)}></casper-icon-button>
         </div>
 
         <div class="edit-dialog__content-wrapper">
