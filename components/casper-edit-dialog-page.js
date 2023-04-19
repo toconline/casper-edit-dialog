@@ -4,12 +4,24 @@ import { LitElement, css } from 'lit';
 export class CasperEditDialogPage extends LitElement {
   static styles = css`
     :host {
+      --grid-item-min-width: 15.625rem;
+      --grid-section-title-margin-top: 1.666em;
+      --grid-section-title-margin-bottom: 1.111em;
+
       display: grid;
-      column-gap: 12px;
-      row-gap: 6px;
+      grid-row-gap: 0.625rem;
+      grid-column-gap: 1.25rem;
+      grid-template-columns: repeat(auto-fit, minmax(var(--grid-item-min-width), 1fr));
     }
 
-    h3 {
+    .casper-edit-dialog-page__section-title {
+      grid-column: 1 / -1;
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 0.625em;
+      border-radius: 0.25em;
+      margin: var(--grid-section-title-margin-top) 0 var(--grid-section-title-margin-bottom) 0;
+      background: var(--light-primary-color);
       color: var(--primary-color);
     }
   `;
