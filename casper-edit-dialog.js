@@ -15,8 +15,8 @@ export class CasperEditDialog extends LitElement {
 
   static styles = css`
     :host {
-      --ced-vertical-padding: 10px;
-      --ced-horizontal-padding: 20px;
+      --ced-vertical-padding: 0.625rem;
+      --ced-horizontal-padding: 1.25rem;
       --ced-background-color: #FFF;
       --ced-border-radius: var(--radius-primary, 8px);
       --ced-labels-max-width: 13.75rem;
@@ -213,7 +213,7 @@ export class CasperEditDialog extends LitElement {
 
       display: flex;
       justify-content: center;
-      align-items: stretch;
+      align-items: flex-start;
       position: relative;
     }
 
@@ -323,7 +323,7 @@ export class CasperEditDialog extends LitElement {
             ? this._pages.map((page, index) => html`
               <li class="edit-dialog__label" ?active=${index === this._activeIndex} .index=${index} @click=${this._labelClickHandler}>
                 <span class="edit-dialog__label-number">${index + 1}</span>
-                <span class="edit-dialog__label-text">${page?.label}</span>
+                <span class="edit-dialog__label-text">${page.label}</span>
               </li>
             `)
             : ''}
@@ -347,7 +347,7 @@ export class CasperEditDialog extends LitElement {
       
         <div class="edit-dialog__footer">
           <button class="edit-dialog__button reverse" @click=${this.close.bind(this)}>Cancelar</button>
-          <button class="edit-dialog__button" @click=${this._save.bind(this)}>Gravar</button>
+          <button class="edit-dialog__button" @click=${this.save.bind(this)}>Gravar</button>
         </div>
       </dialog>
     `;
@@ -416,7 +416,7 @@ export class CasperEditDialog extends LitElement {
   }
 
   close () {
-    const allowClose = this._validate();
+    const allowClose = this.validate();
 
     if (allowClose) {
       this.parentNode.removeChild(this);
@@ -470,20 +470,30 @@ export class CasperEditDialog extends LitElement {
     newPage.setAttribute('active', '');
     newPage.editDialog = this;
 
-    if ( ! this.data ) {
+    if (!this.data && this._options.urn) {
       try {
-        const response = await app.broker.get(this._options.urn, 10000);
-        this.data  = response.data;
-        this._id   = response.id;
+        const response = await window.app.broker.get(this._options.urn, 10000);
+
+        this.data = response.data;
+        this._id = response.id;
         this._type = response._type;  
       } catch (error) {
         // TODO borrar a pintura
         console.log(error);
+        
+        await this.showStatusPage({ message: ['Erro! Ocorreu um problema ao tentar carregar os dados.'] });
+        this._statusPageEl.showStatus();
+        return;
       }
     }
     this._pagesContainerEl.appendChild(newPage);
     await newPage.updateComplete;
-    newPage.load(this.data);
+
+    if (this._options.urn) {
+      newPage.load(this.data);
+    } else {
+      newPage.load();
+    }
   }
 
   _labelClickHandler (event) {
@@ -505,7 +515,7 @@ export class CasperEditDialog extends LitElement {
     this._activeIndex = newIndex;
   }
 
-  _validate () {
+  validate () {
     let valid = true;
 
     for (const page of this._pagesContainerEl.children) {
@@ -516,10 +526,28 @@ export class CasperEditDialog extends LitElement {
     return valid;
   }
 
-  _save () {
+  async save () {
     try {
-      for (const page of this._pagesContainerEl.children) {
-        page.save(this.data);
+      if (this._options.urn && window.app?.broker) {
+        const patch = new Map(); // or make the object
+  
+        for (const page of this._pages) {
+          page.save(patch, this.data);
+        }
+
+        if (patch.size != 0) {
+          await window.app.broker.patch(this._options.urn, { data: {
+              type: this._type,
+              id: this._id,
+              attributes: Object.fromEntries(patch)
+            }
+          }, 10000);
+        }
+
+      } else {
+        for (const page of this._pagesContainerEl.children) {
+          page.save();
+        }
       }
       
     } catch (error) {
