@@ -19,6 +19,7 @@ export class CasperEditDialog extends LitElement {
       --ced-horizontal-padding: 20px;
       --ced-background-color: #FFF;
       --ced-border-radius: var(--radius-primary, 8px);
+      --ced-labels-max-width: 13.75rem;
     }
 
     * {
@@ -39,7 +40,7 @@ export class CasperEditDialog extends LitElement {
         "labels header"
         "labels page"
         "labels footer";
-      grid-template-columns: 13.75rem calc(100% - 13.75rem);
+      grid-template-columns: fit-content(var(--ced-labels-max-width)) minmax(calc(100% - var(--ced-labels-max-width)), auto);
       grid-template-rows: min-content 1fr min-content;
     }
 
@@ -92,6 +93,8 @@ export class CasperEditDialog extends LitElement {
       align-items: center;
       justify-content: center;
       border-radius: 50%;
+      /* Removes top white-space, centering the number */
+      line-height: 0;
       background: transparent;
       border: solid 1px rgba(var(--ced-label-number-color-rgb), 56%);
       transition: all var(--ced-label-transition-duration);
@@ -181,15 +184,17 @@ export class CasperEditDialog extends LitElement {
       text-overflow: ellipsis;
     }
 
-    .edit-dialog__general-title {
+    .edit-dialog__general-title:nth-last-child(2) {
       font-size: 0.875em;
       font-weight: 400;
       color: #808080;
     }
 
+    .edit-dialog__general-title:last-child,
     .edit-dialog__page-title {
       font-size: 1.125em;
       font-weight: 700;
+      color: #000;
     }
 
 
@@ -329,8 +334,8 @@ export class CasperEditDialog extends LitElement {
 
           <hgroup class="edit-dialog__header-text">
             <h1 class="edit-dialog__general-title">${this._title}</h1>
-            ${(this._pages.length > 0)
-              ? html`<h2 class="edit-dialog__page-title">${this._pages[this._activeIndex].title ? this._pages[this._activeIndex].title : this._pages[this._activeIndex].label}</h2>`
+            ${(this._pages.length > 0 && this._pages[this._activeIndex].title)
+              ? html`<h2 class="edit-dialog__page-title">${this._pages[this._activeIndex].title}</h2>`
               : ''
             }
           </hgroup>
@@ -378,24 +383,26 @@ export class CasperEditDialog extends LitElement {
     });
   }
 
-  setOptions (options) {
-    this._options = options;
-  }
 
   //***************************************************************************************//
   //                              ~~~ Public methods  ~~~                                  //
   //***************************************************************************************//
 
+  setOptions (options) {
+    this._options = options;
+  }
+
   async open () {
-    this._title = this._options.title;
+    if (this._options.title) this._title = this._options.title;
+
     try {
       for (const page of this._options.pages) {
         const idx = page.lastIndexOf('/') + 1;
         const module = await import(`/src/${page.slice(0,idx)}${window.app.digest ? `${window.app.digest}.` : ''}${page.slice(idx)}.js`);
         this._pages.push({
-          label: module.label, // TODO fallbacks
-          title: module.title, // TODO fallbacks
-          tag_name: page.slice(idx) // TODO fallbacks
+          label: module.label ? module.label : '', 
+          title: module.title ? module.title : module.label,
+          tag_name: module.tag_name ? module.tag_name : page.slice(idx)
         });
       }
       this.requestUpdate();
