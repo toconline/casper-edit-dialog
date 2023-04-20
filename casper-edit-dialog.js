@@ -72,6 +72,8 @@ export class CasperEditDialog extends LitElement {
       cursor: pointer;
       opacity: 0.6;
       transition: opacity var(--ced-label-transition-duration);
+
+      --ced-label-bold: 500;
     }
 
     .edit-dialog__label:hover {
@@ -80,7 +82,7 @@ export class CasperEditDialog extends LitElement {
 
     .edit-dialog__label[active] {
       opacity: 1;
-      font-weight: 500;
+      font-weight: var(--ced-label-bold);
       pointer-events: none;
     }
 
@@ -112,6 +114,20 @@ export class CasperEditDialog extends LitElement {
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
+    }
+
+    /* Trick to prevent layout shifts when changing the text's font-weight */
+    .edit-dialog__label-text::after {
+      content: attr(text);
+      content: attr(text) / "";
+      height: 0;
+      visibility: hidden;
+      overflow: hidden;
+      user-select: none;
+      pointer-events: none;
+      font-weight: var(--ced-label-bold);
+      /* Must be displayed as block so it sits below the parent's text */
+      display: block;
     }
 
     .edit-dialog__label::after {
@@ -323,7 +339,7 @@ export class CasperEditDialog extends LitElement {
             ? this._pages.map((page, index) => html`
               <li class="edit-dialog__label" ?active=${index === this._activeIndex} .index=${index} @click=${this._labelClickHandler}>
                 <span class="edit-dialog__label-number">${index + 1}</span>
-                <span class="edit-dialog__label-text">${page.label}</span>
+                <span class="edit-dialog__label-text" text=${page.label}>${page.label}</span>
               </li>
             `)
             : ''}
