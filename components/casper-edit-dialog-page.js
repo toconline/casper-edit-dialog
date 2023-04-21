@@ -52,21 +52,35 @@ export class CasperEditDialogPage extends LitElement {
     }
   }
 
-  save (saveData, data) {
-    // TODO validates if patch structure for this._type exists in saveData, else create it
+  save (saveData, data, request = 'patch') {
+    if (!saveData[request][this._type]) {
+      saveData[request][this._type] = {
+        payloads: [{
+          urn: `${this._type}/${data.id}`,
+          payload: {
+            data: {
+              type: this._type,
+              id: data.id,
+              attributes: {}
+            }
+          }
+        }]
+      }
+    }
+
     for (const elem of this.shadowRoot.querySelectorAll('[binding]')) {
       const binding = elem.getAttribute('binding');
 
       switch (elem.tagName.toLowerCase()) {
         case 'paper-checkbox':
           if (data[binding] && elem.checked != data[binding]) {
-            saveData.patch[this._type].payloads[0].data.attributes[binding] = elem.checked;
+            saveData[request][this._type].payloads[0].payload.data.attributes[binding] = elem.checked;
           }
           break;
         case 'paper-input':
         default:
           if (data[binding] && elem.value != data[binding]) {
-            saveData.patch[this._type].payloads[0].data.attributes[binding] = elem.value;
+            saveData[request][this._type].payloads[0].payload.data.attributes[binding] = elem.value;
           }
           break;
       }

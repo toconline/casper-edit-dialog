@@ -522,8 +522,6 @@ export class CasperEditDialog extends LitElement {
     } else {
       newPage.load();
     }
-
-    this._pages[index].content = newPage;
   }
 
   _labelClickHandler (event) {
@@ -561,34 +559,17 @@ export class CasperEditDialog extends LitElement {
       const saveData = {
         patch: {}, // patch is the default operation
         post: {} // only filled if specified in overcharged page save to handle it
-      };
-
-      // set default type structure if type available
-      if ( this._type ) {
-        saveData.patch[this._type] = {
-          urn: this._options.urn ?? `${this._type}/${this._id}`,
-          payloads: [{
-            data: {
-              type: this._type,
-              id: this._id,
-              attributes: {}
-            }
-          }]
-        }
       }
 
-      for ( const page of this._pages ) {
-        if (page.content !== undefined) {
-          page.content.save(saveData, this.data);
-        }
+      for (let i = 0; i < this._pagesContainerEl.children.length; i++) {
+        this._pagesContainerEl.children[i].save(saveData, this.data);
       }
 
-      Object.entries(saveData).forEach(([operation, entries]) => {
-        Object.entries(entries).forEach(async ([type, entry]) => {
-          if (Object.entries(entry.payloads[0].data.attributes).length) {
-            const urn = entry.urn;
-            entry.payloads.forEach(async (payload) => {
-              await app.broker[operation](urn, payload, 10000);
+      Object.entries(saveData).forEach(([operation, types]) => {
+        Object.entries(types).forEach(async ([type, data]) => {
+          if (Object.entries(data.payloads[0].payload.data.attributes).length) {
+            data.payloads.forEach(async (entry) => {
+              await app.broker[operation](entry.urn, entry.payload, 10000);
             });
           }
         })
