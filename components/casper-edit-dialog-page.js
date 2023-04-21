@@ -2,6 +2,12 @@ import { LitElement, css } from 'lit';
 
 
 export class CasperEditDialogPage extends LitElement {
+  static properties = {
+    _type: {
+      type: String
+    }
+  };
+
   static styles = css`
     :host {
       --grid-item-min-width: 15.625rem;
@@ -35,8 +41,6 @@ export class CasperEditDialogPage extends LitElement {
     for (const elem of this.shadowRoot.querySelectorAll('[binding]')) {
       const binding = elem.getAttribute('binding');
 
-      console.log(elem.tagName.toLowerCase());
-      console.log(`binding to ${binding} = ${data[binding]} type: ${typeof data[binding]}`);
       switch (typeof data[binding]) {
         case 'boolean':
           elem.checked = data[binding];
@@ -48,18 +52,23 @@ export class CasperEditDialogPage extends LitElement {
     }
   }
 
-  save (patch, data) {
+  save (saveData, data) {
+    // TODO validates if patch structure for this._type exists in saveData, else create it
     for (const elem of this.shadowRoot.querySelectorAll('[binding]')) {
-      const binding = elem.getAttribute('binding')
-      if ( elem.value != data[binding] ) {
-        switch (typeof data[binding]) {
-          case 'boolean':
-            patch.set(binding, elem.checked);
-            break;
-          default:
-            patch.set(binding, elem.value);
-            break;
-        }
+      const binding = elem.getAttribute('binding');
+
+      switch (elem.tagName.toLowerCase()) {
+        case 'paper-checkbox':
+          if (data[binding] && elem.checked != data[binding]) {
+            saveData.patch[this._type].payloads[0].data.attributes[binding] = elem.checked;
+          }
+          break;
+        case 'paper-input':
+        default:
+          if (data[binding] && elem.value != data[binding]) {
+            saveData.patch[this._type].payloads[0].data.attributes[binding] = elem.value;
+          }
+          break;
       }
     }
   }

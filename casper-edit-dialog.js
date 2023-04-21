@@ -501,11 +501,10 @@ export class CasperEditDialog extends LitElement {
 
     if (!this.data && this._options.urn) {
       try {
-        const response = await window.app.broker.get(this._options.urn, 10000);
-
-        this.data = response.data;
-        this._id = response.id;
-        this._type = response._type;  
+        const response = await app.broker.get(this._options.urn, 10000);
+        this.data  = response.data;
+        this._id   = response.id;
+        this._type = response.type;
       } catch (error) {
         // TODO borrar a pintura
         console.log(error);
@@ -523,6 +522,8 @@ export class CasperEditDialog extends LitElement {
     } else {
       newPage.load();
     }
+
+    this._pages[index].content = newPage;
   }
 
   _labelClickHandler (event) {
@@ -557,37 +558,59 @@ export class CasperEditDialog extends LitElement {
 
   async save () {
     try {
-      if (this._options.urn && window.app?.broker) {
-        const patch = new Map(); // or make the object
-  
-        for (const page of this._pages) {
-          page.save(patch, this.data);
-        }
+      const saveData = {
+        patch: {}, // patch is the default operation
+        post: {} // only filled if specified in overcharged page save to handle it
+      };
 
-        if (patch.size != 0) {
-          await window.app.broker.patch(this._options.urn, { data: {
+      // set default type structure if type available
+      if ( this._type ) {
+        saveData.patch[this._type] = {
+          urn: this._options.urn ?? `${this._type}/${this._id}`,
+          payloads: [{
+            data: {
               type: this._type,
               id: this._id,
-              attributes: Object.fromEntries(patch)
+              attributes: {}
             }
-          }, 10000);
-        }
-
-      } else {
-        for (const page of this._pagesContainerEl.children) {
-          page.save();
+          }]
         }
       }
-      
-    } catch (error) {
-      console.error(error);
-      return;
-    }
 
-    this.close();
+      for ( const page of this._pages ) {
+        if (page.content !== undefined) {
+          page.content.save(saveData, this.data);
+        }
+      }
+
+      Object.entries(saveData).forEach(([operation, entries]) => {
+        Object.entries(entries).forEach(async ([type, entry]) => {
+          if (Object.entries(entry.payloads[0].data.attributes).length) {
+            const urn = entry.urn;
+            entry.payloads.forEach(async (payload) => {
+              await app.broker[operation](urn, payload, 10000);
+            });
+          }
+        })
+      });
+    } catch (e) {
+      console.error(e);
+      // todo catch and show error
+    }
+    // try {
+    //   for (const page of this._pagesContainerEl.children) {
+    //     page.save(this.data);
+    //   }
+
+    // } catch (error) {
+    //   console.error(error);
+    //   return;
+    // }
+
+    // this.close();
   }
 
-  
+
 }
 
 customElements.define('casper-edit-dialog', CasperEditDialog);
