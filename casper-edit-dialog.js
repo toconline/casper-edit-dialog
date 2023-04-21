@@ -1,4 +1,5 @@
 import { html, css, LitElement } from 'lit';
+import './components/casper-edit-dialog-warning.js';
 
 export class CasperEditDialog extends LitElement {
   static properties = {
@@ -366,6 +367,8 @@ export class CasperEditDialog extends LitElement {
           <button class="edit-dialog__button" @click=${this.save.bind(this)}>Gravar</button>
         </div>
       </dialog>
+
+      <casper-edit-dialog-warning id="warning"></casper-edit-dialog-warning>
     `;
   }
   
@@ -373,6 +376,7 @@ export class CasperEditDialog extends LitElement {
     this._dialogEl = this.shadowRoot.getElementById('editDialog');
     this._contentWrapperEl = this.shadowRoot.querySelector('.edit-dialog__content-wrapper');
     this._pagesContainerEl = this.shadowRoot.querySelector('.edit-dialog__pages-container');
+    this._warningEl = this.shadowRoot.getElementById('warning');
 
     this._dialogEl.addEventListener('click', (event) => {
       // Only a click on the ::backdrop can generate the 'dialog' nodeName
@@ -438,6 +442,15 @@ export class CasperEditDialog extends LitElement {
       this.parentNode.removeChild(this);
     } else {
       
+      const options = {
+        title: 'Atenção!',
+        message: 'Tem a certeza de que pretende fechar o diálogo sem gravar? Todas as alterações feitas serão perdidas.',
+        accept_callback: function () {
+          this.parentNode.removeChild(this);
+        }.bind(this)
+      };
+
+      this._warningEl.open(options);
     }
   }
 
