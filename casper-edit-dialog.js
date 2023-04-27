@@ -37,7 +37,7 @@ export class CasperEditDialog extends LitElement {
       border-radius: var(--ced-border-radius);
       overflow: hidden;
       display: grid;
-      grid-template-areas: 
+      grid-template-areas:
         "labels header"
         "labels page"
         "labels footer";
@@ -326,7 +326,7 @@ export class CasperEditDialog extends LitElement {
 
     this.dispatchEvent(new CustomEvent('casper-edit-dialog-closed', { bubbles: true, composed: true }));
   }
-  
+
 
   //***************************************************************************************//
   //                              ~~~ LIT lifecycle  ~~~                                   //
@@ -345,7 +345,7 @@ export class CasperEditDialog extends LitElement {
             `)
             : ''}
         </ol>
-        
+
         <div class="edit-dialog__header">
           <casper-icon-button tooltip="Fechar" class="edit-dialog__close" icon="fa-light:times-circle" @click=${this.close.bind(this)}></casper-icon-button>
 
@@ -361,7 +361,7 @@ export class CasperEditDialog extends LitElement {
         <div class="edit-dialog__content-wrapper">
           <div class="edit-dialog__pages-container"></div>
         </div>
-      
+
         <div class="edit-dialog__footer">
           <button class="edit-dialog__button reverse" @click=${this.close.bind(this)}>Cancelar</button>
           <button class="edit-dialog__button" @click=${this.save.bind(this)}>Gravar</button>
@@ -371,7 +371,7 @@ export class CasperEditDialog extends LitElement {
       <casper-edit-dialog-warning id="warning"></casper-edit-dialog-warning>
     `;
   }
-  
+
   firstUpdated () {
     this._dialogEl = this.shadowRoot.getElementById('editDialog');
     this._contentWrapperEl = this.shadowRoot.querySelector('.edit-dialog__content-wrapper');
@@ -420,7 +420,7 @@ export class CasperEditDialog extends LitElement {
         const idx = page.lastIndexOf('/') + 1;
         const module = await import(`/src/${page.slice(0,idx)}${window.app.digest ? `${window.app.digest}.` : ''}${page.slice(idx)}.js`);
         this._pages.push({
-          label: module.label ? module.label : '', 
+          label: module.label ? module.label : '',
           title: module.title ? module.title : module.label,
           tag_name: module.tag_name ? module.tag_name : page.slice(idx)
         });
@@ -441,7 +441,7 @@ export class CasperEditDialog extends LitElement {
     if (allowClose) {
       this.parentNode.removeChild(this);
     } else {
-      
+
       const options = {
         title: 'Atenção!',
         message: 'Tem a certeza de que pretende fechar o diálogo sem gravar? Todas as alterações feitas serão perdidas.',
@@ -460,7 +460,7 @@ export class CasperEditDialog extends LitElement {
 
     if (!this._statusPageEl) {
       const statusPageTagName = 'casper-edit-dialog-status-page';
-      
+
       await import(`./components/${statusPageTagName}.js`);
 
       this._statusPageEl = document.createElement(statusPageTagName);
@@ -492,7 +492,7 @@ export class CasperEditDialog extends LitElement {
   //***************************************************************************************//
   //                              ~~~ Private methods  ~~~                                 //
   //***************************************************************************************//
-  
+
   async _createAndActivatePage (index) {
     const newPage = document.createElement(this._pages[index].tag_name);
     newPage.setAttribute('name', `page-${index}`);
@@ -508,7 +508,7 @@ export class CasperEditDialog extends LitElement {
       } catch (error) {
         // TODO borrar a pintura
         console.log(error);
-        
+
         await this.showStatusPage({ message: ['Erro! Ocorreu um problema ao tentar carregar os dados.'] });
         this._statusPageEl.showStatus();
         return;
