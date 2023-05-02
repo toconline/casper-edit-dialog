@@ -431,7 +431,7 @@ export class CasperEditDialog extends LitElement {
       return;
     }
 
-    this._createAndActivatePage('0');
+    this._createAndActivatePage(0);
     this._dialogEl.showModal();
   }
 
@@ -514,7 +514,19 @@ export class CasperEditDialog extends LitElement {
         return;
       }
     }
-    this._pagesContainerEl.appendChild(newPage);
+
+    let closestPreviousSibling;
+    for (let i = +index - 1; i >= 0; i--) {
+      closestPreviousSibling = this._pagesContainerEl.children.namedItem(`page-${i}`);
+      if (closestPreviousSibling) break;
+    }
+
+    if (closestPreviousSibling) {
+      closestPreviousSibling.insertAdjacentElement('afterend', newPage);
+    } else {
+      this._pagesContainerEl.appendChild(newPage);
+    }
+
     await newPage.updateComplete;
 
     if (this._options.urn) {
