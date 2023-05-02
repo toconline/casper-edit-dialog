@@ -569,7 +569,9 @@ export class CasperEditDialog extends LitElement {
         Object.entries(types).forEach(async ([type, data]) => {
           if (Object.entries(data.payloads[0].payload.data.attributes).length) {
             data.payloads.forEach(async (entry) => {
-              await app.broker[operation](entry.urn, entry.payload, 10000);
+              if (Object.keys(entry.payload.data.attributes).length) {
+                await app.broker[operation](entry.urn, entry.payload, 10000);
+              }
             });
           }
         })
