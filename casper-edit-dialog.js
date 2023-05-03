@@ -443,7 +443,8 @@ export class CasperEditDialog extends LitElement {
       return;
     }
 
-    this._createAndActivatePage(0);
+    const firstPage = await this._createAndActivatePage(0);
+    firstPage.setAttribute('active', '');
     this._dialogEl.showModal();
   }
 
@@ -509,7 +510,6 @@ export class CasperEditDialog extends LitElement {
   async _createAndActivatePage (index) {
     const newPage = document.createElement(this._pages[index].tag_name);
     newPage.setAttribute('name', `page-${index}`);
-    newPage.setAttribute('active', '');
     newPage.editDialog = this;
 
     if (!this.data && this._options.urn) {
@@ -547,23 +547,32 @@ export class CasperEditDialog extends LitElement {
     } else {
       newPage.load();
     }
+
+    return newPage;
   }
 
-  _labelClickHandler (event) {
+  async _labelClickHandler (event) {
     if (!event?.currentTarget) return;
 
     const previousIndex = this._activeIndex;
     const newIndex = event.currentTarget.index;
 
     const previousPage = this._pagesContainerEl.children.namedItem(`page-${previousIndex}`);
-    previousPage.removeAttribute('active');
 
-    const currentPage = this._pagesContainerEl.children.namedItem(`page-${newIndex}`);
-    if (currentPage) {
-      currentPage.setAttribute('active', '');
-    } else {
-      this._createAndActivatePage(newIndex);
+    let currentPage = this._pagesContainerEl.children.namedItem(`page-${newIndex}`);
+    if (!currentPage) {
+      currentPage = await this._createAndActivatePage(newIndex);
+      
+      if (newIndex > previousIndex) {
+        currentPage.style.transform = 'translateY(100%)';
+      }
     }
+
+    previousPage.removeAttribute('active');
+    setTimeout(() => {
+      currentPage.setAttribute('active', '');
+      if (currentPage.style.hasOwnProperty('transform')) currentPage.style.removeProperty('transform');
+    }, 0);
 
     this._activeIndex = newIndex;
   }
