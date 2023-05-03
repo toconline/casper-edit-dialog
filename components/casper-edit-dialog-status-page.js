@@ -18,10 +18,10 @@ export class CasperEditDialogStatusPage extends LitElement {
         display: flex;
         place-items: center;
         justify-items: center;
-        background-color: #F5F6FA !important;
+        background-color: rgb(245, 245, 245);
         color: #2E3641;
         padding: 60px;
-        z-index: 3;
+        z-index: 2;
       }
 
       h1 {

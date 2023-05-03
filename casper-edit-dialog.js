@@ -222,8 +222,8 @@ export class CasperEditDialog extends LitElement {
     }
 
     .edit-dialog__pages-container {
-      width: 800px;
-      height: 418px;
+      width: 50rem; /* 800px */
+      height: 26.125rem; /* 418px */
       max-width: 100%;
       max-height: 100%;
       overflow: hidden;
@@ -232,19 +232,31 @@ export class CasperEditDialog extends LitElement {
       justify-content: center;
       align-items: flex-start;
       position: relative;
+      z-index: 1;
     }
 
-    .edit-dialog__pages-container > * {
+    [name^="page"] {
       position: absolute;
       opacity: 0;
       pointer-events: none;
-      flex-grow: 1;
+      width: 100%;
+      height: 100%;
+      background-color: var(--ced-background-color);
+      transform: translateY(-100%);
+      transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.5s;
     }
 
-    .edit-dialog__pages-container > *[active] {
+    [name^="page"][active] {
       position: relative;
       opacity: 1;
       pointer-events: auto;
+      transform: translateY(0);
+      transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0s;
+      z-index: 2;
+    }
+
+    [name^="page"][active] ~ * {
+      transform: translateY(100%);
     }
 
     .edit-dialog__status-page {
