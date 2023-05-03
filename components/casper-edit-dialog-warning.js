@@ -9,6 +9,9 @@ class CasperEditDialogWarning extends LitElement {
     _message: {
       type: String
     },
+    _type: {
+      type: String
+    },
     _accept: {
       type: String
     },
@@ -46,12 +49,13 @@ class CasperEditDialogWarning extends LitElement {
     .ced-warning__title {
       font-size: 1.125rem;
       margin: 0;
-      color: var(--error-color-soft);
+      color: #000;
     }
 
     .ced-warning__message {
       font-size: 1rem;
       margin: 0;
+      color: rgb(68, 68, 68);
     }
 
     .ced-warning__actions {
@@ -61,29 +65,47 @@ class CasperEditDialogWarning extends LitElement {
     }
 
     .edit-dialog__button {
-      background-color: var(--error-color-soft);
-      border: 2px solid var(--error-color-soft);
       color: #FFF;
       font-size: 0.875rem;
       font-weight: 600;
-      padding: 0.6em;
+      padding: 0.714em;
       border-radius: 1.428em;
       outline: none;
-      transition: all 0.5s;
-
 
       min-width: 60px;
-    }
-
-    .edit-dialog__button.reverse {
-      background-color: #FFF;
-      color: var(--error-color-soft);
-    }
-
-    .edit-dialog__button:hover {
       cursor: pointer;
+    }
+
+    .ced-warning[type="regular"] .edit-dialog__button {
+      background-color: var(--button-primary-color);
+      border: 2px solid var(--button-primary-color);
+    }
+
+    .ced-warning[type="warning"] .edit-dialog__button {
+      background-color: var(--error-color-soft);
+      border: 2px solid var(--error-color-soft);
+    }
+
+    .ced-warning[type="warning"] .edit-dialog__button:hover {
+      background-color: var(--error-color-soft-hover);
+      border: 2px solid var(--error-color-soft-hover);
+    }
+
+    .ced-warning[type] .edit-dialog__button.reverse,
+    .ced-warning[type] .edit-dialog__button.reverse:hover {
       background-color: #FFF;
+    }
+
+    .ced-warning[type="regular"] .edit-dialog__button.reverse {
+      color: var(--button-primary-color);
+    }
+
+    .ced-warning[type="warning"] .edit-dialog__button.reverse {
       color: var(--error-color-soft);
+    }
+
+    .ced-warning[type="warning"] .edit-dialog__button.reverse:hover {
+      color: var(--error-color-soft-hover);
     }
 
     .edit-dialog__button[disabled] {
@@ -98,6 +120,7 @@ class CasperEditDialogWarning extends LitElement {
   constructor () {
     super();
 
+    this._type = 'regular';
     this._title = '';
     this._message = '';
     this._accept = 'Sim';
@@ -106,7 +129,7 @@ class CasperEditDialogWarning extends LitElement {
 
   render () {
     return html`
-      <dialog id="editDialogWarning" class="ced-warning">
+      <dialog id="editDialogWarning" class="ced-warning" type=${this._type}>
         <div class="ced-warning__text">
           <h1 class="ced-warning__title">${this._title}</h1>
           <p class="ced-warning__message">${this._message}</p>
@@ -126,6 +149,7 @@ class CasperEditDialogWarning extends LitElement {
 
   open (options) {
     this._options = options;
+    if (this._options.type) this._type = this._options.type;
     if (this._options.title) this._title = this._options.title;
     if (this._options.message) this._message = this._options.message;
     if (this._options.accept) this._accept = this._options.accept;

@@ -445,6 +445,7 @@ export class CasperEditDialog extends LitElement {
       const options = {
         title: 'Atenção!',
         message: 'Tem a certeza de que pretende fechar o diálogo sem gravar? Todas as alterações feitas serão perdidas.',
+        type: 'warning',
         accept_callback: function () {
           this.parentNode.removeChild(this);
         }.bind(this)
