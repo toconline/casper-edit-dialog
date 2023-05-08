@@ -135,7 +135,7 @@ export class CasperEditDialog extends LitElement {
       content: "";
       position: absolute;
       top: 50%;
-      right: calc(var(--ced-horizontal-padding) * -1);
+      right: calc(var(--ced-horizontal-padding) * -1 - 1px);
       transform: translate(50%, -50%) rotate(45deg);
       display: block;
       height: 1.25em;
@@ -201,14 +201,14 @@ export class CasperEditDialog extends LitElement {
       text-overflow: ellipsis;
     }
 
-    .edit-dialog__general-title:nth-last-child(2) {
+    .edit-dialog__page-title:nth-last-child(2) {
       font-size: 0.875em;
       font-weight: 400;
       color: #808080;
     }
 
-    .edit-dialog__general-title:last-child,
-    .edit-dialog__page-title {
+    .edit-dialog__page-title:last-child,
+    .edit-dialog__general-title {
       font-size: 1.125em;
       font-weight: 700;
       color: #000;
@@ -295,7 +295,9 @@ export class CasperEditDialog extends LitElement {
       padding: 0.714em;
       border-radius: 1.428em;
       outline: none;
+      text-transform: uppercase;
       transition: all 0.5s;
+      font-family: inherit;
     }
 
     .edit-dialog__button.reverse {
@@ -320,6 +322,7 @@ export class CasperEditDialog extends LitElement {
   constructor () {
     super();
 
+    window.ced = this;
 
     this._state = 'normal';
     this._title = '';
@@ -362,9 +365,12 @@ export class CasperEditDialog extends LitElement {
           <casper-icon-button tooltip="Fechar" class="edit-dialog__close" icon="fa-light:times-circle" @click=${this.close.bind(this)}></casper-icon-button>
 
           <hgroup class="edit-dialog__header-text">
-            <h1 class="edit-dialog__general-title">${this._title}</h1>
             ${(this._pages.length > 0 && this._pages[this._activeIndex].title)
               ? html`<h2 class="edit-dialog__page-title">${this._pages[this._activeIndex].title}</h2>`
+              : ''
+            }
+            ${(this._title)
+              ? html`<h1 class="edit-dialog__general-title">${this._title}</h1>`
               : ''
             }
           </hgroup>

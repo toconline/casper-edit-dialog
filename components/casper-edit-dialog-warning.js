@@ -71,9 +71,11 @@ class CasperEditDialogWarning extends LitElement {
       padding: 0.714em;
       border-radius: 1.428em;
       outline: none;
+      text-transform: uppercase;
 
       min-width: 60px;
       cursor: pointer;
+      font-family: inherit;
     }
 
     .ced-warning[type="regular"] .edit-dialog__button {
