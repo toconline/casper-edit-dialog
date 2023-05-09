@@ -487,7 +487,7 @@ export class CasperEditDialog extends LitElement {
   }
 
   close () {
-    const allowClose = this.hasUnsavedChanges();
+    const allowClose = !this.hasUnsavedChanges();
 
     if (allowClose) {
       this.parentNode.removeChild(this);
@@ -577,7 +577,7 @@ export class CasperEditDialog extends LitElement {
   }
 
   hasUnsavedChanges () {
-    return true;
+    return false;
   }
 
   async save () {
