@@ -562,7 +562,7 @@ export class CasperEditDialog extends LitElement {
     let currentPage = this._pagesContainerEl.children.namedItem(`page-${newIndex}`);
     if (!currentPage) {
       currentPage = await this._createAndActivatePage(newIndex);
-      
+
       if (newIndex > previousIndex) {
         currentPage.style.transform = 'translateY(100%)';
       }
@@ -592,7 +592,8 @@ export class CasperEditDialog extends LitElement {
     try {
       const saveData = {
         patch: {}, // patch is the default operation
-        post: {} // only filled if specified in overcharged page save to handle it
+        post: {}, // only filled if specified in overcharged page save to handle it
+        delete: {} // only filled if specified in overcharged page save to handle it
       }
 
       for (let i = 0; i < this._pagesContainerEl.children.length; i++) {
@@ -601,13 +602,17 @@ export class CasperEditDialog extends LitElement {
 
       Object.entries(saveData).forEach(([operation, types]) => {
         Object.entries(types).forEach(async ([type, data]) => {
-          if (Object.entries(data.payloads[0].payload.data.attributes).length) {
-            data.payloads.forEach(async (entry) => {
-              if (Object.keys(entry.payload.data.attributes).length) {
+          data.payloads.forEach(async (entry) => {
+            if (operation !== 'delete') {
+              if (entry.urn && Object.keys(entry.payload.data.attributes).length) {
                 await app.broker[operation](entry.urn, entry.payload, 10000);
               }
-            });
-          }
+            } else {
+              if (entry.urn) {
+                console.log('delete');
+              }
+            }
+          });
         })
       });
     } catch (e) {
