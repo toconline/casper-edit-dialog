@@ -392,6 +392,7 @@ export class CasperEditDialog extends LitElement {
 
   firstUpdated () {
     this._dialogEl = this.shadowRoot.getElementById('editDialog');
+    this._labelsList = this.shadowRoot.querySelector('.edit-dialog__labels-list');
     this._contentWrapperEl = this.shadowRoot.querySelector('.edit-dialog__content-wrapper');
     this._pagesContainerEl = this.shadowRoot.querySelector('.edit-dialog__pages-container');
     this._warningEl = this.shadowRoot.getElementById('warning');
@@ -449,7 +450,7 @@ export class CasperEditDialog extends LitElement {
       return;
     }
 
-    const firstPage = await this._createAndActivatePage(0);
+    const firstPage = await this._createPage(0);
     firstPage.setAttribute('active', '');
     this._dialogEl.showModal();
   }
@@ -513,7 +514,7 @@ export class CasperEditDialog extends LitElement {
   //                              ~~~ Private methods  ~~~                                 //
   //***************************************************************************************//
 
-  async _createAndActivatePage (index) {
+  async _createPage (index) {
     const newPage = document.createElement(this._pages[index].tag_name);
     newPage.setAttribute('name', `page-${index}`);
     newPage.editDialog = this;
@@ -546,6 +547,8 @@ export class CasperEditDialog extends LitElement {
       this._pagesContainerEl.appendChild(newPage);
     }
 
+    if (index > this._activeIndex) newPage.style.transform = 'translateY(100%)';
+
     await newPage.updateComplete;
 
     if (this._options.urn) {
@@ -563,24 +566,29 @@ export class CasperEditDialog extends LitElement {
     const previousIndex = this._activeIndex;
     const newIndex = event.currentTarget.index;
 
-    const previousPage = this._pagesContainerEl.children.namedItem(`page-${previousIndex}`);
-
-    let currentPage = this._pagesContainerEl.children.namedItem(`page-${newIndex}`);
+    const currentPage = this._pagesContainerEl.children.namedItem(`page-${newIndex}`);
     if (!currentPage) {
-      currentPage = await this._createAndActivatePage(newIndex);
-      
-      if (newIndex > previousIndex) {
-        currentPage.style.transform = 'translateY(100%)';
-      }
+      await this._createPage(newIndex);
     }
 
+    this.activatePage(newIndex);
+  }
+
+  async activatePage (newIndex) {
+    if (+newIndex === +this._activeIndex) return;
+
+    const previousIndex = this._activeIndex;
+    const previousPage = this._pagesContainerEl.children.namedItem(`page-${previousIndex}`);
     previousPage.removeAttribute('active');
+
+    const currentPage = this._pagesContainerEl.children.namedItem(`page-${newIndex}`);
+    
     setTimeout(() => {
       currentPage.setAttribute('active', '');
       if (currentPage.style.hasOwnProperty('transform')) currentPage.style.removeProperty('transform');
     }, 0);
 
-    this._activeIndex = newIndex;
+    this._activeIndex = +newIndex;
   }
 
   validate () {
