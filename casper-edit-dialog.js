@@ -467,12 +467,14 @@ export class CasperEditDialog extends LitElement {
       for (const page of this._options.pages) {
         const idx = page.lastIndexOf('/') + 1;
         const module = await import(`/src/${page.slice(0,idx)}${window.app.digest ? `${window.app.digest}.` : ''}${page.slice(idx)}.js`);
+
         this._pages.push({
           label: module.label ? module.label : '',
           title: module.title ? module.title : module.label,
           tag_name: module.tag_name ? module.tag_name : page.slice(idx)
         });
       }
+
       this.requestUpdate();
     } catch (error) {
       console.error(error);
@@ -535,72 +537,6 @@ export class CasperEditDialog extends LitElement {
 
     this._statusPageEl.hidden = true;
     this._state = 'normal';
-  }
-
-
-
-  //***************************************************************************************//
-  //                              ~~~ Private methods  ~~~                                 //
-  //***************************************************************************************//
-
-  async _createPage (index) {
-    const newPage = document.createElement(this._pages[index].tag_name);
-    newPage.setAttribute('name', `page-${index}`);
-    newPage.editDialog = this;
-
-    if (!this.data && this._options.urn) {
-      try {
-        const response = await app.broker.get(this._options.urn, 10000);
-        this.data  = response.data;
-        this._id   = response.id;
-        this._type = response.type;
-      } catch (error) {
-        // TODO borrar a pintura
-        console.log(error);
-
-        await this.showStatusPage({ message: ['Erro! Ocorreu um problema ao tentar carregar os dados.'] });
-        this._statusPageEl.showStatus();
-        return;
-      }
-    }
-
-    let closestPreviousSibling;
-    for (let i = +index - 1; i >= 0; i--) {
-      closestPreviousSibling = this._pagesContainerEl.children.namedItem(`page-${i}`);
-      if (closestPreviousSibling) break;
-    }
-
-    if (closestPreviousSibling) {
-      closestPreviousSibling.insertAdjacentElement('afterend', newPage);
-    } else {
-      this._pagesContainerEl.appendChild(newPage);
-    }
-
-    if (index > this._activeIndex) newPage.style.transform = 'translateY(100%)';
-
-    await newPage.updateComplete;
-
-    if (this._options.urn) {
-      newPage.load(this.data);
-    } else {
-      newPage.load();
-    }
-
-    return newPage;
-  }
-
-  async _labelClickHandler (event) {
-    if (!event?.currentTarget) return;
-
-    const previousIndex = this._activeIndex;
-    const newIndex = +event.currentTarget.index;
-
-    const currentPage = this._pagesContainerEl.children.namedItem(`page-${newIndex}`);
-    if (!currentPage) {
-      await this._createPage(newIndex);
-    }
-
-    this.activatePage(newIndex);
   }
 
   async activatePage (newIndex) {
@@ -687,6 +623,69 @@ export class CasperEditDialog extends LitElement {
   }
 
 
+
+  //***************************************************************************************//
+  //                              ~~~ Private methods  ~~~                                 //
+  //***************************************************************************************//
+
+  async _createPage (index) {
+    const newPage = document.createElement(this._pages[index].tag_name);
+    newPage.setAttribute('name', `page-${index}`);
+    newPage.editDialog = this;
+
+    if (!this.data && this._options.urn) {
+      try {
+        const response = await app.broker.get(this._options.urn, 10000);
+        this.data  = response.data;
+        this._id   = response.id;
+        this._type = response.type;
+      } catch (error) {
+        console.log(error);
+
+        await this.showStatusPage({ message: ['Erro! Ocorreu um problema ao tentar carregar os dados.'] });
+        this._statusPageEl.showStatus();
+        return;
+      }
+    }
+
+    let closestPreviousSibling;
+    for (let i = +index - 1; i >= 0; i--) {
+      closestPreviousSibling = this._pagesContainerEl.children.namedItem(`page-${i}`);
+      if (closestPreviousSibling) break;
+    }
+
+    if (closestPreviousSibling) {
+      closestPreviousSibling.insertAdjacentElement('afterend', newPage);
+    } else {
+      this._pagesContainerEl.appendChild(newPage);
+    }
+
+    if (index > this._activeIndex) newPage.style.transform = 'translateY(100%)';
+
+    await newPage.updateComplete;
+
+    if (this._options.urn) {
+      newPage.load(this.data);
+    } else {
+      newPage.load();
+    }
+
+    return newPage;
+  }
+
+  async _labelClickHandler (event) {
+    if (!event?.currentTarget) return;
+
+    const previousIndex = this._activeIndex;
+    const newIndex = +event.currentTarget.index;
+
+    const currentPage = this._pagesContainerEl.children.namedItem(`page-${newIndex}`);
+    if (!currentPage) {
+      await this._createPage(newIndex);
+    }
+
+    this.activatePage(newIndex);
+  }
 }
 
 customElements.define('casper-edit-dialog', CasperEditDialog);
