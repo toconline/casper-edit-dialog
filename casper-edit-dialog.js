@@ -20,6 +20,7 @@ export class CasperEditDialog extends LitElement {
       --ced-horizontal-padding: 1.25rem;
       --ced-background-color: #FFF;
       --ced-border-radius: var(--radius-primary, 8px);
+      --ced-labels-background-color: var(--primary-color);
       --ced-labels-max-width: 13.75rem;
     }
 
@@ -30,7 +31,7 @@ export class CasperEditDialog extends LitElement {
     .edit-dialog {
       max-width: 90vw;
       max-height: 90vh;
-      background-color: var(--primary-color);
+      background-color: var(--ced-labels-background-color);
       box-shadow: rgba(0, 0, 0, 15%) 0 5px 20px;
       border: none;
       padding: 0;
@@ -88,6 +89,7 @@ export class CasperEditDialog extends LitElement {
     }
 
     .edit-dialog__label-number {
+      position: relative;
       flex-shrink: 0;
       width: 1.875em;
       height: 1.875em;
@@ -108,6 +110,32 @@ export class CasperEditDialog extends LitElement {
       border: solid 1px transparent;
       box-shadow: rgba(0, 0, 0, 5%) 1px 1px 4px;
       transform: scale(1.1);
+    }
+
+    .edit-dialog__label-number::after {
+      content: "!";
+      position: absolute;
+      top: 0;
+      right: 0;
+      font-size: 0.75rem;
+      box-sizing: border-box;
+      transform: translate(40%, -40%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      border: solid 1px var(--ced-labels-background-color);
+      background-color: var(--error-color-soft);
+      opacity: 0;
+      width: 0;
+      height: 0;
+      transition: opacity var(--ced-label-transition-duration), width var(--ced-label-transition-duration), height var(--ced-label-transition-duration);
+    }
+
+    .edit-dialog__label[invalid] .edit-dialog__label-number::after {
+      height: 1.4em;
+      width: 1.4em;
+      opacity: 1;
     }
 
     .edit-dialog__label-text {
@@ -135,7 +163,7 @@ export class CasperEditDialog extends LitElement {
       content: "";
       position: absolute;
       top: 50%;
-      right: calc(var(--ced-horizontal-padding) * -1);
+      right: calc(var(--ced-horizontal-padding) * -1 - 1px);
       transform: translate(50%, -50%) rotate(45deg);
       display: block;
       height: 1.25em;
@@ -201,14 +229,14 @@ export class CasperEditDialog extends LitElement {
       text-overflow: ellipsis;
     }
 
-    .edit-dialog__general-title:nth-last-child(2) {
+    .edit-dialog__page-title:nth-last-child(2) {
       font-size: 0.875em;
       font-weight: 400;
       color: #808080;
     }
 
-    .edit-dialog__general-title:last-child,
-    .edit-dialog__page-title {
+    .edit-dialog__page-title:last-child,
+    .edit-dialog__general-title {
       font-size: 1.125em;
       font-weight: 700;
       color: #000;
@@ -295,7 +323,9 @@ export class CasperEditDialog extends LitElement {
       padding: 0.714em;
       border-radius: 1.428em;
       outline: none;
+      text-transform: uppercase;
       transition: all 0.5s;
+      font-family: inherit;
     }
 
     .edit-dialog__button.reverse {
@@ -320,11 +350,13 @@ export class CasperEditDialog extends LitElement {
   constructor () {
     super();
 
+    window.ced = this;
 
     this._state = 'normal';
     this._title = '';
     this._pages = [];
     this._activeIndex = 0;
+    this._invalidPagesIndexes = new Set();
   }
 
   connectedCallback() {
@@ -350,7 +382,7 @@ export class CasperEditDialog extends LitElement {
         <ol class="edit-dialog__labels-list">
           ${(this._pages.length > 0)
             ? this._pages.map((page, index) => html`
-              <li class="edit-dialog__label" ?active=${index === this._activeIndex} .index=${index} @click=${this._labelClickHandler}>
+              <li class="edit-dialog__label" ?active=${index === this._activeIndex} ?invalid=${this._invalidPagesIndexes.has(index)} .index=${index} @click=${this._labelClickHandler}>
                 <span class="edit-dialog__label-number">${index + 1}</span>
                 <span class="edit-dialog__label-text" text=${page.label}>${page.label}</span>
               </li>
@@ -362,9 +394,12 @@ export class CasperEditDialog extends LitElement {
           <casper-icon-button tooltip="Fechar" class="edit-dialog__close" icon="fa-light:times-circle" @click=${this.close.bind(this)}></casper-icon-button>
 
           <hgroup class="edit-dialog__header-text">
-            <h1 class="edit-dialog__general-title">${this._title}</h1>
             ${(this._pages.length > 0 && this._pages[this._activeIndex].title)
               ? html`<h2 class="edit-dialog__page-title">${this._pages[this._activeIndex].title}</h2>`
+              : ''
+            }
+            ${(this._title)
+              ? html`<h1 class="edit-dialog__general-title">${this._title}</h1>`
               : ''
             }
           </hgroup>
@@ -386,6 +421,7 @@ export class CasperEditDialog extends LitElement {
 
   firstUpdated () {
     this._dialogEl = this.shadowRoot.getElementById('editDialog');
+    this._labelsList = this.shadowRoot.querySelector('.edit-dialog__labels-list');
     this._contentWrapperEl = this.shadowRoot.querySelector('.edit-dialog__content-wrapper');
     this._pagesContainerEl = this.shadowRoot.querySelector('.edit-dialog__pages-container');
     this._warningEl = this.shadowRoot.getElementById('warning');
@@ -431,25 +467,27 @@ export class CasperEditDialog extends LitElement {
       for (const page of this._options.pages) {
         const idx = page.lastIndexOf('/') + 1;
         const module = await import(`/src/${page.slice(0,idx)}${window.app.digest ? `${window.app.digest}.` : ''}${page.slice(idx)}.js`);
+
         this._pages.push({
           label: module.label ? module.label : '',
           title: module.title ? module.title : module.label,
           tag_name: module.tag_name ? module.tag_name : page.slice(idx)
         });
       }
+
       this.requestUpdate();
     } catch (error) {
       console.error(error);
       return;
     }
 
-    const firstPage = await this._createAndActivatePage(0);
+    const firstPage = await this._createPage(0);
     firstPage.setAttribute('active', '');
     this._dialogEl.showModal();
   }
 
   close () {
-    const allowClose = this.validate();
+    const allowClose = !this.hasUnsavedChanges();
 
     if (allowClose) {
       this.parentNode.removeChild(this);
@@ -501,80 +539,21 @@ export class CasperEditDialog extends LitElement {
     this._state = 'normal';
   }
 
-
-
-  //***************************************************************************************//
-  //                              ~~~ Private methods  ~~~                                 //
-  //***************************************************************************************//
-
-  async _createAndActivatePage (index) {
-    const newPage = document.createElement(this._pages[index].tag_name);
-    newPage.setAttribute('name', `page-${index}`);
-    newPage.editDialog = this;
-
-    if (!this.data && this._options.urn) {
-      try {
-        const response = await app.broker.get(this._options.urn, 10000);
-        this.data  = response.data;
-        this._id   = response.id;
-        this._type = response.type;
-      } catch (error) {
-        // TODO borrar a pintura
-        console.log(error);
-
-        await this.showStatusPage({ message: ['Erro! Ocorreu um problema ao tentar carregar os dados.'] });
-        this._statusPageEl.showStatus();
-        return;
-      }
-    }
-
-    let closestPreviousSibling;
-    for (let i = +index - 1; i >= 0; i--) {
-      closestPreviousSibling = this._pagesContainerEl.children.namedItem(`page-${i}`);
-      if (closestPreviousSibling) break;
-    }
-
-    if (closestPreviousSibling) {
-      closestPreviousSibling.insertAdjacentElement('afterend', newPage);
-    } else {
-      this._pagesContainerEl.appendChild(newPage);
-    }
-
-    await newPage.updateComplete;
-
-    if (this._options.urn) {
-      newPage.load(this.data);
-    } else {
-      newPage.load();
-    }
-
-    return newPage;
-  }
-
-  async _labelClickHandler (event) {
-    if (!event?.currentTarget) return;
+  async activatePage (newIndex) {
+    if (+newIndex === +this._activeIndex) return;
 
     const previousIndex = this._activeIndex;
-    const newIndex = event.currentTarget.index;
-
     const previousPage = this._pagesContainerEl.children.namedItem(`page-${previousIndex}`);
-
-    let currentPage = this._pagesContainerEl.children.namedItem(`page-${newIndex}`);
-    if (!currentPage) {
-      currentPage = await this._createAndActivatePage(newIndex);
-
-      if (newIndex > previousIndex) {
-        currentPage.style.transform = 'translateY(100%)';
-      }
-    }
-
     previousPage.removeAttribute('active');
+
+    const currentPage = this._pagesContainerEl.children.namedItem(`page-${newIndex}`);
+    
     setTimeout(() => {
       currentPage.setAttribute('active', '');
       if (currentPage.style.hasOwnProperty('transform')) currentPage.style.removeProperty('transform');
     }, 0);
 
-    this._activeIndex = newIndex;
+    this._activeIndex = +newIndex;
   }
 
   validate () {
@@ -582,13 +561,29 @@ export class CasperEditDialog extends LitElement {
 
     for (const page of this._pagesContainerEl.children) {
       valid = page.validate(this.data);
-      if (!valid) break;
+      const index = +page.getAttribute('name')?.split('-')[1];
+      
+      if (valid) {
+        if (this._invalidPagesIndexes.has(index)) this._invalidPagesIndexes.delete(index);
+      } else {
+        this._invalidPagesIndexes.add(index);
+      }
     }
 
+    if (this._invalidPagesIndexes.size > 0) this.activatePage(this._invalidPagesIndexes.values().next().value);
+
+    this.requestUpdate();
     return valid;
   }
 
+  hasUnsavedChanges () {
+    return false;
+  }
+
   async save () {
+    const isValid = this.validate();
+    if (!isValid) return;
+
     try {
       const saveData = {
         patch: {}, // patch is the default operation
@@ -633,6 +628,69 @@ export class CasperEditDialog extends LitElement {
   }
 
 
+
+  //***************************************************************************************//
+  //                              ~~~ Private methods  ~~~                                 //
+  //***************************************************************************************//
+
+  async _createPage (index) {
+    const newPage = document.createElement(this._pages[index].tag_name);
+    newPage.setAttribute('name', `page-${index}`);
+    newPage.editDialog = this;
+
+    if (!this.data && this._options.urn) {
+      try {
+        const response = await app.broker.get(this._options.urn, 10000);
+        this.data  = response.data;
+        this._id   = response.id;
+        this._type = response.type;
+      } catch (error) {
+        console.log(error);
+
+        await this.showStatusPage({ message: ['Erro! Ocorreu um problema ao tentar carregar os dados.'] });
+        this._statusPageEl.showStatus();
+        return;
+      }
+    }
+
+    let closestPreviousSibling;
+    for (let i = +index - 1; i >= 0; i--) {
+      closestPreviousSibling = this._pagesContainerEl.children.namedItem(`page-${i}`);
+      if (closestPreviousSibling) break;
+    }
+
+    if (closestPreviousSibling) {
+      closestPreviousSibling.insertAdjacentElement('afterend', newPage);
+    } else {
+      this._pagesContainerEl.appendChild(newPage);
+    }
+
+    if (index > this._activeIndex) newPage.style.transform = 'translateY(100%)';
+
+    await newPage.updateComplete;
+
+    if (this._options.urn) {
+      newPage.load(this.data);
+    } else {
+      newPage.load();
+    }
+
+    return newPage;
+  }
+
+  async _labelClickHandler (event) {
+    if (!event?.currentTarget) return;
+
+    const previousIndex = this._activeIndex;
+    const newIndex = +event.currentTarget.index;
+
+    const currentPage = this._pagesContainerEl.children.namedItem(`page-${newIndex}`);
+    if (!currentPage) {
+      await this._createPage(newIndex);
+    }
+
+    this.activatePage(newIndex);
+  }
 }
 
 customElements.define('casper-edit-dialog', CasperEditDialog);
