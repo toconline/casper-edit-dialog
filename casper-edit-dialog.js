@@ -20,6 +20,7 @@ export class CasperEditDialog extends LitElement {
       --ced-horizontal-padding: 1.25rem;
       --ced-background-color: #FFF;
       --ced-border-radius: var(--radius-primary, 8px);
+      --ced-labels-background-color: var(--primary-color);
       --ced-labels-max-width: 13.75rem;
     }
 
@@ -30,7 +31,7 @@ export class CasperEditDialog extends LitElement {
     .edit-dialog {
       max-width: 90vw;
       max-height: 90vh;
-      background-color: var(--primary-color);
+      background-color: var(--ced-labels-background-color);
       box-shadow: rgba(0, 0, 0, 15%) 0 5px 20px;
       border: none;
       padding: 0;
@@ -88,6 +89,7 @@ export class CasperEditDialog extends LitElement {
     }
 
     .edit-dialog__label-number {
+      position: relative;
       flex-shrink: 0;
       width: 1.875em;
       height: 1.875em;
@@ -108,6 +110,32 @@ export class CasperEditDialog extends LitElement {
       border: solid 1px transparent;
       box-shadow: rgba(0, 0, 0, 5%) 1px 1px 4px;
       transform: scale(1.1);
+    }
+
+    .edit-dialog__label-number::after {
+      content: "!";
+      position: absolute;
+      top: 0;
+      right: 0;
+      font-size: 0.75rem;
+      box-sizing: border-box;
+      transform: translate(40%, -40%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      border: solid 1px var(--ced-labels-background-color);
+      background-color: var(--error-color-soft);
+      opacity: 0;
+      width: 0;
+      height: 0;
+      transition: opacity var(--ced-label-transition-duration), width var(--ced-label-transition-duration), height var(--ced-label-transition-duration);
+    }
+
+    .edit-dialog__label[invalid] .edit-dialog__label-number::after {
+      height: 1.4em;
+      width: 1.4em;
+      opacity: 1;
     }
 
     .edit-dialog__label-text {
@@ -328,6 +356,7 @@ export class CasperEditDialog extends LitElement {
     this._title = '';
     this._pages = [];
     this._activeIndex = 0;
+    this._invalidPagesIndexes = new Set();
   }
 
   connectedCallback() {
@@ -353,7 +382,7 @@ export class CasperEditDialog extends LitElement {
         <ol class="edit-dialog__labels-list">
           ${(this._pages.length > 0)
             ? this._pages.map((page, index) => html`
-              <li class="edit-dialog__label" ?active=${index === this._activeIndex} .index=${index} @click=${this._labelClickHandler}>
+              <li class="edit-dialog__label" ?active=${index === this._activeIndex} ?invalid=${this._invalidPagesIndexes.has(index)} .index=${index} @click=${this._labelClickHandler}>
                 <span class="edit-dialog__label-number">${index + 1}</span>
                 <span class="edit-dialog__label-text" text=${page.label}>${page.label}</span>
               </li>
@@ -456,7 +485,7 @@ export class CasperEditDialog extends LitElement {
   }
 
   close () {
-    const allowClose = this.validate();
+    const allowClose = this.hasUnsavedChanges();
 
     if (allowClose) {
       this.parentNode.removeChild(this);
@@ -564,7 +593,7 @@ export class CasperEditDialog extends LitElement {
     if (!event?.currentTarget) return;
 
     const previousIndex = this._activeIndex;
-    const newIndex = event.currentTarget.index;
+    const newIndex = +event.currentTarget.index;
 
     const currentPage = this._pagesContainerEl.children.namedItem(`page-${newIndex}`);
     if (!currentPage) {
@@ -596,13 +625,29 @@ export class CasperEditDialog extends LitElement {
 
     for (const page of this._pagesContainerEl.children) {
       valid = page.validate(this.data);
-      if (!valid) break;
+      const index = +page.getAttribute('name')?.split('-')[1];
+      
+      if (valid) {
+        if (this._invalidPagesIndexes.has(index)) this._invalidPagesIndexes.delete(index);
+      } else {
+        this._invalidPagesIndexes.add(index);
+      }
     }
 
+    if (this._invalidPagesIndexes.size > 0) this.activatePage(this._invalidPagesIndexes.values().next().value);
+
+    this.requestUpdate();
     return valid;
   }
 
+  hasUnsavedChanges () {
+    return true;
+  }
+
   async save () {
+    const isValid = this.validate();
+    if (!isValid) return;
+
     try {
       const saveData = {
         patch: {}, // patch is the default operation
