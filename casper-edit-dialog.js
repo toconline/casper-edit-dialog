@@ -324,7 +324,7 @@ export class CasperEditDialog extends LitElement {
       color: #FFF;
       font-size: 0.875rem;
       font-weight: 600;
-      padding: 0.714em;
+      padding: 0.714em 1em;
       border-radius: 1.428em;
       outline: none;
       text-transform: uppercase;

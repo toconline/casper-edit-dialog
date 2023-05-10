@@ -69,25 +69,29 @@ class CasperEditDialogWarning extends LitElement {
       display: flex;
       justify-content: flex-end;
       gap: 0.375rem;
+      background-color: #f8f8f8;
     }
 
     .edit-dialog__button {
+      font-family: inherit;
       color: #FFF;
       font-size: 0.75rem;
       font-weight: 600;
-      padding: 0.714em;
+      padding: 0.714em 1em;
       border-radius: 1.428em;
       outline: none;
       text-transform: uppercase;
-
-      min-width: 60px;
       cursor: pointer;
-      font-family: inherit;
     }
 
     .ced-warning[type="regular"] .edit-dialog__button {
       background-color: var(--button-primary-color);
       border: 1.5px solid var(--button-primary-color);
+    }
+
+    .ced-warning[type="regular"] .edit-dialog__button:hover {
+      background-color: var(--light-primary-color);
+      color: var(--button-primary-color);
     }
 
     .ced-warning[type="warning"] .edit-dialog__button {
@@ -100,21 +104,23 @@ class CasperEditDialogWarning extends LitElement {
       border: 1.5px solid var(--error-color-soft-hover);
     }
 
-    .ced-warning[type] .edit-dialog__button.reverse,
-    .ced-warning[type] .edit-dialog__button.reverse:hover {
+    .ced-warning[type] .edit-dialog__button[type="secondary"],
+    .ced-warning[type] .edit-dialog__button[type="secondary"]:hover {
       background-color: transparent;
     }
 
-    .ced-warning[type="regular"] .edit-dialog__button.reverse {
+    .ced-warning[type="regular"] .edit-dialog__button[type="secondary"] {
       color: var(--button-primary-color);
     }
 
-    .ced-warning[type="warning"] .edit-dialog__button.reverse {
-      color: var(--error-color-soft);
+    .ced-warning[type="warning"] .edit-dialog__button[type="secondary"] {
+      color: #808080;
+      border-color: #a9a9a9;
     }
 
-    .ced-warning[type="warning"] .edit-dialog__button.reverse:hover {
-      color: var(--error-color-soft-hover);
+    .ced-warning[type="warning"] .edit-dialog__button[type="secondary"]:hover {
+      color: #707070;
+      border-color: #808080;
     }
 
     .edit-dialog__button[disabled] {
@@ -145,7 +151,7 @@ class CasperEditDialogWarning extends LitElement {
         </div>
     
         <div class="ced-warning__actions">
-          <button class="edit-dialog__button reverse" @click=${this.close.bind(this)}>${this._reject}</button>
+          <button class="edit-dialog__button" type="secondary" @click=${this.close.bind(this)}>${this._reject}</button>
           <button class="edit-dialog__button" @click=${this.confirm.bind(this)}>${this._accept}</button>
         </div>
       </dialog>
