@@ -1,5 +1,5 @@
 import { html, css, LitElement } from 'lit';
-import './components/casper-edit-dialog-warning.js';
+import './components/casper-confirmation-dialog.js';
 import './components/casper-toast-lit.js';
 
 export class CasperEditDialog extends LitElement {
@@ -428,7 +428,7 @@ export class CasperEditDialog extends LitElement {
         </div>
       </dialog>
 
-      <casper-edit-dialog-warning id="warning"></casper-edit-dialog-warning>
+      <casper-confirmation-dialog id="confirmationDialog" />
     `;
   }
 
@@ -437,7 +437,7 @@ export class CasperEditDialog extends LitElement {
     this._labelsList = this.shadowRoot.querySelector('.edit-dialog__labels-list');
     this._contentWrapperEl = this.shadowRoot.querySelector('.edit-dialog__content-wrapper');
     this._pagesContainerEl = this.shadowRoot.querySelector('.edit-dialog__pages-container');
-    this._warningEl = this.shadowRoot.getElementById('warning');
+    this._confirmationDialogEl = this.shadowRoot.getElementById('confirmationDialog');
     this._toastLitEl = this.shadowRoot.getElementById('toastLit');
 
     this._dialogEl.addEventListener('click', (event) => {
@@ -506,7 +506,6 @@ export class CasperEditDialog extends LitElement {
     if (allowClose) {
       this.parentNode.removeChild(this);
     } else {
-
       const options = {
         title: 'Atenção!',
         message: 'Tem a certeza de que pretende fechar o diálogo sem gravar? Todas as alterações feitas serão perdidas.',
@@ -516,7 +515,7 @@ export class CasperEditDialog extends LitElement {
         }.bind(this)
       };
 
-      this._warningEl.open(options);
+      this._confirmationDialogEl.open(options);
     }
   }
 
@@ -654,6 +653,8 @@ export class CasperEditDialog extends LitElement {
     const newPage = document.createElement(this._pages[index].tag_name);
     newPage.setAttribute('name', `page-${index}`);
     newPage.editDialog = this;
+    // For backwards compatibility
+    newPage.wizard = this;
 
     if (!this.data && this._options.urn) {
       try {

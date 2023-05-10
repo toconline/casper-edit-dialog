@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit';
 
 
-class CasperEditDialogWarning extends LitElement {
+class CasperConfirmationDialog extends LitElement {
   static properties = {
     _title: {
       type: String
@@ -26,7 +26,7 @@ class CasperEditDialogWarning extends LitElement {
       --ccd-horizontal-padding: 1.25rem;
     }
 
-    .ced-warning {
+    .confirmation-dialog {
       width: var(--ccd-width);
       max-width: 90vw;
       max-height: 90vh;
@@ -40,31 +40,31 @@ class CasperEditDialogWarning extends LitElement {
       overflow: hidden;
     }
 
-    .ced-warning::backdrop {
+    .confirmation-dialog::backdrop {
       background-color: rgba(204, 204, 204, 65%);
     }
 
-    .ced-warning__text {
+    .confirmation-dialog__text {
       padding: 1.875rem var(--ccd-horizontal-padding);
       display: flex;
       flex-direction: column;
       gap: 1rem;
     }
 
-    .ced-warning__title {
+    .confirmation-dialog__title {
       font-size: 1.125rem;
       margin: 0;
       color: #000;
     }
 
-    .ced-warning__message {
+    .confirmation-dialog__message {
       font-size: 1rem;
       line-height: 1.3em;
       margin: 0;
       color: #808080;
     }
 
-    .ced-warning__actions {
+    .confirmation-dialog__actions {
       padding: 0.625rem var(--ccd-horizontal-padding);
       display: flex;
       justify-content: flex-end;
@@ -84,41 +84,41 @@ class CasperEditDialogWarning extends LitElement {
       cursor: pointer;
     }
 
-    .ced-warning[type="regular"] .edit-dialog__button {
+    .confirmation-dialog[type="regular"] .edit-dialog__button {
       background-color: var(--button-primary-color);
       border: 1.5px solid var(--button-primary-color);
     }
 
-    .ced-warning[type="regular"] .edit-dialog__button:hover {
+    .confirmation-dialog[type="regular"] .edit-dialog__button:hover {
       background-color: var(--light-primary-color);
       color: var(--button-primary-color);
     }
 
-    .ced-warning[type="warning"] .edit-dialog__button {
+    .confirmation-dialog[type="warning"] .edit-dialog__button {
       background-color: var(--error-color-soft);
       border: 1.5px solid var(--error-color-soft);
     }
 
-    .ced-warning[type="warning"] .edit-dialog__button:hover {
+    .confirmation-dialog[type="warning"] .edit-dialog__button:hover {
       background-color: var(--error-color-soft-hover);
       border: 1.5px solid var(--error-color-soft-hover);
     }
 
-    .ced-warning[type] .edit-dialog__button[type="secondary"],
-    .ced-warning[type] .edit-dialog__button[type="secondary"]:hover {
+    .confirmation-dialog[type] .edit-dialog__button[type="secondary"],
+    .confirmation-dialog[type] .edit-dialog__button[type="secondary"]:hover {
       background-color: transparent;
     }
 
-    .ced-warning[type="regular"] .edit-dialog__button[type="secondary"] {
+    .confirmation-dialog[type="regular"] .edit-dialog__button[type="secondary"] {
       color: var(--button-primary-color);
     }
 
-    .ced-warning[type="warning"] .edit-dialog__button[type="secondary"] {
+    .confirmation-dialog[type="warning"] .edit-dialog__button[type="secondary"] {
       color: #808080;
       border-color: #a9a9a9;
     }
 
-    .ced-warning[type="warning"] .edit-dialog__button[type="secondary"]:hover {
+    .confirmation-dialog[type="warning"] .edit-dialog__button[type="secondary"]:hover {
       color: #707070;
       border-color: #808080;
     }
@@ -135,6 +135,8 @@ class CasperEditDialogWarning extends LitElement {
   constructor () {
     super();
 
+    window.confirmationDialog = this;
+
     this._type = 'regular';
     this._title = '';
     this._message = '';
@@ -144,13 +146,13 @@ class CasperEditDialogWarning extends LitElement {
 
   render () {
     return html`
-      <dialog id="editDialogWarning" class="ced-warning" type=${this._type}>
-        <div class="ced-warning__text">
-          <h1 class="ced-warning__title">${this._title}</h1>
-          <p class="ced-warning__message">${this._message}</p>
+      <dialog id="confirmationDialog" class="confirmation-dialog" type=${this._type}>
+        <div class="confirmation-dialog__text">
+          <h1 class="confirmation-dialog__title">${this._title}</h1>
+          <p class="confirmation-dialog__message">${this._message}</p>
         </div>
     
-        <div class="ced-warning__actions">
+        <div class="confirmation-dialog__actions">
           <button class="edit-dialog__button" type="secondary" @click=${this.close.bind(this)}>${this._reject}</button>
           <button class="edit-dialog__button" @click=${this.confirm.bind(this)}>${this._accept}</button>
         </div>
@@ -159,7 +161,7 @@ class CasperEditDialogWarning extends LitElement {
   }
 
   firstUpdated () {
-    this._warningEl = this.shadowRoot.getElementById('editDialogWarning');
+    this._confirmationDialogEl = this.shadowRoot.getElementById('confirmationDialog');
   }
 
   open (options) {
@@ -171,11 +173,11 @@ class CasperEditDialogWarning extends LitElement {
     if (this._options.reject) this._reject = this._options.reject;
     if (this._options.width) this.style.setProperty('--ccd-width', this._options.width);
 
-    this._warningEl.showModal();
+    this._confirmationDialogEl.showModal();
   }
 
   close () {
-    this._warningEl.close();
+    this._confirmationDialogEl.close();
   }
 
   confirm () {
@@ -185,4 +187,4 @@ class CasperEditDialogWarning extends LitElement {
   }
 }
 
-customElements.define('casper-edit-dialog-warning', CasperEditDialogWarning);
+customElements.define('casper-confirmation-dialog', CasperConfirmationDialog);
