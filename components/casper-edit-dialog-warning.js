@@ -21,18 +21,23 @@ class CasperEditDialogWarning extends LitElement {
   };
 
   static styles = css`
+    :host {
+      --ccd-width: 27.5rem;
+      --ccd-horizontal-padding: 1.25rem;
+    }
+
     .ced-warning {
-      width: 400px;
+      width: var(--ccd-width);
       max-width: 90vw;
       max-height: 90vh;
+      display: flex;
+      flex-direction: column;
       background-color: #FFF;
       box-shadow: rgba(0, 0, 0, 15%) 0 5px 20px;
       border: none;
-      padding: 20px;
-      border-radius: 10px;
+      border-radius: var(--radius-primary, 8px);
+      padding: 0;
       overflow: hidden;
-      display: flex;
-      flex-direction: column;
     }
 
     .ced-warning::backdrop {
@@ -40,7 +45,7 @@ class CasperEditDialogWarning extends LitElement {
     }
 
     .ced-warning__text {
-      margin: 0 10px 2rem 10px;
+      padding: 1.875rem var(--ccd-horizontal-padding);
       display: flex;
       flex-direction: column;
       gap: 1rem;
@@ -54,19 +59,21 @@ class CasperEditDialogWarning extends LitElement {
 
     .ced-warning__message {
       font-size: 1rem;
+      line-height: 1.3em;
       margin: 0;
-      color: rgb(68, 68, 68);
+      color: #808080;
     }
 
     .ced-warning__actions {
+      padding: 0.625rem var(--ccd-horizontal-padding);
       display: flex;
-      gap: 5px;
       justify-content: flex-end;
+      gap: 0.375rem;
     }
 
     .edit-dialog__button {
       color: #FFF;
-      font-size: 0.875rem;
+      font-size: 0.75rem;
       font-weight: 600;
       padding: 0.714em;
       border-radius: 1.428em;
@@ -80,22 +87,22 @@ class CasperEditDialogWarning extends LitElement {
 
     .ced-warning[type="regular"] .edit-dialog__button {
       background-color: var(--button-primary-color);
-      border: 2px solid var(--button-primary-color);
+      border: 1.5px solid var(--button-primary-color);
     }
 
     .ced-warning[type="warning"] .edit-dialog__button {
       background-color: var(--error-color-soft);
-      border: 2px solid var(--error-color-soft);
+      border: 1.5px solid var(--error-color-soft);
     }
 
     .ced-warning[type="warning"] .edit-dialog__button:hover {
       background-color: var(--error-color-soft-hover);
-      border: 2px solid var(--error-color-soft-hover);
+      border: 1.5px solid var(--error-color-soft-hover);
     }
 
     .ced-warning[type] .edit-dialog__button.reverse,
     .ced-warning[type] .edit-dialog__button.reverse:hover {
-      background-color: #FFF;
+      background-color: transparent;
     }
 
     .ced-warning[type="regular"] .edit-dialog__button.reverse {
@@ -113,7 +120,7 @@ class CasperEditDialogWarning extends LitElement {
     .edit-dialog__button[disabled] {
       color: #FFF;
       background-color: #e0e0e0;
-      border: 2px solid #e0e0e0;
+      border: 1.5px solid #e0e0e0;
       pointer-events: none;
     }
   `;
@@ -156,6 +163,7 @@ class CasperEditDialogWarning extends LitElement {
     if (this._options.message) this._message = this._options.message;
     if (this._options.accept) this._accept = this._options.accept;
     if (this._options.reject) this._reject = this._options.reject;
+    if (this._options.width) this.style.setProperty('--ccd-width', this._options.width);
 
     this._warningEl.showModal();
   }
