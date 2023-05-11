@@ -601,10 +601,14 @@ export class CasperEditDialog extends LitElement {
             if (operation !== 'delete') {
               if (entry.urn && Object.keys(entry.payload.data.attributes).length) {
                 await app.broker[operation](entry.urn, entry.payload, 10000);
+
+                // TODO: update this.data in case closing the dialog is optional
               }
             } else {
               if (entry.urn) {
-                console.log('delete');
+                await app.broker.delete(entry.urn, 30000);
+
+                // TODO: update this.data in case closing the dialog is optional
               }
             }
           });
@@ -614,16 +618,8 @@ export class CasperEditDialog extends LitElement {
       console.error(e);
       // todo catch and show error
     }
-    // try {
-    //   for (const page of this._pagesContainerEl.children) {
-    //     page.save(this.data);
-    //   }
 
-    // } catch (error) {
-    //   console.error(error);
-    //   return;
-    // }
-
+    // optional? Save, Save and Close?
     // this.close();
   }
 
