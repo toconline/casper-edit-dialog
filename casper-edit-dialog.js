@@ -1,5 +1,6 @@
 import { html, css, LitElement } from 'lit';
-import './components/casper-edit-dialog-warning.js';
+import './components/casper-confirmation-dialog.js';
+import './components/casper-toast-lit.js';
 
 export class CasperEditDialog extends LitElement {
   static properties = {
@@ -37,13 +38,16 @@ export class CasperEditDialog extends LitElement {
       padding: 0;
       border-radius: var(--ced-border-radius);
       overflow: hidden;
-      display: grid;
       grid-template-areas:
         "labels header"
         "labels page"
         "labels footer";
       grid-template-columns: fit-content(var(--ced-labels-max-width)) minmax(calc(100% - var(--ced-labels-max-width)), auto);
       grid-template-rows: min-content 1fr min-content;
+    }
+
+    .edit-dialog[open] {
+      display: grid;
     }
 
     .edit-dialog::backdrop {
@@ -125,7 +129,7 @@ export class CasperEditDialog extends LitElement {
       justify-content: center;
       border-radius: 50%;
       border: solid 1px var(--ced-labels-background-color);
-      background-color: var(--error-color-soft);
+      background-color: var(--status-red);
       opacity: 0;
       width: 0;
       height: 0;
@@ -320,7 +324,7 @@ export class CasperEditDialog extends LitElement {
       color: #FFF;
       font-size: 0.875rem;
       font-weight: 600;
-      padding: 0.714em;
+      padding: 0.714em 1em;
       border-radius: 1.428em;
       outline: none;
       text-transform: uppercase;
@@ -344,6 +348,14 @@ export class CasperEditDialog extends LitElement {
       background-color: #e0e0e0;
       border: 2px solid #e0e0e0;
       pointer-events: none;
+    }
+
+    #toastLit {
+      position: absolute;
+      bottom: calc(var(--ced-vertical-padding) * 2);
+      left: var(--ced-horizontal-padding);
+      width: calc(100% - var(--ced-horizontal-padding) * 2);
+      z-index: 2;
     }
   `;
 
@@ -407,6 +419,7 @@ export class CasperEditDialog extends LitElement {
 
         <div class="edit-dialog__content-wrapper">
           <div class="edit-dialog__pages-container"></div>
+          <casper-toast-lit id="toastLit" />
         </div>
 
         <div class="edit-dialog__footer">
@@ -415,7 +428,7 @@ export class CasperEditDialog extends LitElement {
         </div>
       </dialog>
 
-      <casper-edit-dialog-warning id="warning"></casper-edit-dialog-warning>
+      <casper-confirmation-dialog id="confirmationDialog" />
     `;
   }
 
@@ -424,7 +437,8 @@ export class CasperEditDialog extends LitElement {
     this._labelsList = this.shadowRoot.querySelector('.edit-dialog__labels-list');
     this._contentWrapperEl = this.shadowRoot.querySelector('.edit-dialog__content-wrapper');
     this._pagesContainerEl = this.shadowRoot.querySelector('.edit-dialog__pages-container');
-    this._warningEl = this.shadowRoot.getElementById('warning');
+    this._confirmationDialogEl = this.shadowRoot.getElementById('confirmationDialog');
+    this._toastLitEl = this.shadowRoot.getElementById('toastLit');
 
     this._dialogEl.addEventListener('click', (event) => {
       // Only a click on the ::backdrop can generate the 'dialog' nodeName
@@ -492,7 +506,6 @@ export class CasperEditDialog extends LitElement {
     if (allowClose) {
       this.parentNode.removeChild(this);
     } else {
-
       const options = {
         title: 'Atenção!',
         message: 'Tem a certeza de que pretende fechar o diálogo sem gravar? Todas as alterações feitas serão perdidas.',
@@ -502,7 +515,7 @@ export class CasperEditDialog extends LitElement {
         }.bind(this)
       };
 
-      this._warningEl.open(options);
+      this._confirmationDialogEl.open(options);
     }
   }
 
@@ -570,7 +583,10 @@ export class CasperEditDialog extends LitElement {
       }
     }
 
-    if (this._invalidPagesIndexes.size > 0) this.activatePage(this._invalidPagesIndexes.values().next().value);
+    if (this._invalidPagesIndexes.size > 0) {
+      this.activatePage(this._invalidPagesIndexes.values().next().value);
+      this._toastLitEl.open({'text': 'Não foi possível gravar as alterações. Por favor verifique se preencheu os campos corretamente.', 'duration': 3000, 'backgroundColor': 'var(--status-red)'});
+    } 
 
     this.requestUpdate();
     return valid;
@@ -633,6 +649,8 @@ export class CasperEditDialog extends LitElement {
     const newPage = document.createElement(this._pages[index].tag_name);
     newPage.setAttribute('name', `page-${index}`);
     newPage.editDialog = this;
+    // For backwards compatibility
+    newPage.wizard = this;
 
     if (!this.data && this._options.urn) {
       try {
