@@ -44,6 +44,9 @@ export class CasperEditDialogPage extends LitElement {
   }
 
   async load (data) {
+    if (!this.__type) this.__type = this.getRootNode().host._options.root_dialog;
+    if (!data) return;
+
     await this.beforeLoad(data);
 
     for (const elem of this.shadowRoot.querySelectorAll('[binding]')) {
@@ -108,14 +111,18 @@ export class CasperEditDialogPage extends LitElement {
     this.afterLoad(data);
   }
 
-  save (saveData, data, request = 'patch') {
-    this.beforeSave(saveData, data, request);
+  save (saveData, data) {
+    const isNew = data ? false : true;
+    const request = isNew ? 'post' : 'patch';
+    if(isNew) data = { relationships: {} };
+
+    this.beforeSave(saveData, data);
 
     for (const elem of this.shadowRoot.querySelectorAll('[binding]')) {
       let newValue;
       const binding = elem.getAttribute('binding');
       const relAttribute = elem.dataset.relationshipAttribute;
-      const initialValue = this._getValue(binding, relAttribute, data);
+      const initialValue = isNew ? null : this._getValue(binding, relAttribute, data);
 
       switch (elem.tagName.toLowerCase()) {
         case 'paper-checkbox':
@@ -135,15 +142,18 @@ export class CasperEditDialogPage extends LitElement {
         if (!saveData[request][type]) {
           saveData[request][type] = {
             payloads: [{
-              urn: `${type}/${id}`,
+              urn: `${type}${!isNew ? '/' + id : ''}`,
               payload: {
                 data: {
                   type: type,
-                  id: id,
                   attributes: {}
                 }
               }
             }]
+          }
+
+          if (request == 'patch') {
+            saveData[request][type]['payloads'][0]['payload']['data']['id'] = id;
           }
         }
 
@@ -151,7 +161,7 @@ export class CasperEditDialogPage extends LitElement {
       }
     }
 
-    this.afterSave(saveData, data, request);
+    this.afterSave(saveData, data);
   }
 
   showStatusPage (response) {
@@ -174,11 +184,11 @@ export class CasperEditDialogPage extends LitElement {
     return;
   }
 
-  beforeSave (saveData, data, request) {
+  beforeSave (saveData, data) {
     return;
   }
 
-  afterSave (saveData, data, request) {
+  afterSave (saveData, data) {
     return;
   }
 

@@ -7,6 +7,9 @@ export class CasperEditDialog extends LitElement {
     _title: {
       type: String
     },
+    _rootDialog: {
+      type: String
+    },
     _pages: {
       type: Array
     },
@@ -367,6 +370,7 @@ export class CasperEditDialog extends LitElement {
     this._state = 'normal';
     this._title = '';
     this._pages = [];
+    this._rootDialog = '';
     this._activeIndex = 0;
     this._invalidPagesIndexes = new Set();
   }
@@ -476,6 +480,7 @@ export class CasperEditDialog extends LitElement {
 
   async open () {
     if (this._options.title) this._title = this._options.title;
+    if (this._options.root_dialog) this._rootDialog = this._options.root_dialog;
 
     try {
       for (const page of this._options.pages) {
@@ -616,8 +621,11 @@ export class CasperEditDialog extends LitElement {
           data.payloads.forEach(async (entry) => {
             if (operation !== 'delete') {
               if (entry.urn && Object.keys(entry.payload.data.attributes).length) {
-                await app.broker[operation](entry.urn, entry.payload, 10000);
+                const response = await app.broker[operation](entry.urn, entry.payload, 10000);
 
+                if (response) {
+                  this.data = response.data;
+                }
                 // TODO: update this.data in case closing the dialog is optional
               }
             } else {
