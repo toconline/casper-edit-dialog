@@ -141,7 +141,7 @@ class CasperTabbedItems extends LitElement {
 
   _renderItem (item, index) {
     return html`
-      <div class="content__item" data-id=${item.id ? item.id : ''} ?active=${index === this._activeIndex}>
+      <div class="content__item" item-id=${item.id ? item.id : ''} ?active=${+index === +this._activeIndex}>
         ${this.renderItem(item)}
       </div>
     `;
@@ -150,7 +150,6 @@ class CasperTabbedItems extends LitElement {
   _addNewItem () {
     this.addNewItem();
     this.activateItem(this.items.length);
-    this.requestUpdate();
   }
 }
 
