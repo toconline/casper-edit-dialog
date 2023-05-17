@@ -29,7 +29,7 @@ export class CasperEditDialogPage extends LitElement {
       padding: 0.625em;
       border-radius: 0.25em;
       margin: var(--grid-section-title-margin-top) 0 var(--grid-section-title-margin-bottom) 0;
-      background: var(--light-primary-color);
+      background-color: #efefef;
       color: var(--primary-color);
     }
 
