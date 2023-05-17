@@ -25,6 +25,7 @@ class CasperTabbedItems extends LitElement {
     :host {
       --grid-item-min-width: 14.625rem;
       --cti-grey: rgb(179, 179, 179);
+      --cti-dark-grey: rgb(149, 149, 149);
       --tab-vertical-padding: 0.25rem;
     }
 
@@ -73,21 +74,21 @@ class CasperTabbedItems extends LitElement {
       transition: color 0.5s ease;
     }
 
+    .header__tab:hover {
+      color: var(--cti-dark-grey);
+    }
+
     .header__tab::after {
       content: '';
       position: absolute;
-      left: 0;
+      left: 50%;
       bottom: calc(var(--header-margin-bottom) * -1);
-      width: 100%;
+      width: 0;
       height: 2.5px;
-      transform: translateY(50%);
+      transform: translate(-50%, 50%);
       z-index: 1;
       background-color: transparent;
-      transition: background-color 0.5s ease;
-    }
-
-    .header__tab:hover::after {
-      background-color: var(--cti-grey);
+      transition: background-color 0.5s ease, width 0.5s ease;
     }
 
     .header__tab[active] {
@@ -98,6 +99,7 @@ class CasperTabbedItems extends LitElement {
 
     .header__tab[active]::after {
       background-color: var(--primary-color);
+      width: 100%;
     }
 
     .header__add {
