@@ -16,6 +16,9 @@ class CasperTabbedItems extends LitElement {
     allowNewItems: {
       type: Boolean
     },
+    showDeleteItemsAction: {
+      type: Boolean
+    },
     _activeIndex: {
       type: Number
     }
@@ -34,6 +37,10 @@ class CasperTabbedItems extends LitElement {
       border: none;
       cursor: pointer;
       background-color: transparent;
+    }
+
+    button[hidden] {
+      display: none !important;
     }
 
     .tabbed-items__action {
@@ -141,8 +148,9 @@ class CasperTabbedItems extends LitElement {
       bottom: var(--item-padding);
       border-radius: 3px;
       gap: 0.3125rem;
+      background-color: transparent;
       color: var(--status-red);
-      transition: color 0.5s ease;
+      transition: color 0.5s ease, background-color 0.5s ease;
     }
 
     .content__delete:hover {
@@ -156,6 +164,7 @@ class CasperTabbedItems extends LitElement {
     this.items = [];
     this.showNewItemsAction = true;
     this.allowNewItems = true;
+    this.showDeleteItemsAction = true;
     this._activeIndex = 0;
   }
 
@@ -189,10 +198,14 @@ class CasperTabbedItems extends LitElement {
           : ''
         }
 
-        <button class="content__delete tabbed-items__action">
-          <casper-icon icon="fa-regular/trash-alt"></casper-icon>
-          Eliminar
-        </button>
+        ${this.showDeleteItemsAction 
+          ? html`
+            <button class="content__delete tabbed-items__action" @click=${this._deleteItem} ?disabled=${!this.items?.[this._activeIndex]?.allow_delete} ?hidden=${!this.items?.[this._activeIndex]?.hasOwnProperty('allow_delete')}>
+              <casper-icon icon="fa-regular/trash-alt"></casper-icon>
+              Eliminar
+            </button>` 
+          : ''
+        }
       </div>
     `;
   }
@@ -219,6 +232,11 @@ class CasperTabbedItems extends LitElement {
   _addNewItem () {
     this.addNewItem();
     this.activateItem(this.items.length);
+  }
+
+  _deleteItem () {
+    this.deleteItem(this._activeIndex);
+    if (this._activeIndex > 0) this.activateItem(this._activeIndex - 1);
   }
 }
 
