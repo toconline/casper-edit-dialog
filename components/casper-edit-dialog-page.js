@@ -10,15 +10,16 @@ export class CasperEditDialogPage extends LitElement {
 
   static styles = css`
     :host {
-      --grid-item-min-width: 15.625rem;
-      --grid-section-title-margin-top: 1.666em;
-      --grid-section-title-margin-bottom: 1.111em;
+      --grid-item-min-width: 15rem;
+      --grid-section-title-margin-top: 1.7em;
+      --grid-section-title-margin-bottom: 1.2em;
 
       display: grid;
       grid-row-gap: 0.625rem;
       grid-column-gap: 1.25rem;
       grid-template-columns: repeat(auto-fit, minmax(var(--grid-item-min-width), 1fr));
-      grid-auto-rows: min-content;
+      grid-auto-rows: minmax(min-content, max-content);
+      align-content: start;
       align-items: center;
     }
 
@@ -27,7 +28,7 @@ export class CasperEditDialogPage extends LitElement {
       font-size: 1rem;
       font-weight: 600;
       padding: 0.625em;
-      border-radius: 0.25em;
+      border-radius: 4px;
       margin: var(--grid-section-title-margin-top) 0 var(--grid-section-title-margin-bottom) 0;
       background-color: #efefef;
       color: var(--primary-color);
