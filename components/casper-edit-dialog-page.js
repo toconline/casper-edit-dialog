@@ -1,4 +1,5 @@
 import { LitElement, css } from 'lit';
+import { mediaQueriesBreakpoints } from '../casper-edit-dialog.js';
 
 
 export class CasperEditDialogPage extends LitElement {
@@ -12,19 +13,15 @@ export class CasperEditDialogPage extends LitElement {
     }
   };
 
-  static mediaQueriesBreakpoints = {
-    mobile: css`30rem`,
-    tablet: css`60rem`
-  };
-
   static styles = css`
     :host {
       --item-min-width: 15rem;
       --heading-margin-top: 1.7em;
       --heading-margin-bottom: 1.2em;
+      --column-gap: 1.25rem;
 
       row-gap: 0.625rem;
-      column-gap: 1.25rem;
+      column-gap: var(--column-gap);
     }
 
     .ced-page__heading {
@@ -49,7 +46,6 @@ export class CasperEditDialogPage extends LitElement {
       grid-template-columns: repeat(auto-fit, minmax(var(--item-min-width), 1fr));
       grid-auto-rows: minmax(min-content, max-content);
       align-content: start;
-      align-items: center;
     }
 
     :host([layout="grid"]) .ced-page__heading,
@@ -67,14 +63,22 @@ export class CasperEditDialogPage extends LitElement {
 
     :host([layout="flex"]) {
       display: flex;
+      flex-wrap: wrap;
+      align-content: flex-start;
     }
 
     :host([layout="flex"]) .ced-page__heading {
-      with: 100%;
+      width: 100%;
     }
 
+    :host([layout="flex"]) > *:not(.ced-page__heading) {
+      width: calc((100% - var(--column-gap) * 2) / 3 );
+      min-width: var(--item-min-width);
+      max-width: 100%;
+      flex-grow: 1;
+    }
 
-    @media (max-width: ${this.mediaQueriesBreakpoints.tablet}) {
+    @media (max-width: ${mediaQueriesBreakpoints.tablet}) {
       :host([layout="grid"]) > *:not(.ced-page__heading, .ced-page__span-all, .ced-page__span-2, casper-tabbed-items) {
         grid-column: auto !important;
       }

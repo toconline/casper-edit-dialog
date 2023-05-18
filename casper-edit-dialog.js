@@ -2,6 +2,11 @@ import { html, css, LitElement } from 'lit';
 import './components/casper-confirmation-dialog.js';
 import './components/casper-toast-lit.js';
 
+export const mediaQueriesBreakpoints = {
+  mobile: css`30rem`,
+  tablet: css`60rem`
+};
+
 export class CasperEditDialog extends LitElement {
   static properties = {
     _title: {
@@ -78,6 +83,7 @@ export class CasperEditDialog extends LitElement {
       margin-bottom: 1.375em;
       display: flex;
       align-items: center;
+      gap: 0.625em;
       cursor: pointer;
       opacity: 0.6;
       transition: opacity var(--ced-label-transition-duration);
@@ -100,7 +106,6 @@ export class CasperEditDialog extends LitElement {
       flex-shrink: 0;
       width: 1.875em;
       height: 1.875em;
-      margin-right: 0.625em;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -359,6 +364,12 @@ export class CasperEditDialog extends LitElement {
       left: var(--ced-horizontal-padding);
       width: calc(100% - var(--ced-horizontal-padding) * 2);
       z-index: 2;
+    }
+
+    @media (max-width: ${mediaQueriesBreakpoints.mobile}) {
+      .edit-dialog__label-text {
+        display: none;
+      }
     }
   `;
 
