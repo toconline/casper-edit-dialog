@@ -5,39 +5,91 @@ export class CasperEditDialogPage extends LitElement {
   static properties = {
     type: {
       type: String
+    },
+    layout: { 
+      type: String, 
+      reflect: true 
     }
+  };
+
+  static mediaQueriesBreakpoints = {
+    mobile: css`30rem`,
+    tablet: css`60rem`
   };
 
   static styles = css`
     :host {
-      --grid-item-min-width: 15rem;
-      --grid-section-title-margin-top: 1.7em;
-      --grid-section-title-margin-bottom: 1.2em;
+      --item-min-width: 15rem;
+      --heading-margin-top: 1.7em;
+      --heading-margin-bottom: 1.2em;
 
+      row-gap: 0.625rem;
+      column-gap: 1.25rem;
+    }
+
+    .ced-page__heading {
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 0.625em;
+      border-radius: 4px;
+      margin: var(--heading-margin-top) 0 var(--heading-margin-bottom) 0;
+      background-color: #efefef;
+      color: var(--primary-color);
+    }
+
+    .ced-page__heading:first-child {
+      margin-top: 0;
+    }
+
+    
+    /* GRID VERSION */
+
+    :host([layout="grid"]) {
       display: grid;
-      grid-row-gap: 0.625rem;
-      grid-column-gap: 1.25rem;
-      grid-template-columns: repeat(auto-fit, minmax(var(--grid-item-min-width), 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(var(--item-min-width), 1fr));
       grid-auto-rows: minmax(min-content, max-content);
       align-content: start;
       align-items: center;
     }
 
-    .casper-edit-dialog-page__section-title {
+    :host([layout="grid"]) .ced-page__heading,
+    :host([layout="grid"]) .ced-page__span-all,
+    :host([layout="grid"]) casper-tabbed-items {
       grid-column: 1 / -1;
-      font-size: 1rem;
-      font-weight: 600;
-      padding: 0.625em;
-      border-radius: 4px;
-      margin: var(--grid-section-title-margin-top) 0 var(--grid-section-title-margin-bottom) 0;
-      background-color: #efefef;
-      color: var(--primary-color);
     }
 
-    .casper-edit-dialog-page__section-title:first-child {
-      margin-top: 0;
+    :host([layout="grid"]) .ced-page__span-2 {
+      grid-column: span 2;
+    }
+
+
+    /* FLEXBOX VERSION */
+
+    :host([layout="flex"]) {
+      display: flex;
+    }
+
+    :host([layout="flex"]) .ced-page__heading {
+      with: 100%;
+    }
+
+
+    @media (max-width: ${this.mediaQueriesBreakpoints.tablet}) {
+      :host([layout="grid"]) > *:not(.ced-page__heading, .ced-page__span-all, .ced-page__span-2, casper-tabbed-items) {
+        grid-column: auto !important;
+      }
+
+      :host([layout="grid"]) .ced-page__span-2 {
+        grid-column: 1 / -1 !important;
+      }
     }
   `;
+
+  constructor () {
+    super();
+
+    this.layout = 'grid';
+  }
 
   validate () {
     console.warn('A validate method should be defined for the page.')
