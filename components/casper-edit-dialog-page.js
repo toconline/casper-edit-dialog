@@ -171,9 +171,9 @@ export class CasperEditDialogPage extends LitElement {
   save (saveData, data) {
     const isNew = data ? false : true;
     const request = isNew ? 'post' : 'patch';
-    if(isNew) data = { relationships: {} };
+    if (isNew) data = { relationships: {} };
 
-    this.beforeSave(saveData, data);
+    this.beforeSave(saveData, data, isNew);
 
     for (const elem of this.shadowRoot.querySelectorAll('[binding]')) {
       let newValue;
@@ -192,8 +192,8 @@ export class CasperEditDialogPage extends LitElement {
       }
 
       if (newValue !== undefined && newValue !== null) {
-        let type = data.relationships[this.__type]?.data.type ?? this.__type;
-        let id = data.relationships[this.__type]?.data.id ?? data.id;
+        let type = data.relationships[binding]?.data.type ?? (data.relationships[this.__type]?.data.type ?? this.__type);
+        let id = data.relationships[binding]?.data.id ?? (data.relationships[this.__type]?.data.id ?? data.id);
         let attribute = relAttribute ?? binding;
 
         if (!saveData[request][type]) {
@@ -218,7 +218,7 @@ export class CasperEditDialogPage extends LitElement {
       }
     }
 
-    this.afterSave(saveData, data);
+    this.afterSave(saveData, data, isNew);
   }
 
   showStatusPage (response) {
@@ -241,11 +241,11 @@ export class CasperEditDialogPage extends LitElement {
     return;
   }
 
-  beforeSave (saveData, data) {
+  beforeSave (saveData, data, isNew = false) {
     return;
   }
 
-  afterSave (saveData, data) {
+  afterSave (saveData, data, isNew = false) {
     return;
   }
 

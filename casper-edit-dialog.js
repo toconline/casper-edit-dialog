@@ -658,9 +658,9 @@ export class CasperEditDialog extends LitElement {
                 const response = await app.broker[operation](entry.urn, entry.payload, 10000);
 
                 if (response) {
-                  this.data = response.data;
+                  // TODO: response is missing relationships. maybe use saveData to update data?
+                  //this.data = response.data;
                 }
-                // TODO: update this.data in case closing the dialog is optional
               }
             } else {
               if (entry.urn) {
