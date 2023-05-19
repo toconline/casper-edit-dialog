@@ -15,7 +15,7 @@ export class CasperEditDialogPage extends LitElement {
 
   static styles = css`
     :host {
-      --item-min-width: 15rem;
+      --item-min-width: 14.5rem;
       --heading-margin-top: 1.7em;
       --heading-margin-bottom: 1.2em;
       --column-gap: 1.25rem;

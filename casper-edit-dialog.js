@@ -68,6 +68,9 @@ export class CasperEditDialog extends LitElement {
       background-color: rgba(204, 204, 204, 65%);
     }
 
+
+    /* LABELS */
+
     .edit-dialog__labels-list {
       grid-area: labels;
       list-style-type: none;
@@ -197,17 +200,20 @@ export class CasperEditDialog extends LitElement {
       opacity: 1;
     }
 
+  
     .edit-dialog > *:not(.edit-dialog__labels-list) {
       background-color: var(--ced-background-color);
     }
+
+
+    /* HEADER */
 
     .edit-dialog__header {
       grid-area: header;
       display: flex;
       flex-direction: column;
       border-top-left-radius: var(--ced-border-radius);
-      padding: var(--ced-vertical-padding) var(--ced-horizontal-padding);
-      padding-bottom: 0;
+      padding: var(--ced-vertical-padding) var(--ced-horizontal-padding) 0 var(--ced-horizontal-padding);
 
       --ced-close-button-width: 1.5625rem;
     }
@@ -261,10 +267,13 @@ export class CasperEditDialog extends LitElement {
     }
 
 
+    /* CONTENT */
+    
     .edit-dialog__content-wrapper {
       grid-area: page;
       position: relative;
       padding: var(--ced-wrapper-vertical-padding) var(--ced-wrapper-horizontal-padding);
+      overflow: hidden;
     }
 
     .edit-dialog__pages-container {
@@ -273,7 +282,6 @@ export class CasperEditDialog extends LitElement {
       max-width: 100%;
       max-height: 100%;
       overflow: hidden;
-
       display: flex;
       justify-content: center;
       align-items: flex-start;
@@ -292,6 +300,9 @@ export class CasperEditDialog extends LitElement {
       background-color: var(--ced-background-color);
       transform: translateY(-100%);
       transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.5s;
+      overflow: auto;
+      /* This prevents layout shifts */
+      scrollbar-gutter: stable;
     }
 
     [name^="page"][active] {
@@ -319,6 +330,9 @@ export class CasperEditDialog extends LitElement {
       opacity: 0;
       display: none;
     }
+
+
+    /* FOOTER */
 
     .edit-dialog__footer {
       grid-area: footer;
@@ -373,6 +387,7 @@ export class CasperEditDialog extends LitElement {
       width: calc(100% - var(--ced-horizontal-padding) * 2);
       z-index: 2;
     }
+
 
     @media (max-width: ${mediaQueriesBreakpoints.mobile}) {
       .edit-dialog__label-text {
