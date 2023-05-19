@@ -38,7 +38,11 @@ export class CasperEditDialogPage extends LitElement {
       margin-top: 0;
     }
 
-    
+    casper-tabbed-items {
+      --header-before-height: var(--ced-page-padding);
+    }
+
+
     /* GRID VERSION */
 
     :host([layout="grid"]) {
