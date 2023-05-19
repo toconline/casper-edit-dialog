@@ -26,7 +26,7 @@ class CasperTabbedItems extends LitElement {
 
   static styles = css`
     :host {
-      --grid-item-min-width: 14.625rem;
+      --grid-item-min-width: 14.4rem;
       --cti-grey: rgb(179, 179, 179);
       --cti-dark-grey: rgb(149, 149, 149);
       --tab-vertical-padding: 0.25rem;
@@ -63,12 +63,13 @@ class CasperTabbedItems extends LitElement {
     }
 
     .header {
-      --header-margin-bottom: 0.5rem;
+      --header-padding-bottom: 0.5rem;
 
       display: flex;
       align-items: center;
       gap: 0.375rem;
-      margin-bottom: var(--header-margin-bottom);
+      padding-bottom: var(--header-padding-bottom);
+      border-bottom: 1px solid rgb(217, 217, 217);
     }
 
     .header__tab {
@@ -89,7 +90,7 @@ class CasperTabbedItems extends LitElement {
       content: '';
       position: absolute;
       left: 50%;
-      bottom: calc(var(--header-margin-bottom) * -1);
+      bottom: calc(var(--header-padding-bottom) * -1);
       width: 0;
       height: 2.5px;
       transform: translate(-50%, 50%);
@@ -131,10 +132,11 @@ class CasperTabbedItems extends LitElement {
       grid-row-gap: 0.625rem;
       grid-column-gap: 1.25rem;
       grid-template-columns: repeat(auto-fit, minmax(var(--grid-item-min-width), 1fr));
+      grid-auto-rows: minmax(min-content, max-content);
+      align-content: start;
       padding: var(--item-padding);
       /* Space needed so that an input's error message fits */
       padding-bottom: calc(var(--item-padding) * 2);
-      border-top: 1px solid rgb(217, 217, 217);
       border-bottom: 1px solid rgb(217, 217, 217);
     }
 
