@@ -31,6 +31,12 @@ export class CasperEditDialog extends LitElement {
       --ced-border-radius: var(--radius-primary, 8px);
       --ced-labels-background-color: var(--primary-color);
       --ced-labels-max-width: 13.75rem;
+
+      --ced-content-vertical-padding: calc(var(--ced-vertical-padding) * 3);
+      --ced-content-horizontal-padding: calc(var(--ced-horizontal-padding) * 2);
+      --ced-page-padding: calc((var(--paper-checkbox-ink-size, 48px) - var(--paper-checkbox-size, 18px)) / 2);
+      --ced-wrapper-vertical-padding: calc(var(--ced-content-vertical-padding) - var(--ced-page-padding));
+      --ced-wrapper-horizontal-padding: calc(var(--ced-content-horizontal-padding) - var(--ced-page-padding));
     }
 
     * {
@@ -258,7 +264,7 @@ export class CasperEditDialog extends LitElement {
     .edit-dialog__content-wrapper {
       grid-area: page;
       position: relative;
-      padding: calc(var(--ced-vertical-padding) * 3) calc(var(--ced-horizontal-padding) * 2);
+      padding: var(--ced-wrapper-vertical-padding) var(--ced-wrapper-horizontal-padding);
     }
 
     .edit-dialog__pages-container {
@@ -276,6 +282,8 @@ export class CasperEditDialog extends LitElement {
     }
 
     [name^="page"] {
+      /* Padding needed to prevent the checkbox's ripple from being trimmed */
+      padding: var(--ced-page-padding);
       position: absolute;
       opacity: 0;
       pointer-events: none;
@@ -301,10 +309,10 @@ export class CasperEditDialog extends LitElement {
 
     .edit-dialog__status-page {
       position: absolute;
-      top: calc(var(--ced-vertical-padding) * 3);
-      left: calc(var(--ced-horizontal-padding) * 2);
-      width: calc(100% - 4 * var(--ced-horizontal-padding));
-      height: calc(100% - 6 * var(--ced-vertical-padding));
+      top: var(--ced-content-vertical-padding);
+      left: var(--ced-content-horizontal-padding);
+      width: calc(100% - 2 * var(--ced-content-horizontal-padding));
+      height: calc(100% - 2 * var(--ced-content-vertical-padding));
     }
 
     .edit-dialog__status-page[hidden] {
@@ -340,7 +348,7 @@ export class CasperEditDialog extends LitElement {
       font-family: inherit;
     }
 
-    .edit-dialog__button.reverse {
+    .edit-dialog__button.secondary {
       background-color: #FFF;
       color: var(--button-primary-color);
     }
@@ -438,7 +446,7 @@ export class CasperEditDialog extends LitElement {
         </div>
 
         <div class="edit-dialog__footer">
-          <button class="edit-dialog__button reverse" @click=${this.close.bind(this)}>Cancelar</button>
+          <button class="edit-dialog__button secondary" @click=${this.close.bind(this)}>Cancelar</button>
           <button class="edit-dialog__button" @click=${this.save.bind(this)}>Gravar</button>
         </div>
       </dialog>
