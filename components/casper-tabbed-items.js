@@ -237,7 +237,8 @@ class CasperTabbedItems extends LitElement {
   }
 
   _deleteItem () {
-    this.deleteItem(this._activeIndex);
+    this._headerEl.querySelectorAll('.header__tab')[this.___activeIndex].remove();
+    this._contentEl.querySelectorAll('.content__item')[this.___activeIndex].remove();
     if (this._activeIndex > 0) this.activateItem(this._activeIndex - 1);
   }
 }
