@@ -30,6 +30,7 @@ class CasperTabbedItems extends LitElement {
       --cti-grey: rgb(179, 179, 179);
       --cti-dark-grey: rgb(149, 149, 149);
       --tab-vertical-padding: 0.25rem;
+      --header-before-height: 0;
     }
 
     button {
@@ -70,6 +71,22 @@ class CasperTabbedItems extends LitElement {
       gap: 0.375rem;
       padding-bottom: var(--header-padding-bottom);
       border-bottom: 1px solid rgb(217, 217, 217);
+      position: sticky;
+      top: 0;
+      background-color: #FFF;
+      z-index: 1;
+    }
+
+    /* Prevents elements from peeking through while scrolling */
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: var(--header-before-height);
+      transform: translateY(-100%);
+      background-color: inherit;
     }
 
     .header__tab {
