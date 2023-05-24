@@ -291,9 +291,9 @@ export class CasperEditDialogPage extends LitElement {
       } else {
         Object.keys(data.relationships).forEach((key) => {
           if (key == binding) {
-            if (relAttribute && data.relationships[binding].element?.[relAttribute]) {
+            if (relAttribute && data.relationships[binding]?.element?.[relAttribute]) {
               value = data.relationships[binding].element[relAttribute];
-            } else if (data.relationships[binding].element?.[binding]) {
+            } else if (data.relationships[binding]?.element?.[binding]) {
               value = data.relationships[binding].element[binding];
             }
           }
