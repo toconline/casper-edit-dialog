@@ -7,9 +7,9 @@ export class CasperEditDialogPage extends LitElement {
     type: {
       type: String
     },
-    layout: { 
-      type: String, 
-      reflect: true 
+    layout: {
+      type: String,
+      reflect: true
     }
   };
 
@@ -196,8 +196,8 @@ export class CasperEditDialogPage extends LitElement {
       }
 
       if (newValue !== undefined && newValue !== null) {
-        let type = data.relationships[binding]?.data.type ?? (data.relationships[this.__type]?.data.type ?? this.__type);
-        let id = data.relationships[binding]?.data.id ?? (data.relationships[this.__type]?.data.id ?? data.id);
+        let type = data.relationships[binding]?.data?.type ?? (data.relationships[this.__type]?.data?.type ?? this.__type);
+        let id = data.relationships[binding]?.data?.id ?? (data.relationships[this.__type]?.data?.id ?? data.id);
         let attribute = relAttribute ?? binding;
 
         if (!saveData[request][type]) {
@@ -266,7 +266,11 @@ export class CasperEditDialogPage extends LitElement {
       } else {
         Object.keys(data.relationships).forEach((key) => {
           if (key == binding) {
-            value = relAttribute ? data.relationships[binding].element[relAttribute] : data.relationships[binding].element[binding]
+            if (relAttribute && data.relationships[binding].element?.[relAttribute]) {
+              value = data.relationships[binding].element[relAttribute];
+            } else if (data.relationships[binding].element?.[binding]) {
+              value = data.relationships[binding].element[binding];
+            }
           }
         });
       }
