@@ -632,6 +632,12 @@ export class CasperEditDialog extends LitElement {
   }
 
   hasUnsavedChanges () {
+    for (let i = 0; i < this._pagesContainerEl.children.length; i++) {
+      if (this._pagesContainerEl.children[i].hasUnsavedChanges(this.data)) {
+        return true;
+      }
+    }
+
     return false;
   }
 
@@ -678,7 +684,7 @@ export class CasperEditDialog extends LitElement {
     }
 
     // optional? Save, Save and Close?
-    // this.close();
+    this.parentNode.removeChild(this);
   }
 
 

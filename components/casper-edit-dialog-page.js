@@ -172,6 +172,31 @@ export class CasperEditDialogPage extends LitElement {
     this.afterLoad(data);
   }
 
+  hasUnsavedChanges (data) {
+    const isNew = data ? false : true;
+
+    for (const elem of this.shadowRoot.querySelectorAll('[binding]')) {
+      let hasNewValue;
+      const binding = elem.getAttribute('binding');
+      const relAttribute = elem.dataset.relationshipAttribute;
+      const initialValue = isNew ? null : this._getValue(binding, relAttribute, data);
+
+      switch (elem.tagName.toLowerCase()) {
+        case 'paper-checkbox':
+          hasNewValue = elem.checked != (initialValue || false);
+          break;
+        case 'paper-input':
+        default:
+          hasNewValue = elem.value != (initialValue || false);
+          break;
+      }
+
+      if (hasNewValue) return true;
+    }
+
+    return false;
+  }
+
   save (saveData, data) {
     const isNew = data ? false : true;
     const request = isNew ? 'post' : 'patch';
@@ -276,7 +301,7 @@ export class CasperEditDialogPage extends LitElement {
       }
     }
 
-    return value;
+    return value || null;
   }
 
   _setValue (elem, value, data = null) {
