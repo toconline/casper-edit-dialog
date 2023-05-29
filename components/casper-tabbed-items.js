@@ -68,8 +68,7 @@ class CasperTabbedItems extends LitElement {
 
       display: flex;
       align-items: center;
-      gap: 0.375rem;
-      padding-bottom: var(--header-padding-bottom);
+      gap: 1rem;
       border-bottom: 1px solid rgb(217, 217, 217);
       position: sticky;
       top: 0;
@@ -87,6 +86,21 @@ class CasperTabbedItems extends LitElement {
       height: var(--header-before-height);
       transform: translateY(-100%);
       background-color: inherit;
+    }
+
+    .header__tabs-wrapper {
+      overflow: scroll;
+      scroll-behavior: smooth;
+      -ms-overflow-style: none;  /* Hides scrollbar for IE and Edge */
+      scrollbar-width: none;  /* Hides scrollbar for Firefox */
+      display: flex;
+      gap: 0.375rem;
+      padding-bottom: var(--header-padding-bottom);
+    }
+
+    /* Hides scrollbar for Chrome, Safari and Opera */
+    .header__tabs-wrapper::-webkit-scrollbar {
+      display: none;
     }
 
     .header__tab {
@@ -110,7 +124,7 @@ class CasperTabbedItems extends LitElement {
       bottom: calc(var(--header-padding-bottom) * -1);
       width: 0;
       height: 2.5px;
-      transform: translate(-50%, 50%);
+      transform: translate(-50%, 0%);
       z-index: 1;
       background-color: transparent;
       transition: background-color 0.5s ease, width 0.5s ease;
@@ -127,11 +141,20 @@ class CasperTabbedItems extends LitElement {
       width: 100%;
     }
 
+    .header__tab-text {
+      display: block;
+      white-space: nowrap;
+      max-width: 9.375rem;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
     .header__add {
       background-color: var(--light-primary-color);
       color: var(--primary-color);
       border-radius: 50%;
       transition: background-color 0.5s ease;
+      margin-bottom: var(--header-padding-bottom);
     }
 
     .header__add:hover {
@@ -197,7 +220,14 @@ class CasperTabbedItems extends LitElement {
     return html`
       <div class="header">
         ${(this.items.length > 0)
-          ? this.items.map((item, index) => html`<button class="header__tab" ?active=${index === this._activeIndex} .index=${index} @click=${this.activateItem.bind(this, index)}>${item.title ? item.title : index + 1}</button>`)
+          ? html`
+            <div class="header__tabs-wrapper" @click=${this._findScrollDirection}>
+              ${this.items.map((item, index) => html`
+                <button class="header__tab" ?active=${index === this._activeIndex} .index=${index} @click=${this.activateItem.bind(this, index)}>
+                  <span class="header__tab-text">${item.title ? item.title : index + 1}</span>
+                </button>
+              `)}
+            </div>`
           : ''
         }
 
@@ -208,7 +238,6 @@ class CasperTabbedItems extends LitElement {
             </button>`
           : ''
         }
-      
       </div>
 
       <div class="content">
@@ -234,10 +263,26 @@ class CasperTabbedItems extends LitElement {
     this._contentEl = this.shadowRoot.querySelector('.content');
   }
 
+  updated (changedProperties) {
+    if (!this._tabsWrapperEl && this.items?.length > 0) this._tabsWrapperEl = this.shadowRoot.querySelector('.header__tabs-wrapper');
+
+    if (changedProperties.has('items')) {
+      this._tabsWrapperEl?.children?.[this._activeIndex]?.scrollIntoView();
+    }
+  }
+
   activateItem (newIndex) {
     if (+newIndex === +this._activeIndex) return;
 
     this._activeIndex = +newIndex;
+  }
+
+  scrollTabsWrapper (direction, value) {
+    if (direction === 'right') {
+      this._tabsWrapperEl.scrollLeft += value;
+    } else if (direction === 'left') {
+      this._tabsWrapperEl.scrollLeft -= value;
+    }
   }
 
   _renderItem (item, index) {
@@ -257,6 +302,27 @@ class CasperTabbedItems extends LitElement {
     this._headerEl.querySelectorAll('.header__tab')[this.___activeIndex].remove();
     this._contentEl.querySelectorAll('.content__item')[this.___activeIndex].remove();
     if (this._activeIndex > 0) this.activateItem(this._activeIndex - 1);
+  }
+
+  _findScrollDirection (event) { 
+    if (!event) return;
+    
+    // Here there's no need to scroll
+    if (this._tabsWrapperEl.offsetWidth >= this._tabsWrapperEl.scrollWidth) return;
+
+    const currentTab = this._tabsWrapperEl.querySelector('.header__tab[active]');
+    const middleX = this._tabsWrapperEl.offsetWidth / 2;
+    const clickX = event.clientX - this._tabsWrapperEl.getBoundingClientRect().left;
+
+    let direction;
+    if (clickX >= middleX) {
+      direction = 'right';
+    } else if (clickX < middleX) {
+      direction = 'left';
+    }
+    
+    const scrollValue = currentTab.offsetWidth;
+    this.scrollTabsWrapper(direction, scrollValue);
   }
 }
 
