@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit';
+import {classMap} from 'lit-html/directives/class-map.js';
 import '@cloudware-casper/casper-icons/casper-icon.js';
 
 
@@ -65,6 +66,7 @@ class CasperTabbedItems extends LitElement {
 
     .header {
       --header-padding-bottom: 0.5rem;
+      --header-background-color: #FFF;
 
       display: flex;
       align-items: center;
@@ -72,7 +74,7 @@ class CasperTabbedItems extends LitElement {
       border-bottom: 1px solid rgb(217, 217, 217);
       position: sticky;
       top: 0;
-      background-color: #FFF;
+      background-color: var(--header-background-color);
       z-index: 1;
     }
 
@@ -94,13 +96,45 @@ class CasperTabbedItems extends LitElement {
       -ms-overflow-style: none;  /* Hides scrollbar for IE and Edge */
       scrollbar-width: none;  /* Hides scrollbar for Firefox */
       display: flex;
-      gap: 0.375rem;
       padding-bottom: var(--header-padding-bottom);
     }
 
     /* Hides scrollbar for Chrome, Safari and Opera */
     .header__tabs-wrapper::-webkit-scrollbar {
       display: none;
+    }
+
+    /* Shadows which indicate the wrapper is scrollable */
+    .header__tabs-wrapper::before,
+    .header__tabs-wrapper::after {
+      --width: 60px;
+
+      content: ' ';
+      position: sticky;
+      width: var(--width);
+      margin-left: calc(var(--width) * -1);
+      margin-bottom: calc(var(--header-padding-bottom) * -1);
+      pointer-events: none;
+      flex-shrink: 0;
+      /* Necessary to stay above the tabs */
+      z-index: 2;
+      opacity: 0;
+      transition: opacity .3s ease-in-out;
+    }
+
+    .header__tabs-wrapper::before {
+      left: 0;
+      background: linear-gradient(90deg, var(--header-background-color) 5px, transparent);
+    }
+
+    .header__tabs-wrapper::after {
+      right: 0;
+      background: linear-gradient(270deg, var(--header-background-color) 5px, transparent);
+    }
+
+    .header__tabs-wrapper.shadow-left::before,
+    .header__tabs-wrapper.shadow-right::after {
+      opacity: 1;
     }
 
     .header__tab {
@@ -111,6 +145,10 @@ class CasperTabbedItems extends LitElement {
       background-color: transparent;
       color: var(--cti-grey);
       transition: color 0.5s ease;
+    }
+
+    .header__tab:not(:last-of-type) {
+      margin-right: 0.375rem;
     }
 
     .header__tab:hover {
@@ -176,7 +214,7 @@ class CasperTabbedItems extends LitElement {
       align-content: start;
       padding: var(--item-padding);
       /* Space needed so that an input's error message fits */
-      padding-bottom: calc(var(--item-padding) * 2);
+      padding-bottom: 3rem;
       border-bottom: 1px solid rgb(217, 217, 217);
     }
 
@@ -186,13 +224,14 @@ class CasperTabbedItems extends LitElement {
 
     .content__delete {
       position: absolute;
-      right: 0;
+      right: var(--item-padding);
       bottom: var(--item-padding);
       border-radius: 3px;
       gap: 0.3125rem;
       background-color: transparent;
       color: var(--status-red);
       transition: color 0.5s ease, background-color 0.5s ease;
+      padding: 0;
     }
 
     .content__delete:hover {
@@ -208,6 +247,7 @@ class CasperTabbedItems extends LitElement {
     this.allowNewItems = true;
     this.showDeleteItemsAction = true;
     this._activeIndex = 0;
+    this._tabsWrapperClasses = { 'shadow-left': false, 'shadow-right': false };
   }
 
   connectedCallback() {
@@ -221,7 +261,7 @@ class CasperTabbedItems extends LitElement {
       <div class="header">
         ${(this.items.length > 0)
           ? html`
-            <div class="header__tabs-wrapper" @click=${this._findScrollDirection}>
+            <div class="header__tabs-wrapper ${classMap(this._tabsWrapperClasses)}" @click=${this._findScrollDirection}>
               ${this.items.map((item, index) => html`
                 <button class="header__tab" ?active=${index === this._activeIndex} .index=${index} @click=${this.activateItem.bind(this, index)}>
                   <span class="header__tab-text">${item.title ? item.title : index + 1}</span>
@@ -266,7 +306,34 @@ class CasperTabbedItems extends LitElement {
   updated (changedProperties) {
     if (!this._tabsWrapperEl && this.items?.length > 0) this._tabsWrapperEl = this.shadowRoot.querySelector('.header__tabs-wrapper');
 
-    if (changedProperties.has('items')) {
+    if (this._tabsWrapperEl && changedProperties.has('items')) {
+      if (!this._tabsWrapperIntersectionObserver) {
+        this._tabsWrapperIntersectionObserver = new IntersectionObserver(this._handleTabsWrapperIntersection.bind(this), {
+          root: this._tabsWrapperEl,
+          rootMargin: '0px',
+          threshold: 0.99
+        }); 
+      }
+
+      // First we stop observing all items
+      this._tabsWrapperIntersectionObserver.disconnect();
+
+      const tabs = this._tabsWrapperEl.querySelectorAll('.header__tab');
+
+      if (tabs.length <= 1) {
+        this._tabsWrapperClasses['shadow-left'] = false;
+        this._tabsWrapperClasses['shadow-right'] = false;
+        this.requestUpdate();
+      } else {
+        const firstTab = tabs[0];
+        const lastTab = tabs[tabs.length - 1];
+
+        firstTab.setAttribute('position', 'left');
+        lastTab.setAttribute('position', 'right');
+
+        this._tabsWrapperIntersectionObserver.observe(firstTab);
+        this._tabsWrapperIntersectionObserver.observe(lastTab);
+      }
     }
   }
 
@@ -322,6 +389,25 @@ class CasperTabbedItems extends LitElement {
     
     const scrollValue = currentTab.offsetWidth;
     this.scrollTabsWrapper(direction, scrollValue);
+  }
+
+  _handleTabsWrapperIntersection (entries) {
+    entries.forEach(entry => {
+      const target = entry.target;
+      
+      if (target.classList.contains('header__tab') && target.hasAttribute('position')) {
+        const position = target.getAttribute('position');
+        const root = this._tabsWrapperEl;
+
+        if (entry.isIntersecting || root.clientWidth === 0 || !target.parentElement) {
+          this._tabsWrapperClasses[`shadow-${position}`] = false;
+        } else {
+          this._tabsWrapperClasses[`shadow-${position}`] = true;
+        }
+
+        this.requestUpdate();
+      }
+    });
   }
 }
 
