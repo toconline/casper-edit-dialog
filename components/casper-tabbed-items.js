@@ -267,7 +267,6 @@ class CasperTabbedItems extends LitElement {
     if (!this._tabsWrapperEl && this.items?.length > 0) this._tabsWrapperEl = this.shadowRoot.querySelector('.header__tabs-wrapper');
 
     if (changedProperties.has('items')) {
-      this._tabsWrapperEl?.children?.[this._activeIndex]?.scrollIntoView();
     }
   }
 
