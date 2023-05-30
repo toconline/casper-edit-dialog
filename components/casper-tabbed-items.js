@@ -343,6 +343,19 @@ class CasperTabbedItems extends LitElement {
     this._activeIndex = +newIndex;
   }
 
+  /**
+   * The method implemented by the developer must receive an index argument of the item to be deleted.
+   * The item with the given index must be removed from the items array. 
+   * No changes must be made to the DOM or other internal properties, since this will be handled by Lit.
+   */
+  deleteItem () {
+    console.warn('A deleteItem method must be defined for the component.');
+  }
+
+  addNewItem () {
+    console.warn('A addNewItem method must be defined for the component.');
+  }
+
   scrollTabsWrapper (direction, value) {
     if (direction === 'right') {
       this._tabsWrapperEl.scrollLeft += value;
@@ -365,8 +378,7 @@ class CasperTabbedItems extends LitElement {
   }
 
   _deleteItem () {
-    this._headerEl.querySelectorAll('.header__tab')[this.___activeIndex].remove();
-    this._contentEl.querySelectorAll('.content__item')[this.___activeIndex].remove();
+    this.deleteItem(this._activeIndex);
     if (this._activeIndex > 0) this.activateItem(this._activeIndex - 1);
   }
 
