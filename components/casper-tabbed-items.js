@@ -263,7 +263,7 @@ class CasperTabbedItems extends LitElement {
           ? html`
             <div class="header__tabs-wrapper ${classMap(this._tabsWrapperClasses)}" @click=${this._findScrollDirection}>
               ${this.items.map((item, index) => html`
-                <button class="header__tab" ?active=${index === this._activeIndex} .index=${index} @click=${this.activateItem.bind(this, index)}>
+                <button class="header__tab" ?active=${index === this._activeIndex} .index=${index} name="tab-${index}" @click=${this.activateItem.bind(this, index)}>
                   <span class="header__tab-text">${item.title ? item.title : index + 1}</span>
                 </button>
               `)}
@@ -307,6 +307,12 @@ class CasperTabbedItems extends LitElement {
     if (!this._tabsWrapperEl && this.items?.length > 0) this._tabsWrapperEl = this.shadowRoot.querySelector('.header__tabs-wrapper');
 
     if (this._tabsWrapperEl && changedProperties.has('items')) {
+      if (changedProperties.get('items')?.length > 0) {
+        // When a new item is added, we scroll the corresponding tab into view
+        const newTab = this._tabsWrapperEl.children.namedItem(`tab-${this._activeIndex}`);
+        this.scrollTabsWrapper('right', newTab?.offsetWidth + 10);
+      }
+
       if (!this._tabsWrapperIntersectionObserver) {
         this._tabsWrapperIntersectionObserver = new IntersectionObserver(this._handleTabsWrapperIntersection.bind(this), {
           root: this._tabsWrapperEl,
@@ -337,6 +343,12 @@ class CasperTabbedItems extends LitElement {
     }
   }
 
+
+
+  //***************************************************************************************//
+  //                              ~~~ Public methods  ~~~                                  //
+  //***************************************************************************************//
+
   activateItem (newIndex) {
     if (+newIndex === +this._activeIndex) return;
 
@@ -356,6 +368,12 @@ class CasperTabbedItems extends LitElement {
     console.warn('A addNewItem method must be defined for the component.');
   }
 
+  /**
+   * This method is responsible for scrolling the tabs wrapper.
+   *
+   * @param {String} direction The direction of the scroll.
+   * @param {Number} value The value of the scroll.
+   */
   scrollTabsWrapper (direction, value) {
     if (direction === 'right') {
       this._tabsWrapperEl.scrollLeft += value;
@@ -363,6 +381,12 @@ class CasperTabbedItems extends LitElement {
       this._tabsWrapperEl.scrollLeft -= value;
     }
   }
+
+
+
+  //***************************************************************************************//
+  //                              ~~~ Private methods  ~~~                                 //
+  //***************************************************************************************//
 
   _renderItem (item, index) {
     return html`
@@ -382,6 +406,12 @@ class CasperTabbedItems extends LitElement {
     if (this._activeIndex > 0) this.activateItem(this._activeIndex - 1);
   }
 
+  /**
+   * Event listener that fires when the user clicks on the tabs wrapper. 
+   * It is responsible for finding whether the tabs wrapper should be scrolled left or right.
+   *
+   * @param {Object} event The event's object.
+   */
   _findScrollDirection (event) { 
     if (!event) return;
     
