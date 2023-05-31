@@ -309,7 +309,7 @@ export class CasperEditDialog extends LitElement {
       position: relative;
       opacity: 1;
       pointer-events: auto;
-      transform: translateY(0);
+      transform: none;
       transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0s;
       z-index: 2;
     }
