@@ -309,8 +309,10 @@ class CasperTabbedItems extends LitElement {
     if (this._tabsWrapperEl && changedProperties.has('items')) {
       if (changedProperties.get('items')?.length > 0) {
         // When a new item is added, we scroll the corresponding tab into view
-        const newTab = this._tabsWrapperEl.children.namedItem(`tab-${this._activeIndex}`);
-        this.scrollTabsWrapper('right', newTab?.offsetWidth + 10);
+        const scrollWidth = this._tabsWrapperEl.scrollWidth;
+        const clientWidth = this._tabsWrapperEl.clientWidth;
+
+        if (scrollWidth > clientWidth) this.scrollTabsWrapper('right', scrollWidth - clientWidth);
       }
 
       if (!this._tabsWrapperIntersectionObserver) {
