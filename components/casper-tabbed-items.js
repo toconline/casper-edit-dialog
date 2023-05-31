@@ -97,6 +97,8 @@ class CasperTabbedItems extends LitElement {
       scrollbar-width: none;  /* Hides scrollbar for Firefox */
       display: flex;
       padding-bottom: var(--header-padding-bottom);
+      /* Trick to fix bug where 1px of a not yet scrolled into view item would be visible */
+      clip-path: inset(0px 1px 0px 1px);
     }
 
     /* Hides scrollbar for Chrome, Safari and Opera */
@@ -119,7 +121,7 @@ class CasperTabbedItems extends LitElement {
       /* Necessary to stay above the tabs */
       z-index: 2;
       opacity: 0;
-      transition: opacity .3s ease-in-out;
+      transition: opacity .3s ease-out;
     }
 
     .header__tabs-wrapper::before {
@@ -435,6 +437,11 @@ class CasperTabbedItems extends LitElement {
     this.scrollTabsWrapper(direction, scrollValue);
   }
 
+  /**
+   * Intersection observer responsible for adding/removing the scroll cues/shadows.
+   *
+   * @param {Object} entries The list of entries. Each entry describes an intersection change for one observed target element.
+   */
   _handleTabsWrapperIntersection (entries) {
     entries.forEach(entry => {
       const target = entry.target;
