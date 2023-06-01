@@ -100,7 +100,7 @@ export class CasperEditDialogPage extends LitElement {
   }
 
   validate () {
-    console.warn('A validate method should be defined for the page.')
+    console.warn('A validate method should be defined for the page.');
     return true;
   }
 
