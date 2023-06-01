@@ -478,42 +478,9 @@ export class CasperEditDialog extends LitElement {
     this._confirmationDialogEl = this.shadowRoot.getElementById('confirmationDialog');
     this._toastLitEl = this.shadowRoot.getElementById('toastLit');
 
-    this._dialogEl.addEventListener('click', (event) => {
-      if (!event) return;
-
-      // Trick needed to fix problems related to the casper-date-picker and the top-layer
-      const clickedOnDatePicker = event.composedPath().find(element => (element.nodeName?.toLowerCase() === 'casper-date-picker' || element.nodeName?.toLowerCase() === 'vaadin-date-picker-overlay'))
-        ? true
-        : false;
-
-      const datePickerOverlay = this._contentWrapperEl.querySelector('vaadin-date-picker-overlay');
-      if (!clickedOnDatePicker && datePickerOverlay?.opened) {
-        datePickerOverlay.correspondingPicker.close();
-        return;
-      }
-
-      // A click on the ::backdrop generates the 'dialog' nodeName
-      if (event.target?.nodeName === 'DIALOG') {
-        this.close();
-      }
-    });
-
-    // Fired when user presses the 'esc' key
-    this._dialogEl.addEventListener('cancel', function (event) {
-      if (!event) return;
-
-      // Needed otherwise it would call the dialog's native close method
-      event.preventDefault();
-      this.close();
-    }.bind(this));
-
-    // All components which use casper-overlay need to have their overlays moved to the stacking context of the top-layer, otherwise they wouldn't be visible
-    this.addEventListener('casper-overlay-opened', function (event) {
-      if (!event?.detail?.element) return;
-
-      event.stopPropagation();
-      this._contentWrapperEl.appendChild(event.detail.element);
-    });
+    this._dialogEl.addEventListener('click', this._dialogClickHandler.bind(this));
+    this._dialogEl.addEventListener('cancel', this._dialogCancelHandler.bind(this));
+    this.addEventListener('casper-overlay-opened', this._casperOverlayOpenedHandler);
   }
 
 
@@ -751,6 +718,43 @@ export class CasperEditDialog extends LitElement {
     }
 
     return newPage;
+  }
+
+  // All components which use casper-overlay need to have their overlays moved to the stacking context of the top-layer, otherwise they wouldn't be visible
+  _casperOverlayOpenedHandler (event) {
+    if (!event?.detail?.element) return;
+
+    event.stopPropagation();
+    this._contentWrapperEl.appendChild(event.detail.element);
+  }
+
+  _dialogClickHandler (event) {
+    if (!event) return;
+
+    // Trick needed to fix problems related to the casper-date-picker and the top-layer
+    const clickedOnDatePicker = event.composedPath().find(element => (element.nodeName?.toLowerCase() === 'casper-date-picker' || element.nodeName?.toLowerCase() === 'vaadin-date-picker-overlay'))
+      ? true
+      : false;
+
+    const datePickerOverlay = this._contentWrapperEl.querySelector('vaadin-date-picker-overlay');
+    if (!clickedOnDatePicker && datePickerOverlay?.opened) {
+      datePickerOverlay.correspondingPicker.close();
+      return;
+    }
+
+    // A click on the ::backdrop generates the 'dialog' nodeName
+    if (event.target?.nodeName === 'DIALOG') {
+      this.close();
+    }
+  }
+
+  // Fired when user presses the 'esc' key
+  _dialogCancelHandler (event) {
+    if (!event) return;
+
+    // Needed otherwise it would call the dialog's native close method
+    event.preventDefault();
+    this.close();
   }
 
   async _labelClickHandler (event) {
