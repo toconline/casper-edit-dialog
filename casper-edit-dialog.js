@@ -615,7 +615,7 @@ export class CasperEditDialog extends LitElement {
     
     setTimeout(() => {
       currentPage.setAttribute('active', '');
-      if (currentPage.style.hasOwnProperty('transform')) currentPage.style.removeProperty('transform');
+      if (currentPage.style.transform) currentPage.style.removeProperty('transform');
     }, 0);
 
     this._activeIndex = +newIndex;

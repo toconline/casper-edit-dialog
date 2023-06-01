@@ -16,8 +16,8 @@ export class CasperEditDialogPage extends LitElement {
   static styles = css`
     :host {
       --item-min-width: 14.5rem;
-      --heading-margin-top: 1.7em;
-      --heading-margin-bottom: 1.2em;
+      --heading-margin-top: 1.6em;
+      --heading-margin-bottom: 1.1em;
       --column-gap: 1.25rem;
 
       row-gap: 0.625rem;
@@ -50,6 +50,10 @@ export class CasperEditDialogPage extends LitElement {
       grid-template-columns: repeat(auto-fit, minmax(var(--item-min-width), 1fr));
       grid-auto-rows: minmax(min-content, max-content);
       align-content: start;
+    }
+
+    :host([layout="grid"]) paper-checkbox {
+      justify-self: flex-start;
     }
 
     :host([layout="grid"]) .ced-page__heading,

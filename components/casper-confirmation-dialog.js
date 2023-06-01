@@ -78,6 +78,7 @@ class CasperConfirmationDialog extends LitElement {
       font-size: 0.75rem;
       font-weight: 600;
       padding: 0.714em 1em;
+      min-width: 4.5em;
       border-radius: 1.428em;
       outline: none;
       text-transform: uppercase;
