@@ -6,6 +6,11 @@ class CasperToastLit extends LitElement {
   static properties = {
     _text: {
       type: String
+    },
+    _showDialog: {
+      type: Boolean,
+      attribute: 'show-dialog',
+      reflect: true
     }
   };
 
@@ -17,6 +22,14 @@ class CasperToastLit extends LitElement {
       bottom: 1rem;
       left: 1rem;
       width: calc(100% - 2rem);
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+
+    :host([show-dialog]) {
+      opacity: 1;
+      pointer-events: auto;
     }
 
     .toast {
@@ -33,6 +46,9 @@ class CasperToastLit extends LitElement {
       border-radius: 4px;
       align-items: center;
       gap: 1rem;
+
+      // Its default display of 'none' while closed would ruin the transition, so we also set it as 'flex'
+      display: flex;
     }
 
     .toast[open] {
@@ -55,6 +71,7 @@ class CasperToastLit extends LitElement {
 
     this._text = '';
     this._duration = 5000;
+    this._showDialog = false;
   }
 
   render () {
@@ -76,6 +93,7 @@ class CasperToastLit extends LitElement {
     if (options.backgroundColor) this.style.setProperty('--toast-background-color', options.backgroundColor);
 
     this._toastEl.show();
+    this._showDialog = true;
 
     setTimeout(() => {
       this.close();
@@ -83,7 +101,11 @@ class CasperToastLit extends LitElement {
   }
 
   close () {
-    this._toastEl.close();
+    this._showDialog = false;
+
+    setTimeout(() => {
+      this._toastEl.close();
+    }, 300);
   }
 }
 
