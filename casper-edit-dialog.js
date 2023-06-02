@@ -496,6 +496,7 @@ export class CasperEditDialog extends LitElement {
     if (this._options.title) this._title = this._options.title;
     if (this._options.root_dialog) this._rootDialog = this._options.root_dialog;
 
+    // First we import the classes
     try {
       for (const page of this._options.pages) {
         const idx = page.lastIndexOf('/') + 1;
@@ -511,9 +512,11 @@ export class CasperEditDialog extends LitElement {
       this.requestUpdate();
     } catch (error) {
       console.error(error);
+      window.app.openToast({'text': 'Erro ao tentar abrir o diálogo. Por favor contacte o suporte técnico.', 'duration': 3500, 'backgroundColor': 'var(--status-red)'});
       return;
     }
 
+    // Then we create only the first page
     const firstPage = await this._createPage(0);
     firstPage.setAttribute('active', '');
     this._dialogEl.showModal();
@@ -641,7 +644,7 @@ export class CasperEditDialog extends LitElement {
           data.payloads.forEach(async (entry) => {
             if (operation !== 'delete') {
               if (entry.urn && Object.keys(entry.payload.data.attributes).length) {
-                const response = await app.broker[operation](entry.urn, entry.payload, 10000);
+                const response = await window.app.broker[operation](entry.urn, entry.payload, 10000);
 
                 if (response) {
                   // TODO: response is missing relationships. maybe use saveData to update data?
@@ -650,7 +653,7 @@ export class CasperEditDialog extends LitElement {
               }
             } else {
               if (entry.urn) {
-                await app.broker.delete(entry.urn, 30000);
+                await window.app.broker.delete(entry.urn, 30000);
 
                 // TODO: update this.data in case closing the dialog is optional
               }
@@ -658,9 +661,12 @@ export class CasperEditDialog extends LitElement {
           });
         })
       });
-    } catch (e) {
-      console.error(e);
-      // todo catch and show error
+
+      this._toastLitEl.open({'text': 'As alterações foram gravadas com sucesso.', 'duration': 3000, 'backgroundColor': 'var(--status-green)'});
+    } catch (error) {
+      console.error(error);
+      this._toastLitEl.open({'text':  error?.errors?.[0]?.detail ? error.errors[0].detail : 'Erro! Não foi possível gravar as alterações.', 'duration': 3000, 'backgroundColor': 'var(--status-red)'});
+      return;
     }
 
     // optional? Save, Save and Close?
@@ -682,7 +688,7 @@ export class CasperEditDialog extends LitElement {
 
     if (!this.data && this._options.urn) {
       try {
-        const response = await app.broker.get(this._options.urn, 10000);
+        const response = await window.app.broker.get(this._options.urn, 10000);
         this.data  = response.data;
         this._id   = response.id;
         this._type = response.type;
