@@ -20,6 +20,15 @@ export class CasperEditDialog extends LitElement {
     },
     _activeIndex: {
       type: Number
+    },
+    _disableLabels: {
+      type: Boolean
+    },
+    _disablePrevious: {
+      type: Boolean
+    },
+    _disableNext: {
+      type: Boolean
     }
   };
 
@@ -28,6 +37,7 @@ export class CasperEditDialog extends LitElement {
       --ced-vertical-padding: 0.625rem;
       --ced-horizontal-padding: 1.25rem;
       --ced-background-color: #FFF;
+      --ced-disabled-color-rgb: 224, 224, 224;
       --ced-border-radius: var(--radius-primary, 8px);
       --ced-labels-background-color: var(--primary-color);
       --ced-labels-max-width: 13.75rem;
@@ -41,6 +51,10 @@ export class CasperEditDialog extends LitElement {
 
     * {
       box-sizing: border-box;
+    }
+
+    [disabled] {
+      pointer-events: none !important;
     }
 
     .edit-dialog {
@@ -72,6 +86,9 @@ export class CasperEditDialog extends LitElement {
     /* LABELS */
 
     .edit-dialog__labels-list {
+      --ced-label-number-color-rgb: 255, 255, 255;
+      --ced-label-transition-duration: 0.5s;
+
       grid-area: labels;
       list-style-type: none;
       margin: 0;
@@ -80,10 +97,11 @@ export class CasperEditDialog extends LitElement {
       padding-right: calc(var(--ced-border-radius) + var(--ced-horizontal-padding));
       margin-right: calc(var(--ced-border-radius) * -1);
       box-shadow: rgba(0, 0, 0, 6%) calc(-15px - var(--ced-border-radius)) -7px 10px inset;
-      color: #FFF;
+      color: rgb(var(--ced-label-number-color-rgb));
+    }
 
-      --ced-label-number-color-rgb: 255, 255, 255;
-      --ced-label-transition-duration: 0.5s;
+    .edit-dialog__labels-list[disabled] {
+      --ced-label-number-color-rgb: var(--ced-disabled-color-rgb);
     }
 
     .edit-dialog__label {
@@ -108,6 +126,11 @@ export class CasperEditDialog extends LitElement {
       opacity: 1;
       font-weight: var(--ced-label-bold);
       pointer-events: none;
+    }
+
+    .edit-dialog__label[disabled] {
+      color: rgb(var(--ced-disabled-color-rgb));
+      --ced-label-number-color-rgb: var(--ced-disabled-color-rgb);
     }
 
     .edit-dialog__label-number {
@@ -375,9 +398,8 @@ export class CasperEditDialog extends LitElement {
 
     .edit-dialog__button[disabled] {
       color: #FFF;
-      background-color: #e0e0e0;
-      border: 2px solid #e0e0e0;
-      pointer-events: none;
+      background-color: rgb(var(--ced-disabled-color-rgb));
+      border: 2px solid rgb(var(--ced-disabled-color-rgb));
     }
 
     #toastLit {
@@ -407,6 +429,10 @@ export class CasperEditDialog extends LitElement {
     this._rootDialog = '';
     this._activeIndex = 0;
     this._invalidPagesIndexes = new Set();
+
+    this._disableLabels = false;
+    this._disablePrevious = false;
+    this._disableNext = false;
   }
 
   connectedCallback() {
@@ -429,7 +455,7 @@ export class CasperEditDialog extends LitElement {
   render () {
     return html`
       <dialog id="editDialog" class="edit-dialog">
-        <ol class="edit-dialog__labels-list">
+        <ol class="edit-dialog__labels-list" ?disabled=${this._disableLabels}>
           ${(this._pages.length > 0)
             ? this._pages.map((page, index) => html`
               <li class="edit-dialog__label" ?active=${index === this._activeIndex} ?invalid=${this._invalidPagesIndexes.has(index)} .index=${index} @click=${this._labelClickHandler}>
@@ -461,8 +487,8 @@ export class CasperEditDialog extends LitElement {
         </div>
 
         <div class="edit-dialog__footer">
-          <button class="edit-dialog__button secondary" @click=${this.close.bind(this)}>Cancelar</button>
-          <button class="edit-dialog__button" @click=${this.save.bind(this)}>Gravar</button>
+          <button class="edit-dialog__button secondary" ?disabled=${this._disablePrevious} @click=${this.close.bind(this)}>Cancelar</button>
+          <button class="edit-dialog__button" ?disabled=${this._disableNext} @click=${this.save.bind(this)}>Gravar</button>
         </div>
       </dialog>
 
@@ -544,6 +570,7 @@ export class CasperEditDialog extends LitElement {
   async showStatusPage (notification) {
     if (this._state === 'show-status' || !notification) return;
 
+    this.disableAllActions();
 
     if (!this._statusPageEl) {
       const statusPageTagName = 'casper-edit-dialog-status-page';
@@ -572,6 +599,7 @@ export class CasperEditDialog extends LitElement {
 
     this._statusPageEl.hidden = true;
     this._state = 'normal';
+    this.enableAllActions();
   }
 
   async activatePage (newIndex) {
@@ -589,6 +617,18 @@ export class CasperEditDialog extends LitElement {
     }, 0);
 
     this._activeIndex = +newIndex;
+  }
+
+  disableAllActions () {
+    this._disableLabels = true;
+    this._disablePrevious = true;
+    this._disableNext = true;
+  }
+
+  enableAllActions () {
+    this._disableLabels = false;
+    this._disablePrevious = false;
+    this._disableNext = false;
   }
 
   validate () {
