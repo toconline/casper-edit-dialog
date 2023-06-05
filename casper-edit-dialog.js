@@ -347,6 +347,7 @@ export class CasperEditDialog extends LitElement {
       left: var(--ced-content-horizontal-padding);
       width: calc(100% - 2 * var(--ced-content-horizontal-padding));
       height: calc(100% - 2 * var(--ced-content-vertical-padding));
+      z-index: 2;
     }
 
     .edit-dialog__status-page[hidden] {

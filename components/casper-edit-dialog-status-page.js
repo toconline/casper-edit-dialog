@@ -16,54 +16,70 @@ export class CasperEditDialogStatusPage extends LitElement {
     css`
       :host {
         display: flex;
-        place-items: center;
-        justify-items: center;
-        background-color: rgb(245, 245, 245);
-        color: #2E3641;
-        padding: 60px;
-        z-index: 2;
+        flex-direction: column;
+        justify-content: center;
+        background-color: #efefef;
+        color: var(--primary-text-color);
+        padding: 3.75rem;
+
+        --icon-height: 5rem;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      h1, h2, h3 {
+        text-align: center;
       }
 
       h1 {
-        font-size: 20px;
-        font-style: normal;
+        font-size: 1.25rem;
         font-weight: 700;
-        line-height: 24px;
-        letter-spacing: 0px;
-        text-align: center;
       }
 
       h2 {
-        font-size: 14px;
-        font-style: normal;
+        font-size: 0.875rem;
         font-weight: 500;
-        text-align: center;
       }
 
       h3 {
-        font-size: 12px;
-        font-style: normal;
+        font-size: 0.75rem;
         font-weight: 300;
-        text-align: center;
       }
 
-      .status-background {
-        width: 78px;
-        height: 78px;
-        top: -39px;
-        left: calc(50% - 39px);
-        background-color: white;
-        position: absolute;
+      .status-page__frame {
+        max-height: calc(100% - (var(--icon-height) / 2));
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+
+      .status-page__message {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: #FFF;
+        border-radius: var(--radius-primary, 8px);
+        padding: 2.5rem;
+        overflow: auto;
+      }
+
+      .status-page__icon-container {
+        background-color: #FFF;
         border-radius: 50%;
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translate(-50%, -50%);
       }
 
-      casper-timed-status {
-        width: 80px;
-        height: 80px;
-        position: absolute;
-        top: -40px;
-        left: calc(50% - 40px);
+      .status-page__icon {
+        width: var(--icon-height);
+        height: var(--icon-height);
+        
         --casper-timed-status-progress-color: var(--primary-color);
+        --casper-timed-status-icon: /static/icons/error;
         --casper-timed-status-icon-check: /static/icons/check;
         --casper-timed-status-icon-error: /static/icons/error;
         --casper-timed-status-icon-timeout: /static/icons/timeout;
@@ -73,65 +89,9 @@ export class CasperEditDialogStatusPage extends LitElement {
         border: 2px gray solid;
       }
 
-      .frame {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        position: relative;
-      }
-
-      .status-wrapper {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        background-color: white;
-        border-radius: 16px;
-        padding: 40px;
-        width: 100%;
-        box-sizing: border-box;
-        overflow: auto;
-      }
-
       .spinner {
         display: flex;
-        height: 70px;
-      }
-
-      .operations {
-        display: flex;
-        gap: 20px;
-        list-style: none;
-        margin: 18px 0 0 0;
-        padding: 0;
-      }
-
-      .operations li {
-        min-width: 280px;
-      }
-
-      .operations a {
-        color: rgb(46, 54, 65);
-        display: flex;
-        gap: 10px;
-        border: 1px solid #CCCCCC;
-        border-radius: 40px;
-        padding: 10px 20px;
-        text-decoration: none;
-        text-transform: uppercase;
-        font-size: 12px;
-        font-weight: bold;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .operations a:hover {
-        background-color: #FEFAFC;
-        color: var(--primary-color);
-        border-color: var(--primary-color);
-      }
-
-      .operations a:hover casper-icon {
-        color: var(--primary-color);
+        height: 4.375rem;
       }
     `
   ];
@@ -152,15 +112,8 @@ export class CasperEditDialogStatusPage extends LitElement {
       this._custom = undefined;
       this.message = response.message[0];
     }
+
     this.requestUpdate();
-
-    setTimeout(() => {
-      const safePageData = this.parentElement?.querySelector("safe-page")?.data;
-      this.shadowRoot.querySelectorAll('.status-wrapper .operations a').forEach(elem =>
-        elem.addEventListener('click', app._boundOperationActions.bind(safePageData))
-      );
-    }, 1500);
-
   }
 
   showStatus (notification) {
@@ -206,25 +159,26 @@ export class CasperEditDialogStatusPage extends LitElement {
 
   render () {
     return html`
-      <div class="frame">
-        <div class="status-wrapper">
+      <div class="status-page__frame">
+        <div class="status-page__message">
           ${this._custom ? unsafeHTML(this._custom) : html`<h1>${this.message}</h1>`}
         </div>
-        <div class="status-background">
+        <div class="status-page__icon-container">
+          <casper-timed-status
+            id="status"
+            class="status-page__icon"
+            .state=${this.state}
+            .progress=${this.progress}
+            ?no-reset
+            .timeout=${this.timeout}>
+          </casper-timed-status>
         </div>
-        <casper-timed-status
-          id="status"
-          .state=${this.state}
-          .progress=${this.progress}
-          ?no-reset
-          .timeout=${this.timeout}>
-        </casper-timed-status>
       </div>
     `;
   }
 
   firstUpdated () {
-    this._status = this.shadowRoot.getElementById('status');
+    this._timedStatusEl = this.shadowRoot.getElementById('status');
   }
 }
 
