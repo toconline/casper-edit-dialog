@@ -6,10 +6,21 @@ import '@cloudware-casper/casper-timed-status/casper-timed-status.js';
 
 export class CasperEditDialogStatusPage extends LitElement {
   static properties = {
-    state:     { type: String },
-    progress:  { type: Number },
-    timeout:   { type: Number },
-    message:   { type: String }
+    state: { 
+      type: String 
+    },
+    progress: { 
+      type: Number
+    },
+    timeout: { 
+      type: Number 
+    },
+    message: { 
+      type: String 
+    },
+    _custom: {
+      type: String
+    }
   }
 
   static styles = [
@@ -31,6 +42,7 @@ export class CasperEditDialogStatusPage extends LitElement {
 
       h1, h2, h3 {
         text-align: center;
+        margin: 0;
       }
 
       h1 {
@@ -63,6 +75,10 @@ export class CasperEditDialogStatusPage extends LitElement {
         border-radius: var(--radius-primary, 8px);
         padding: 2.5rem;
         overflow: auto;
+      }
+
+      .status-page__message > *:first-child {
+        margin-top: 1rem;
       }
 
       .status-page__icon-container {
@@ -104,54 +120,7 @@ export class CasperEditDialogStatusPage extends LitElement {
     this.message  = '';
   }
 
-  showResponse (response) {
-    this.state = 'success';
-    if ( response.custom ) {
-      this._custom = response.message[0];
-    } else {
-      this._custom = undefined;
-      this.message = response.message[0];
-    }
 
-    this.requestUpdate();
-  }
-
-  showStatus (notification) {
-    this.state = 'error';
-  }
-
-  /**
-   * Update the progress display
-   *
-   * @param {Number} index  not used here we only have one bar
-   * @param {String} message text to display
-   * @param {Number} progress integer value between 0 and 100
-   */
-  updateProgress (index, message, progress) {
-    this.state    = 'connected';
-    this.progress = progress;
-    this.message  = message;
-    this.requestUpdate();
-  }
-
-  /**
-   *
-   * @param {Number} count
-   * @param {Boolean} forced
-   */
-  setProgressCount (count, forced) {
-    /* not implemented */
-  }
-
-  setCustom (custom) {
-    this._custom = custom;
-    this.requestUpdate();
-  }
-
-  clearCustom () {
-    this._custom = undefined;
-    this.requestUpdate();
-  }
 
   //***************************************************************************************//
   //                                ~~~ LIT life cycle ~~~                                 //
@@ -167,18 +136,92 @@ export class CasperEditDialogStatusPage extends LitElement {
           <casper-timed-status
             id="status"
             class="status-page__icon"
-            .state=${this.state}
-            .progress=${this.progress}
+            state=${this.state}
+            progress=${this.progress}
             ?no-reset
-            .timeout=${this.timeout}>
+            timeout=${this.timeout}>
           </casper-timed-status>
         </div>
       </div>
     `;
   }
 
-  firstUpdated () {
+  firstUpdated (changedProperties) {
     this._timedStatusEl = this.shadowRoot.getElementById('status');
+  }
+
+
+
+  //***************************************************************************************//
+  //                              ~~~ Public methods  ~~~                                  //
+  //***************************************************************************************//
+
+  setCustom (custom) {
+    this._custom = custom;
+  }
+
+  clearCustom () {
+    this._custom = undefined;
+  }
+
+  resetValues () {
+    this.state    = undefined;
+    this.progress = undefined;
+    this.message  = '';
+    this.clearCustom();
+  }
+
+  showStatus (notification, state = 'error') {
+    if (!notification) {
+      this.state = 'error';
+      this.message = 'Erro!';
+      return;
+    }
+
+    this.state = state;
+
+    if (notification.custom === true) {
+      this.setCustom(notification.message[0]);
+    } else {
+      this.clearCustom();
+      this.message = notification.message || [notification?.response?.body?.message];
+    }
+  }
+
+  /**
+   *
+   * @param {Number} count
+   * @param {Boolean} forced
+   */
+  setProgressCount (count, forced = false) {
+    if (count !== this.progress || forced) {
+      this.state = 'connecting';
+      this.progress = count;
+    }
+  }
+
+  /**
+   * Update the progress display
+   *
+   * @param {Number} index  not used here we only have one bar
+   * @param {String} message text to display
+   * @param {Number} progress integer value between 0 and 100
+   */
+  updateProgress (index = null, message, progress) {
+    this.state    = 'connected';
+    this.progress = progress;
+    this.message  = message;
+  }
+
+  showResponse (response) {
+    this.state = 'success';
+
+    if (response.custom) {
+      this.setCustom(response.message[0]);
+    } else {
+      this.clearCustom();
+      this.message = response.message[0];
+    }
   }
 }
 

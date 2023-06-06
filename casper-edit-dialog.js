@@ -341,7 +341,7 @@ export class CasperEditDialog extends LitElement {
       transform: translateY(100%);
     }
 
-    .edit-dialog__status-page {
+    .edit-dialog__status-progress-page {
       position: absolute;
       top: var(--ced-content-vertical-padding);
       left: var(--ced-content-horizontal-padding);
@@ -350,7 +350,7 @@ export class CasperEditDialog extends LitElement {
       z-index: 2;
     }
 
-    .edit-dialog__status-page[hidden] {
+    .edit-dialog__status-progress-page[hidden] {
       opacity: 0;
       display: none;
     }
@@ -568,37 +568,37 @@ export class CasperEditDialog extends LitElement {
     }
   }
 
+  async showProgressPage () {
+    if (this._state === 'show-progress') return;
+
+    if (!this._statusProgressPageEl) await this._createStatusProgressPage();
+
+    this._statusProgressPageEl.setProgressCount(1, true);
+    this._state = 'show-progress';
+    this._statusProgressPageEl.hidden = false;
+  }
+
   async showStatusPage (notification) {
     if (this._state === 'show-status' || !notification) return;
 
     this.disableAllActions();
+    if (!this._statusProgressPageEl) await this._createStatusProgressPage();
 
-    if (!this._statusPageEl) {
-      const statusPageTagName = 'casper-edit-dialog-status-page';
-
-      await import(`./components/${statusPageTagName}.js`);
-
-      this._statusPageEl = document.createElement(statusPageTagName);
-      this._statusPageEl.classList.add('edit-dialog__status-page');
-      this._statusPageEl.hidden = true;
-      this._contentWrapperEl.appendChild(this._statusPageEl);
-    }
-
-    if (notification.custom === true) {
-      this._statusPageEl.setCustom(notification.message[0]);
-    } else {
-      this._statusPageEl.clearCustom();
-      this._statusPageEl.message = notification.message || [notification?.response?.body?.message];
-    }
-
+    this._statusProgressPageEl.showStatus(notification);
     this._state = 'show-status';
-    this._statusPageEl.hidden = false;
+    this._statusProgressPageEl.hidden = false;
   }
 
-  hideStatusPage () {
-    if (!this._statusPageEl) return;
 
-    this._statusPageEl.hidden = true;
+
+
+
+
+  hideStatusAndProgress () {
+    if (!this._statusProgressPageEl) return;
+
+    this._statusProgressPageEl.hidden = true;
+    this._statusProgressPageEl.resetValues();
     this._state = 'normal';
     this.enableAllActions();
   }
@@ -737,7 +737,6 @@ export class CasperEditDialog extends LitElement {
         console.log(error);
 
         await this.showStatusPage({ message: ['Erro! Ocorreu um problema ao tentar carregar os dados.'] });
-        this._statusPageEl.showStatus();
         return;
       }
     }
@@ -765,6 +764,16 @@ export class CasperEditDialog extends LitElement {
     }
 
     return newPage;
+  }
+
+  async _createStatusProgressPage () {
+    const tagName = 'casper-edit-dialog-status-page';
+    await import(`./components/${tagName}.js`);
+
+    this._statusProgressPageEl = document.createElement(tagName);
+    this._statusProgressPageEl.classList.add('edit-dialog__status-progress-page');
+    this._statusProgressPageEl.hidden = true;
+    this._contentWrapperEl.appendChild(this._statusProgressPageEl);
   }
 
   // All components which use casper-overlay need to have their overlays moved to the stacking context of the top-layer, otherwise they wouldn't be visible
@@ -807,7 +816,6 @@ export class CasperEditDialog extends LitElement {
   async _labelClickHandler (event) {
     if (!event?.currentTarget) return;
 
-    const previousIndex = this._activeIndex;
     const newIndex = +event.currentTarget.index;
 
     const currentPage = this._pagesContainerEl.children.namedItem(`page-${newIndex}`);
