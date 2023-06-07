@@ -636,10 +636,9 @@ export class CasperEditDialog extends LitElement {
     let valid = true;
 
     for (const page of this._pagesContainerEl.children) {
-      valid = page.validate(this.data);
       const index = +page.getAttribute('name')?.split('-')[1];
       
-      if (valid) {
+      if (page.validate(this.data)) {
         if (this._invalidPagesIndexes.has(index)) this._invalidPagesIndexes.delete(index);
       } else {
         this._invalidPagesIndexes.add(index);
@@ -647,6 +646,7 @@ export class CasperEditDialog extends LitElement {
     }
 
     if (this._invalidPagesIndexes.size > 0) {
+      valid = false;
       this.activatePage(this._invalidPagesIndexes.values().next().value);
       this._toastLitEl.open({'text': 'Não foi possível gravar as alterações. Por favor verifique se preencheu os campos corretamente.', 'duration': 3000, 'backgroundColor': 'var(--status-red)'});
     } 
