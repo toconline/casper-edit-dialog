@@ -403,11 +403,13 @@ class CasperTabbedItems extends LitElement {
   _addNewItem () {
     this.addNewItem();
     this.activateItem(this.items.length);
+    this.requestUpdate();
   }
 
   _deleteItem () {
     this.deleteItem(this._activeIndex);
     if (this._activeIndex > 0) this.activateItem(this._activeIndex - 1);
+    this.requestUpdate();
   }
 
   /**

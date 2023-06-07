@@ -20,6 +20,15 @@ export class CasperEditDialog extends LitElement {
     },
     _activeIndex: {
       type: Number
+    },
+    _disableLabels: {
+      type: Boolean
+    },
+    _disablePrevious: {
+      type: Boolean
+    },
+    _disableNext: {
+      type: Boolean
     }
   };
 
@@ -28,6 +37,7 @@ export class CasperEditDialog extends LitElement {
       --ced-vertical-padding: 0.625rem;
       --ced-horizontal-padding: 1.25rem;
       --ced-background-color: #FFF;
+      --ced-disabled-color-rgb: 224, 224, 224;
       --ced-border-radius: var(--radius-primary, 8px);
       --ced-labels-background-color: var(--primary-color);
       --ced-labels-max-width: 13.75rem;
@@ -41,6 +51,10 @@ export class CasperEditDialog extends LitElement {
 
     * {
       box-sizing: border-box;
+    }
+
+    [disabled] {
+      pointer-events: none !important;
     }
 
     .edit-dialog {
@@ -72,6 +86,9 @@ export class CasperEditDialog extends LitElement {
     /* LABELS */
 
     .edit-dialog__labels-list {
+      --ced-label-number-color-rgb: 255, 255, 255;
+      --ced-label-transition-duration: 0.5s;
+
       grid-area: labels;
       list-style-type: none;
       margin: 0;
@@ -80,10 +97,11 @@ export class CasperEditDialog extends LitElement {
       padding-right: calc(var(--ced-border-radius) + var(--ced-horizontal-padding));
       margin-right: calc(var(--ced-border-radius) * -1);
       box-shadow: rgba(0, 0, 0, 6%) calc(-15px - var(--ced-border-radius)) -7px 10px inset;
-      color: #FFF;
+      color: rgb(var(--ced-label-number-color-rgb));
+    }
 
-      --ced-label-number-color-rgb: 255, 255, 255;
-      --ced-label-transition-duration: 0.5s;
+    .edit-dialog__labels-list[disabled] {
+      --ced-label-number-color-rgb: var(--ced-disabled-color-rgb);
     }
 
     .edit-dialog__label {
@@ -108,6 +126,11 @@ export class CasperEditDialog extends LitElement {
       opacity: 1;
       font-weight: var(--ced-label-bold);
       pointer-events: none;
+    }
+
+    .edit-dialog__label[disabled] {
+      color: rgb(var(--ced-disabled-color-rgb));
+      --ced-label-number-color-rgb: var(--ced-disabled-color-rgb);
     }
 
     .edit-dialog__label-number {
@@ -318,15 +341,16 @@ export class CasperEditDialog extends LitElement {
       transform: translateY(100%);
     }
 
-    .edit-dialog__status-page {
+    .edit-dialog__status-progress-page {
       position: absolute;
       top: var(--ced-content-vertical-padding);
       left: var(--ced-content-horizontal-padding);
       width: calc(100% - 2 * var(--ced-content-horizontal-padding));
       height: calc(100% - 2 * var(--ced-content-vertical-padding));
+      z-index: 2;
     }
 
-    .edit-dialog__status-page[hidden] {
+    .edit-dialog__status-progress-page[hidden] {
       opacity: 0;
       display: none;
     }
@@ -375,9 +399,8 @@ export class CasperEditDialog extends LitElement {
 
     .edit-dialog__button[disabled] {
       color: #FFF;
-      background-color: #e0e0e0;
-      border: 2px solid #e0e0e0;
-      pointer-events: none;
+      background-color: rgb(var(--ced-disabled-color-rgb));
+      border: 2px solid rgb(var(--ced-disabled-color-rgb));
     }
 
     #toastLit {
@@ -407,6 +430,10 @@ export class CasperEditDialog extends LitElement {
     this._rootDialog = '';
     this._activeIndex = 0;
     this._invalidPagesIndexes = new Set();
+
+    this._disableLabels = false;
+    this._disablePrevious = false;
+    this._disableNext = false;
   }
 
   connectedCallback() {
@@ -429,7 +456,7 @@ export class CasperEditDialog extends LitElement {
   render () {
     return html`
       <dialog id="editDialog" class="edit-dialog">
-        <ol class="edit-dialog__labels-list">
+        <ol class="edit-dialog__labels-list" ?disabled=${this._disableLabels}>
           ${(this._pages.length > 0)
             ? this._pages.map((page, index) => html`
               <li class="edit-dialog__label" ?active=${index === this._activeIndex} ?invalid=${this._invalidPagesIndexes.has(index)} .index=${index} @click=${this._labelClickHandler}>
@@ -461,8 +488,8 @@ export class CasperEditDialog extends LitElement {
         </div>
 
         <div class="edit-dialog__footer">
-          <button class="edit-dialog__button secondary" @click=${this.close.bind(this)}>Cancelar</button>
-          <button class="edit-dialog__button" @click=${this.save.bind(this)}>Gravar</button>
+          <button class="edit-dialog__button secondary" ?disabled=${this._disablePrevious} @click=${this.close.bind(this)}>Cancelar</button>
+          <button class="edit-dialog__button" ?disabled=${this._disableNext} @click=${this.save.bind(this)}>Gravar</button>
         </div>
       </dialog>
 
@@ -496,6 +523,7 @@ export class CasperEditDialog extends LitElement {
     if (this._options.title) this._title = this._options.title;
     if (this._options.root_dialog) this._rootDialog = this._options.root_dialog;
 
+    // First we import the classes
     try {
       for (const page of this._options.pages) {
         const idx = page.lastIndexOf('/') + 1;
@@ -511,9 +539,11 @@ export class CasperEditDialog extends LitElement {
       this.requestUpdate();
     } catch (error) {
       console.error(error);
+      window.app.openToast({'text': 'Erro ao tentar abrir o diálogo. Por favor contacte o suporte técnico.', 'duration': 3500, 'backgroundColor': 'var(--status-red)'});
       return;
     }
 
+    // Then we create only the first page
     const firstPage = await this._createPage(0);
     firstPage.setAttribute('active', '');
     this._dialogEl.showModal();
@@ -538,37 +568,39 @@ export class CasperEditDialog extends LitElement {
     }
   }
 
+  async showProgressPage () {
+    if (this._state === 'show-progress') return;
+
+    if (!this._statusProgressPageEl) await this._createStatusProgressPage();
+
+    this._statusProgressPageEl.setProgressCount(1, true);
+    this._state = 'show-progress';
+    this._statusProgressPageEl.hidden = false;
+  }
+
   async showStatusPage (notification) {
     if (this._state === 'show-status' || !notification) return;
 
+    this.disableAllActions();
+    if (!this._statusProgressPageEl) await this._createStatusProgressPage();
 
-    if (!this._statusPageEl) {
-      const statusPageTagName = 'casper-edit-dialog-status-page';
-
-      await import(`./components/${statusPageTagName}.js`);
-
-      this._statusPageEl = document.createElement(statusPageTagName);
-      this._statusPageEl.classList.add('edit-dialog__status-page');
-      this._statusPageEl.hidden = true;
-      this._contentWrapperEl.appendChild(this._statusPageEl);
-    }
-
-    if (notification.custom === true) {
-      this._statusPageEl.setCustom(notification.message[0]);
-    } else {
-      this._statusPageEl.clearCustom();
-      this._statusPageEl.message = notification.message || [notification?.response?.body?.message];
-    }
-
+    this._statusProgressPageEl.showStatus(notification);
     this._state = 'show-status';
-    this._statusPageEl.hidden = false;
+    this._statusProgressPageEl.hidden = false;
   }
 
-  hideStatusPage () {
-    if (!this._statusPageEl) return;
 
-    this._statusPageEl.hidden = true;
+
+
+
+
+  hideStatusAndProgress () {
+    if (!this._statusProgressPageEl) return;
+
+    this._statusProgressPageEl.hidden = true;
+    this._statusProgressPageEl.resetValues();
     this._state = 'normal';
+    this.enableAllActions();
   }
 
   async activatePage (newIndex) {
@@ -588,14 +620,25 @@ export class CasperEditDialog extends LitElement {
     this._activeIndex = +newIndex;
   }
 
+  disableAllActions () {
+    this._disableLabels = true;
+    this._disablePrevious = true;
+    this._disableNext = true;
+  }
+
+  enableAllActions () {
+    this._disableLabels = false;
+    this._disablePrevious = false;
+    this._disableNext = false;
+  }
+
   validate () {
     let valid = true;
 
     for (const page of this._pagesContainerEl.children) {
-      valid = page.validate(this.data);
       const index = +page.getAttribute('name')?.split('-')[1];
       
-      if (valid) {
+      if (page.validate(this.data)) {
         if (this._invalidPagesIndexes.has(index)) this._invalidPagesIndexes.delete(index);
       } else {
         this._invalidPagesIndexes.add(index);
@@ -603,6 +646,7 @@ export class CasperEditDialog extends LitElement {
     }
 
     if (this._invalidPagesIndexes.size > 0) {
+      valid = false;
       this.activatePage(this._invalidPagesIndexes.values().next().value);
       this._toastLitEl.open({'text': 'Não foi possível gravar as alterações. Por favor verifique se preencheu os campos corretamente.', 'duration': 3000, 'backgroundColor': 'var(--status-red)'});
     } 
@@ -641,7 +685,7 @@ export class CasperEditDialog extends LitElement {
           data.payloads.forEach(async (entry) => {
             if (operation !== 'delete') {
               if (entry.urn && Object.keys(entry.payload.data.attributes).length) {
-                const response = await app.broker[operation](entry.urn, entry.payload, 10000);
+                const response = await window.app.broker[operation](entry.urn, entry.payload, 10000);
 
                 if (response) {
                   // TODO: response is missing relationships. maybe use saveData to update data?
@@ -650,7 +694,7 @@ export class CasperEditDialog extends LitElement {
               }
             } else {
               if (entry.urn) {
-                await app.broker.delete(entry.urn, 30000);
+                await window.app.broker.delete(entry.urn, 30000);
 
                 // TODO: update this.data in case closing the dialog is optional
               }
@@ -658,9 +702,12 @@ export class CasperEditDialog extends LitElement {
           });
         })
       });
-    } catch (e) {
-      console.error(e);
-      // todo catch and show error
+
+      this._toastLitEl.open({'text': 'As alterações foram gravadas com sucesso.', 'duration': 3000, 'backgroundColor': 'var(--status-green)'});
+    } catch (error) {
+      console.error(error);
+      this._toastLitEl.open({'text':  error?.errors?.[0]?.detail ? error.errors[0].detail : 'Erro! Não foi possível gravar as alterações.', 'duration': 3000, 'backgroundColor': 'var(--status-red)'});
+      return;
     }
 
     // optional? Save, Save and Close?
@@ -682,7 +729,7 @@ export class CasperEditDialog extends LitElement {
 
     if (!this.data && this._options.urn) {
       try {
-        const response = await app.broker.get(this._options.urn, 10000);
+        const response = await window.app.broker.get(this._options.urn, 10000);
         this.data  = response.data;
         this._id   = response.id;
         this._type = response.type;
@@ -690,7 +737,6 @@ export class CasperEditDialog extends LitElement {
         console.log(error);
 
         await this.showStatusPage({ message: ['Erro! Ocorreu um problema ao tentar carregar os dados.'] });
-        this._statusPageEl.showStatus();
         return;
       }
     }
@@ -718,6 +764,16 @@ export class CasperEditDialog extends LitElement {
     }
 
     return newPage;
+  }
+
+  async _createStatusProgressPage () {
+    const tagName = 'casper-edit-dialog-status-page';
+    await import(`./components/${tagName}.js`);
+
+    this._statusProgressPageEl = document.createElement(tagName);
+    this._statusProgressPageEl.classList.add('edit-dialog__status-progress-page');
+    this._statusProgressPageEl.hidden = true;
+    this._contentWrapperEl.appendChild(this._statusProgressPageEl);
   }
 
   // All components which use casper-overlay need to have their overlays moved to the stacking context of the top-layer, otherwise they wouldn't be visible
@@ -760,7 +816,6 @@ export class CasperEditDialog extends LitElement {
   async _labelClickHandler (event) {
     if (!event?.currentTarget) return;
 
-    const previousIndex = this._activeIndex;
     const newIndex = +event.currentTarget.index;
 
     const currentPage = this._pagesContainerEl.children.namedItem(`page-${newIndex}`);
