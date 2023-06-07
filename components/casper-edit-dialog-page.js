@@ -109,10 +109,11 @@ export class CasperEditDialogPage extends LitElement {
   }
 
   async load (data) {
+    await this.beforeLoad(data);
+
     if (!this.__type) this.__type = this.getRootNode().host._options.root_dialog;
     if (!data) return;
 
-    await this.beforeLoad(data);
 
     for (const elem of this.shadowRoot.querySelectorAll('[binding]')) {
       const binding = elem.getAttribute('binding');
