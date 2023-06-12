@@ -314,6 +314,9 @@ export class CasperEditDialogPage extends LitElement {
       case 'paper-checkbox':
         elem.checked = value;
         break;
+      case 'casper-select-lit':
+        elem.initialId = value;
+        break;
       case 'paper-input':
       default:
         elem.value = value;
