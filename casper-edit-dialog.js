@@ -488,8 +488,8 @@ export class CasperEditDialog extends LitElement {
         </div>
 
         <div class="edit-dialog__footer">
-          <button class="edit-dialog__button secondary" ?disabled=${this._disablePrevious} @click=${this.close.bind(this)}>Cancelar</button>
-          <button class="edit-dialog__button" ?disabled=${this._disableNext} @click=${this.save.bind(this)}>Gravar</button>
+          <button class="edit-dialog__button secondary" ?disabled=${this._disablePrevious} @click=${this.save.bind(this, false)}>Gravar</button>
+          <button class="edit-dialog__button" ?disabled=${this._disableNext} @click=${this.save.bind(this)}>Gravar e sair</button>
         </div>
       </dialog>
 
@@ -589,11 +589,6 @@ export class CasperEditDialog extends LitElement {
     this._statusProgressPageEl.hidden = false;
   }
 
-
-
-
-
-
   hideStatusAndProgress () {
     if (!this._statusProgressPageEl) return;
 
@@ -665,7 +660,7 @@ export class CasperEditDialog extends LitElement {
     return false;
   }
 
-  async save () {
+  async save (close = true) {
     const isValid = this.validate();
     if (!isValid) return;
 
@@ -710,8 +705,7 @@ export class CasperEditDialog extends LitElement {
       return;
     }
 
-    // optional? Save, Save and Close?
-    this.parentNode.removeChild(this);
+    if (close) this.close();
   }
 
 
