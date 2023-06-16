@@ -1,4 +1,5 @@
 import { html, css, LitElement } from 'lit';
+import { CasperSocketPromise } from  '@cloudware-casper/casper-socket/casper-socket.js';
 import './components/casper-confirmation-dialog.js';
 import './components/casper-toast-lit.js';
 
@@ -484,7 +485,7 @@ export class CasperEditDialog extends LitElement {
 
         <div class="edit-dialog__content-wrapper">
           <div class="edit-dialog__pages-container"></div>
-          <casper-toast-lit id="toastLit" />
+          <casper-toast-lit id="toastLit"></casper-toast-lit>
         </div>
 
         <div class="edit-dialog__footer">
@@ -493,7 +494,7 @@ export class CasperEditDialog extends LitElement {
         </div>
       </dialog>
 
-      <casper-confirmation-dialog id="confirmationDialog" />
+      <casper-confirmation-dialog id="confirmationDialog"></casper-confirmation-dialog>
     `;
   }
 
@@ -625,6 +626,52 @@ export class CasperEditDialog extends LitElement {
     this._disableLabels = false;
     this._disablePrevious = false;
     this._disableNext = false;
+  }
+
+  /**
+   * Submit a job and return a promise to the caller
+   *
+   * @param {Object} job     the job payload
+   * @param {Number} timeout in seconds, the maximum time the front will wait for the result
+   * @param {Number} ttr     time to run in seconds, maximum execution time on the server (counted after the job starts)
+   * @returns the promise for the caller to await on
+   */
+  async execJob (job, timeout, ttr) {
+    this._jobPromise = new CasperSocketPromise();
+
+    if (!this._statusProgressPageEl) await this._createStatusProgressPage();
+    this._statusProgressPageEl = this.submitJobWithStrictValidity(job, timeout, ttr, true);
+    this._statusProgressPageEl.timeout = timeout;
+    this._statusProgressPageEl.state = 'connecting';
+    this._statusProgressPageEl.progress = 0;
+    this._statusProgressPageEl.message = 'Em fila de espera. Por favor, aguarde';
+    
+    return this._jobPromise;
+  }
+
+  /**
+   *
+   * @param {Object}  job
+   * @param {Integer} timeout
+   * @param {Integer} ttr
+   *
+   * @return the progress page
+   */
+  submitJobWithStrictValidity (job, timeout, ttr, hideTimeout) {
+    const ltimeout = parseInt(timeout);
+    const lttr     = parseInt(ttr);
+
+    if ( isNaN(ltimeout) || isNaN(lttr) ) {
+      throw 'Strict timing requires valid ttr and timeout!!!';
+    }
+    job.validity = ltimeout - lttr - 2; // 2 seconds safety margin
+    if ( job.validity < 1 ) {
+      throw 'Strict timing requires a timeout greater than ttr + 3!!!")';
+    }
+    this.showProgressPage();
+    this._setControlledSubmission();
+    this.socket.submitJob(job, this._submitJobResponse.bind(this), { validity: job.validity, ttr: lttr, timeout: ltimeout, hideTimeout: !!hideTimeout });
+    return this._statusProgressPageEl;
   }
 
   validate () {
@@ -819,6 +866,99 @@ export class CasperEditDialog extends LitElement {
 
     this.activatePage(newIndex);
   }
+
+  _setControlledSubmission (isControlled = false, ttr = undefined) {
+    this._controlledSubmission = isControlled;
+    this._controlledSubmissionTTR = ttr;
+  }
+
+  static _normalizeServerResponse (response) {
+    let status;
+
+    if (response.success === undefined) {
+      response.success = true;
+    }
+
+    if (typeof response.status === 'object') {
+      status = response.status;
+    } else {
+      status = response;
+    }
+
+    if (status.status_code === undefined) {
+      response.status_code = response.success ? 200 : 500;
+    }
+
+    if (!response.status_code && response.success && status.response && status.status_code && status.action !== 'redirect') {
+      if (status.custom) response.custom = status.custom;
+      response.message = status.message;
+      response.status = status.status;
+      response.response = status.response;
+      response.status_code = status.status_code;
+    }
+
+    if (response.status_code !== 200 && !status.message) {
+      if (status.response) {
+        try {
+
+          // Catch the error from job if exists
+          let detailed_error = status.response.map(element => {
+            return element.errors.map(error => {
+              return error.detail;
+            }).join(";")
+          }).join(";");
+
+          if (detailed_error == "" || detailed_error == undefined) {
+            throw "No error detail";
+          }
+
+          response.detailed_error = true;
+          response.message = detailed_error;
+        } catch (error) {
+          response.detailed_error = false;
+          response.message = ['Erro serviço, detalhe técnico: ' + JSON.stringify(status.response)];
+        }
+        response.status = 'error';
+      } else {
+        response.message = ['Erro desconhecido status por favor tente mais tarde'];
+        response.status = 'error';
+      }
+    } else {
+      if (response.success && status.status === 'error') {
+        if (status.custom) response.custom = status.custom;
+        response.message = status.message;
+        response.status = status.status;
+        response.status_code = status.status_code;
+      }
+    }
+
+    if (status.action === 'redirect' && status.status === 'completed' && response.response === undefined) {
+      response.response = {
+        public_link: status.public_link,
+        redirect: status.redirect
+      };
+      response.message = ['Redirect'];
+      response.status = 'completed';
+      response.status_code = 200;
+    }
+  }
+
+  _submitJobResponse (notification) {
+    if (notification.success === true && this._jobId === undefined && notification.id !== undefined) {
+      this._jobId = notification.id;
+      this._jobChannel = notification.channel;
+      this.noCancelOnEscKey = true;
+    }
+    CasperEditDialog._normalizeServerResponse(notification);
+    this._updateUI(notification);
+  }
+
+  _clearJob () {
+    this._jobId = undefined;
+    this._jobChannel = undefined;
+    this.noCancelOnEscKey = false;
+  }
+
 }
 
 customElements.define('casper-edit-dialog', CasperEditDialog);
