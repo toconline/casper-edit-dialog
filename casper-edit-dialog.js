@@ -599,6 +599,11 @@ export class CasperEditDialog extends LitElement {
     this.enableAllActions();
   }
 
+  showFatalError (notification) {
+    this._nextClosesWizard = true;
+    this.showStatusPage(notification);
+  }
+
   async activatePage (newIndex) {
     if (+newIndex === +this._activeIndex) return;
 
@@ -672,6 +677,16 @@ export class CasperEditDialog extends LitElement {
     this._setControlledSubmission();
     this.socket.submitJob(job, this._submitJobResponse.bind(this), { validity: job.validity, ttr: lttr, timeout: ltimeout, hideTimeout: !!hideTimeout });
     return this._statusProgressPageEl;
+  }
+
+  subscribeJob (jobId, timeout) {
+    this.showProgressPage();
+    this.socket.subscribeJob(jobId, this._subscribeJobResponse.bind(this), timeout);
+  }
+
+  showCustomNotification (notification) {
+    this.showStatusPage(notification);
+    this._nextClosesWizard = true;
   }
 
   validate () {
@@ -867,9 +882,23 @@ export class CasperEditDialog extends LitElement {
     this.activatePage(newIndex);
   }
 
-  _setControlledSubmission (isControlled = false, ttr = undefined) {
-    this._controlledSubmission = isControlled;
-    this._controlledSubmissionTTR = ttr;
+  _updateWizardButtons () {
+    this._nextButtonIcon.icon = this._activeIndex === this._pagesContainerEl.children.length - 1 && !this._getCurrentPage().hasAttribute('next')
+      ? 'fa-light:check'
+      : 'fa-light:arrow-right';
+  }
+
+  _gotoNextPageNoHandlers () {
+    if (this._activeIndex < this._pagesContainerEl.children.length - 1) {
+      this.activatePage(this._activeIndex + 1);
+    } else {
+      this.close();
+    }
+  }
+
+  _subscribeJobResponse (response) {
+    CasperEditDialog._normalizeServerResponse(response);
+    this._updateUI(response);
   }
 
   static _normalizeServerResponse (response) {
@@ -952,6 +981,15 @@ export class CasperEditDialog extends LitElement {
     CasperEditDialog._normalizeServerResponse(notification);
     this._updateUI(notification);
   }
+
+  _setControlledSubmission (isControlled = false, ttr = undefined) {
+    this._controlledSubmission = isControlled;
+    this._controlledSubmissionTTR = ttr;
+  }
+  _getCurrentPage () {
+    return this._pagesContainerEl.children.namedItem(`page-${this._activeIndex}`);
+  }
+
 
   _clearJob () {
     this._jobId = undefined;
