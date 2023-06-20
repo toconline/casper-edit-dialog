@@ -94,11 +94,10 @@ export class CasperEditDialogStatusPage extends LitElement {
         width: var(--icon-height);
         height: var(--icon-height);
         
-        --casper-timed-status-progress-color: var(--primary-color);
-        --casper-timed-status-icon: /static/icons/error;
         --casper-timed-status-icon-check: /static/icons/check;
         --casper-timed-status-icon-error: /static/icons/error;
-        --casper-timed-status-icon-timeout: /static/icons/timeout;
+        --casper-timed-status-progress-color: var(--primary-color);
+        --casper-timed-status-countdown-color: rgba(0, 0, 0, 0.1);
       }
 
       .bordered {
@@ -184,7 +183,7 @@ export class CasperEditDialogStatusPage extends LitElement {
       this.setCustom(notification.message[0]);
     } else {
       this.clearCustom();
-      this.message = notification.message || [notification?.response?.body?.message];
+      this.message = this.editDialog.i18n.apply(this.editDialog, notification.message || [notification?.response?.body?.message]);
     }
   }
 

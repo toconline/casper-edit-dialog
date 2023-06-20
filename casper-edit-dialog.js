@@ -1,5 +1,6 @@
 import { html, css, LitElement } from 'lit';
 import { CasperSocketPromise } from  '@cloudware-casper/casper-socket/casper-socket.js';
+import { Casper } from '@cloudware-casper/casper-common-ui/casper-i18n-behavior.js';
 import './components/casper-confirmation-dialog.js';
 import './components/casper-toast-lit.js';
 
@@ -8,7 +9,7 @@ export const mediaQueriesBreakpoints = {
   tablet: css`60rem`
 };
 
-export class CasperEditDialog extends LitElement {
+export class CasperEditDialog extends Casper.I18n(LitElement) {
   static properties = {
     _title: {
       type: String
@@ -827,6 +828,7 @@ export class CasperEditDialog extends LitElement {
     await import(`./components/${tagName}.js`);
 
     this._statusProgressPageEl = document.createElement(tagName);
+    this._statusProgressPageEl.editDialog = this;
     this._statusProgressPageEl.classList.add('edit-dialog__status-progress-page');
     this._statusProgressPageEl.hidden = true;
     this._contentWrapperEl.appendChild(this._statusProgressPageEl);
@@ -990,6 +992,75 @@ export class CasperEditDialog extends LitElement {
     return this._pagesContainerEl.children.namedItem(`page-${this._activeIndex}`);
   }
 
+
+  async _updateUI (notification) {
+    switch (notification.status) {
+      case 'in-progress':
+        this.showProgressPage();
+        if (notification.index + 1 > this._statusProgressPageEl.progressCount) {
+          this._statusProgressPageEl.setProgressCount(notification.index + 1);
+        }
+
+        this._statusProgressPageEl.updateProgress(notification.index, this.i18n.apply(this, notification.message), notification.progress);
+
+        if (typeof this['jobProgressOn' + this._getCurrentPage().id] === 'function') {
+          this['jobProgressOn' + this._getCurrentPage().id].apply(this, [notification.status_code, notification, notification.response]);
+        }
+
+        break;
+      case 'completed':
+        if (this._controlledSubmission === true) {
+          this.subscribeJob(notification.response.channel, this._controlledSubmissionTTR);
+          this._setControlledSubmission();
+        } else {
+          // this._updateWizardButtons();
+          if (typeof  this._getCurrentPage().jobCompleted === 'function') {
+            this._getCurrentPage().jobCompleted(notification);
+          } else if (typeof this['jobCompletedOn' + this._getCurrentPage().id] === 'function') {
+            if (notification.custom === true) {
+              // ... Pass the full notification to allow more flexible custom handling ...
+              this['jobCompletedOn' + this._getCurrentPage().id].apply(this, [notification.status_code, notification, notification.response]);
+            } else {
+              // ... passes only the notification message, it's an array that can be i18n'ed ...
+              this['jobCompletedOn' + this._getCurrentPage().id].apply(this, [notification.status_code, notification.message, notification.response]);
+            }
+          } else {
+            if (notification.custom === true) {
+              this.showCustomNotification(notification);
+            } else {
+              if (this._activeIndex === this._pagesContainerEl.children.length - 1) {
+                // this.close();
+              } else {
+                // this._gotoNextPageNoHandlers();
+              }
+            }
+          }
+          this._clearJob();
+        }
+        break;
+      case 'failed':
+      case 'error':
+        this._setControlledSubmission();
+        if (typeof this._getCurrentPage().error === 'function') {
+          this._getCurrentPage().error(notification);
+        } else if (typeof this['errorOn' + this._getCurrentPage().id] === 'function') {
+          this['errorOn' + this._getCurrentPage().id].apply(this, [notification]);
+        } else {
+          if ( this.errorsAreFatal === true ) {
+            this.showFatalError(notification);
+          } else {
+            this.showStatusPage(notification);
+          }
+        }
+        this._clearJob();
+        break;
+      case 'reset':
+        break;
+      default:
+        this._setControlledSubmission();
+        break;
+    }
+  }
 
   _clearJob () {
     this._jobId = undefined;
