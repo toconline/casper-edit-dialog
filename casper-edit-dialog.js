@@ -11,6 +11,10 @@ export const mediaQueriesBreakpoints = {
 
 export class CasperEditDialog extends Casper.I18n(LitElement) {
   static properties = {
+    mode: {
+      type: String,
+      reflect: true
+    },
     _title: {
       type: String
     },
@@ -107,6 +111,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     .edit-dialog__labels-list[disabled] {
       --ced-label-number-color-rgb: var(--ced-disabled-color-rgb);
+    }
+
+    :host([mode="wizard"]) .edit-dialog__labels-list {
+      padding: 6px;
     }
 
     .edit-dialog__label {
@@ -429,6 +437,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     window.ced = this;
 
+    this.mode = 'dialog';
     this._state = 'normal';
     this._title = '';
     this._type = '';
@@ -463,7 +472,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     return html`
       <dialog id="editDialog" class="edit-dialog">
         <ol class="edit-dialog__labels-list" ?disabled=${this._disableLabels}>
-          ${(this._pages.length > 0)
+          ${(this._pages.length > 0 && this.mode === 'dialog')
             ? this._pages.map((page, index) => html`
               <li class="edit-dialog__label" ?active=${index === this._activeIndex} ?invalid=${this._invalidPagesIndexes.has(index)} .index=${index} @click=${this._labelClickHandler}>
                 <span class="edit-dialog__label-number">${index + 1}</span>
@@ -528,6 +537,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   async open () {
     if (this.options.title) this._title = this.options.title;
     if (this.options.root_dialog) this._rootDialog = this.options.root_dialog;
+    if (this.options.mode) this.mode = this.options.mode;
     if (this.options.type) this._type = this.options.type;
 
     // First we import the classes
@@ -781,6 +791,19 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
 
     if (close) this.close();
+  }
+
+  /**
+   * Sets the wizard's pages-container to the specified fixed dimensions.
+   *
+   * @param {Object} Object that contains the new dimensions that can be specified only in px.
+   */
+  overrideWizardDimensions (dimensions) {
+    const parsedWidth = this._parsePxDimension(dimensions.width);
+    const parsedHeight = this._parsePxDimension(dimensions.height);
+
+    this._pagesContainerEl.style.width = this._convertDimensionToRem(parsedWidth);
+    this._pagesContainerEl.style.height = this._convertDimensionToRem(parsedHeight);
   }
 
 
@@ -1083,6 +1106,13 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this.noCancelOnEscKey = false;
   }
 
+  _parsePxDimension (dimension) {
+    return parseFloat(dimension.slice(0, -2));
+  }
+
+  _convertDimensionToRem (dimension) {
+    return dimension / 16 + 'rem';
+  }
 }
 
 customElements.define('casper-edit-dialog', CasperEditDialog);
