@@ -111,7 +111,7 @@ export class CasperEditDialogPage extends LitElement {
   async load (data) {
     await this.beforeLoad(data);
 
-    if (!this.__type) this.__type = this.getRootNode().host._options.root_dialog;
+    if (!this.__type) this.__type = this.getRootNode().host.options.root_dialog;
     if (!data) return;
 
 

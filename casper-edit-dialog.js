@@ -522,17 +522,17 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   //***************************************************************************************//
 
   setOptions (options) {
-    this._options = options;
+    this.options = options;
   }
 
   async open () {
-    if (this._options.title) this._title = this._options.title;
-    if (this._options.type) this._type = this._options.type;
-    if (this._options.root_dialog) this._rootDialog = this._options.root_dialog;
+    if (this.options.title) this._title = this.options.title;
+    if (this.options.root_dialog) this._rootDialog = this.options.root_dialog;
+    if (this.options.type) this._type = this.options.type;
 
     // First we import the classes
     try {
-      for (const page of this._options.pages) {
+      for (const page of this.options.pages) {
         const idx = page.lastIndexOf('/') + 1;
         const module = await import(`/src/${page.slice(0,idx)}${window.app.digest ? `${window.app.digest}.` : ''}${page.slice(idx)}.js`);
 
@@ -796,9 +796,9 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     // For backwards compatibility
     newPage.wizard = this;
 
-    if (!this.data && this._options.urn) {
+    if (!this.data && this.options.urn) {
       try {
-        const response = await window.app.broker.get(this._options.urn, 10000);
+        const response = await window.app.broker.get(this.options.urn, 10000);
         this.data  = response.data;
         this._id   = response.id;
         this._type = response.type;
@@ -826,7 +826,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     await newPage.updateComplete;
 
-    if (this._options.urn) {
+    if (this.options.urn) {
       newPage.load(this.data);
     } else {
       newPage.load();
@@ -841,6 +841,9 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     this._statusProgressPageEl = document.createElement(tagName);
     this._statusProgressPageEl.editDialog = this;
+    // For backwards compatibility
+    this._statusProgressPageEl.wizard = this;
+
     this._statusProgressPageEl.classList.add('edit-dialog__status-progress-page');
     this._statusProgressPageEl.hidden = true;
     this._contentWrapperEl.appendChild(this._statusProgressPageEl);
