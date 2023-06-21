@@ -14,6 +14,9 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     _title: {
       type: String
     },
+    _type: {
+      type: String
+    },
     _rootDialog: {
       type: String
     },
@@ -225,7 +228,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       opacity: 1;
     }
 
-  
+
     .edit-dialog > *:not(.edit-dialog__labels-list) {
       background-color: var(--ced-background-color);
     }
@@ -293,7 +296,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
 
     /* CONTENT */
-    
+
     .edit-dialog__content-wrapper {
       grid-area: page;
       position: relative;
@@ -428,6 +431,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     this._state = 'normal';
     this._title = '';
+    this._type = '';
     this._pages = [];
     this._rootDialog = '';
     this._activeIndex = 0;
@@ -523,6 +527,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
   async open () {
     if (this._options.title) this._title = this._options.title;
+    if (this._options.type) this._type = this._options.type;
     if (this._options.root_dialog) this._rootDialog = this._options.root_dialog;
 
     // First we import the classes
@@ -613,7 +618,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     previousPage.removeAttribute('active');
 
     const currentPage = this._pagesContainerEl.children.namedItem(`page-${newIndex}`);
-    
+
     setTimeout(() => {
       currentPage.setAttribute('active', '');
       if (currentPage.style.transform) currentPage.style.removeProperty('transform');
@@ -651,7 +656,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._statusProgressPageEl.state = 'connecting';
     this._statusProgressPageEl.progress = 0;
     this._statusProgressPageEl.message = 'Em fila de espera. Por favor, aguarde';
-    
+
     return this._jobPromise;
   }
 
@@ -695,7 +700,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     for (const page of this._pagesContainerEl.children) {
       const index = +page.getAttribute('name')?.split('-')[1];
-      
+
       if (page.validate(this.data)) {
         if (this._invalidPagesIndexes.has(index)) this._invalidPagesIndexes.delete(index);
       } else {
@@ -707,7 +712,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       valid = false;
       this.activatePage(this._invalidPagesIndexes.values().next().value);
       this._toastLitEl.open({'text': 'Não foi possível gravar as alterações. Por favor verifique se preencheu os campos corretamente.', 'duration': 3000, 'backgroundColor': 'var(--status-red)'});
-    } 
+    }
 
     this.requestUpdate();
     return valid;
@@ -741,21 +746,28 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       Object.entries(saveData).forEach(([operation, types]) => {
         Object.entries(types).forEach(async ([type, data]) => {
           data.payloads.forEach(async (entry) => {
-            if (operation !== 'delete') {
-              if (entry.urn && Object.keys(entry.payload.data.attributes).length) {
-                const response = await window.app.broker[operation](entry.urn, entry.payload, 10000);
+            try {
+              if (operation !== 'delete') {
+                if (entry.urn && Object.keys(entry.payload.data.attributes).length) {
+                  const response = await window.app.broker[operation](entry.urn, entry.payload, 10000);
 
-                if (response) {
-                  // TODO: response is missing relationships. maybe use saveData to update data?
-                  //this.data = response.data;
+                  if (response) {
+                    // TODO: response is missing relationships. maybe use saveData to update data?
+                    //this.data = response.data;
+
+                  }
+                }
+              } else {
+                if (entry.urn) {
+                  await window.app.broker.delete(entry.urn, 30000);
+
+                  // TODO: update this.data in case closing the dialog is optional
                 }
               }
-            } else {
-              if (entry.urn) {
-                await window.app.broker.delete(entry.urn, 30000);
-
-                // TODO: update this.data in case closing the dialog is optional
-              }
+            } catch (error) {
+              console.log(error);
+              this._toastLitEl.open({'text':  error?.errors?.[0]?.detail ? error.errors[0].detail : 'Erro! Não foi possível gravar as alterações.', 'duration': 3000, 'backgroundColor': 'var(--status-red)'});
+              return;
             }
           });
         })
