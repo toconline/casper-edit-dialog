@@ -114,7 +114,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
 
     :host([mode="wizard"]) .edit-dialog__labels-list {
-      padding: 6px;
+      padding: 0;
     }
 
     .edit-dialog__label {
@@ -254,6 +254,15 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       --ced-close-button-width: 1.5625rem;
     }
 
+    :host([mode="wizard"]) .edit-dialog__header {
+      flex-direction: row-reverse;
+      align-items: center;
+      gap: 1rem;
+      background-color: var(--primary-color);
+      color: #FFF;
+      padding-bottom: var(--ced-vertical-padding);
+    }
+
     .edit-dialog__close {
       align-self: flex-end;
       background-color: transparent;
@@ -264,6 +273,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       width: var(--ced-close-button-width);
       height: var(--ced-close-button-width);
       transition: all 1s;
+    }
+
+    :host([mode="wizard"]) .edit-dialog__close {
+      align-self: flex-start;
     }
 
     .edit-dialog__close:hover {
@@ -280,6 +293,12 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       border-bottom: solid 1px var(--primary-color);
       /* Space reserved to prevent text from colliding with the button */
       padding-right: calc(var(--ced-close-button-width) + 0.625rem);
+    }
+
+    :host([mode="wizard"]) .edit-dialog__header-text {
+      flex-grow: 1;
+      padding: 0;
+      border: none;
     }
 
     .edit-dialog__header-text > * {
@@ -302,6 +321,11 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       color: #000;
     }
 
+    :host([mode="wizard"]) .edit-dialog__page-title,
+    :host([mode="wizard"]) .edit-dialog__general-title {
+      color: inherit;
+    }
+
 
     /* CONTENT */
 
@@ -310,6 +334,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       position: relative;
       padding: var(--ced-wrapper-vertical-padding) var(--ced-wrapper-horizontal-padding);
       overflow: hidden;
+    }
+
+    :host([mode="wizard"]) .edit-dialog__content-wrapper {
+      padding: calc(var(--ced-wrapper-vertical-padding) / 2) calc(var(--ced-wrapper-horizontal-padding) / 2);
     }
 
     .edit-dialog__pages-container {
