@@ -598,6 +598,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     const allowClose = !this.hasUnsavedChanges();
 
     if (allowClose) {
+      if (this.options.promise) this.options.promise.resolve();
       this.parentNode.removeChild(this);
     } else {
       const options = {
@@ -731,6 +732,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   showCustomNotification (notification) {
     this.showStatusPage(notification);
     this._nextClosesWizard = true;
+  }
+
+  jobCompleted (notification) {
+    this._jobPromise.resolve(Object.keys(notification.response).length ? notification.response : notification);
   }
 
   validate () {
@@ -1080,29 +1085,13 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           this._setControlledSubmission();
         } else {
           // this._updateWizardButtons();
-          if (typeof  this._getCurrentPage().jobCompleted === 'function') {
-            this._getCurrentPage().jobCompleted(notification);
-          } else if (typeof this['jobCompletedOn' + this._getCurrentPage().id] === 'function') {
-            if (notification.custom === true) {
-              // ... Pass the full notification to allow more flexible custom handling ...
-              this['jobCompletedOn' + this._getCurrentPage().id].apply(this, [notification.status_code, notification, notification.response]);
-            } else {
-              // ... passes only the notification message, it's an array that can be i18n'ed ...
-              this['jobCompletedOn' + this._getCurrentPage().id].apply(this, [notification.status_code, notification.message, notification.response]);
-            }
-          } else {
-            if (notification.custom === true) {
-              this.showCustomNotification(notification);
-            } else {
-              if (this._activeIndex === this._pagesContainerEl.children.length - 1) {
-                // this.close();
-              } else {
-                // this._gotoNextPageNoHandlers();
-              }
-            }
-          }
+          this.jobCompleted(notification);
+          if (notification.custom === true) {
+            this.showCustomNotification(notification);
+          } 
           this._clearJob();
         }
+        this.hideStatusAndProgress();
         break;
       case 'failed':
       case 'error':
