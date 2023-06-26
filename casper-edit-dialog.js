@@ -1,4 +1,5 @@
 import { html, css, LitElement } from 'lit';
+import {styleMap} from 'lit/directives/style-map.js';
 import { CasperSocketPromise } from  '@cloudware-casper/casper-socket/casper-socket.js';
 import { Casper } from '@cloudware-casper/casper-common-ui/casper-i18n-behavior.js';
 import './components/casper-confirmation-dialog.js';
@@ -38,6 +39,9 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     },
     _disableNext: {
       type: Boolean
+    },
+    _pagesContainerStyles: {
+      type: Object
     }
   };
 
@@ -81,6 +85,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         "labels footer";
       grid-template-columns: fit-content(var(--ced-labels-max-width)) minmax(calc(100% - var(--ced-labels-max-width)), auto);
       grid-template-rows: min-content 1fr min-content;
+      transition: opacity 0.3s ease;
     }
 
     .edit-dialog[open] {
@@ -526,7 +531,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         </div>
 
         <div class="edit-dialog__content-wrapper">
-          <div class="edit-dialog__pages-container"></div>
+          <div class="edit-dialog__pages-container" style=${this._pagesContainerStyles !== undefined ? styleMap(this._pagesContainerStyles) : ''}></div>
           <casper-toast-lit id="toastLit"></casper-toast-lit>
         </div>
 
@@ -550,6 +555,11 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._previousButton = this.shadowRoot.querySelector('.edit-dialog__button.previous');
     this._nextButton = this.shadowRoot.querySelector('.edit-dialog__button.next');
 
+    // Needed to hide jumps caused by changes in the wizard's dimensions
+    if (this.options.hasOwnProperty('initial_opacity')) {
+      this._dialogEl.style.opacity = this.options.initial_opacity;
+    }
+
     this._dialogEl.addEventListener('click', this._dialogClickHandler.bind(this));
     this._dialogEl.addEventListener('cancel', this._dialogCancelHandler.bind(this));
     this.addEventListener('casper-overlay-opened', this._casperOverlayOpenedHandler);
@@ -560,6 +570,12 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     } else {
       this._previousButton.addEventListener('click', () => this.save(false));
       this._nextButton.addEventListener('click', () => this.save());
+    }
+  }
+
+  updated (changedProperties) {
+    if (changedProperties.has('_pagesContainerStyles')) {
+      setTimeout(() => this.fixWizardOpacity(), 300);
     }
   }
 
@@ -577,6 +593,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     if (this.options.root_dialog) this._rootDialog = this.options.root_dialog;
     if (this.options.mode) this.mode = this.options.mode;
     if (this.options.type) this._type = this.options.type;
+    if (this.options.dimensions && this.mode === 'wizard') this.overrideWizardDimensions(this.options.dimensions);
 
     // First we import the classes
     try {
@@ -868,11 +885,21 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
    * @param {Object} Object that contains the new dimensions that can be specified only in px.
    */
   overrideWizardDimensions (dimensions) {
+    // Convert the pages-container dimensions to numeric values.
     const parsedWidth = this._parsePxDimension(dimensions.width);
     const parsedHeight = this._parsePxDimension(dimensions.height);
 
-    this._pagesContainerEl.style.width = this._convertDimensionToRem(parsedWidth);
-    this._pagesContainerEl.style.height = this._convertDimensionToRem(parsedHeight);
+    this._pagesContainerStyles = {
+      width: this._convertDimensionToRem(parsedWidth),
+      height: this._convertDimensionToRem(parsedHeight)
+    };
+  }
+
+  /* Needed to hide jumps caused by changes in the wizard's dimensions */
+  fixWizardOpacity () {
+    if (this.options.hasOwnProperty('initial_opacity') && window.getComputedStyle(this._dialogEl).opacity === '0') {
+      this._dialogEl.style.removeProperty('opacity');
+    }
   }
 
 
