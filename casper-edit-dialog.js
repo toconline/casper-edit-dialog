@@ -822,44 +822,12 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         this._pagesContainerEl.children[i].save(saveData, this.data);
       }
 
-      Object.entries(saveData).forEach(([operation, types]) => {
-        Object.entries(types).forEach(async ([type, data]) => {
-          data.payloads.forEach(async (entry) => {
-            try {
-              if (operation !== 'delete') {
-                if (entry.urn && Object.keys(entry.payload.data.attributes).length) {
-                  const response = await window.app.broker[operation](entry.urn, entry.payload, 10000);
-
-                  if (response) {
-                    // TODO: response is missing relationships. maybe use saveData to update data?
-                    //this.data = response.data;
-
-                  }
-                }
-              } else {
-                if (entry.urn) {
-                  await window.app.broker.delete(entry.urn, 30000);
-
-                  // TODO: update this.data in case closing the dialog is optional
-                }
-              }
-            } catch (error) {
-              console.log(error);
-              this._toastLitEl.open({'text':  error?.errors?.[0]?.detail ? error.errors[0].detail : 'Erro! Não foi possível gravar as alterações.', 'duration': 3000, 'backgroundColor': 'var(--status-red)'});
-              return;
-            }
-          });
-        })
-      });
-
-      this._toastLitEl.open({'text': 'As alterações foram gravadas com sucesso.', 'duration': 3000, 'backgroundColor': 'var(--status-green)'});
+      await this._processSaveData(saveData, close);
     } catch (error) {
       console.error(error);
       this._toastLitEl.open({'text':  error?.errors?.[0]?.detail ? error.errors[0].detail : 'Erro! Não foi possível gravar as alterações.', 'duration': 3000, 'backgroundColor': 'var(--status-red)'});
       return;
     }
-
-    if (close) this.close();
   }
 
   /**
@@ -1195,6 +1163,53 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   _convertDimensionToRem (dimension) {
     return dimension / 16 + 'rem';
   }
+
+  async  _processSaveData (saveData, close) {
+    try {
+      for (const [operation, types] of Object.entries(saveData)) {
+        for (const [type, data] of Object.entries(types)) {
+          for (const entry of data.payloads) {
+            try {
+              if (operation !== 'delete') {
+                if (entry.urn && Object.keys(entry.payload.data.attributes).length) {
+                  const response = await window.app.broker[operation](entry.urn, entry.payload, 10000);
+  
+                  if (response) {
+                    for (const [key, value] of Object.entries(entry.payload.data.attributes)) {
+                      if (type == this._type && this.data[key]) {
+                        this.data[key] = value;
+                      } else if (this.data.relationships?.[entry.relationship]?.element?.[key]) {
+                        this.data.relationships[entry.relationship].element[key] = value;
+                      } else if (this.data.relationships?.[type]?.element?.[key]) {
+                        this.data.relationships[type].element[key] = value;
+                      }
+                    }
+                  }
+                }
+              } else {
+                if (entry.urn) {
+                  await window.app.broker.delete(entry.urn, 30000);
+  
+                  // TODO: update this.data in case closing the dialog is optional
+                }
+              }
+            } catch (error) {
+              console.log(error);
+              this._toastLitEl.open({'text':  error?.errors?.[0]?.detail ? error.errors[0].detail : 'Erro! Não foi possível gravar as alterações.', 'duration': 3000, 'backgroundColor': 'var(--status-red)'});
+              return;
+            }
+          }
+        }
+      }
+  
+      this._toastLitEl.open({'text': 'As alterações foram gravadas com sucesso.', 'duration': 3000, 'backgroundColor': 'var(--status-green)'});
+  
+      if (close) this.close();
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  
 }
 
 customElements.define('casper-edit-dialog', CasperEditDialog);

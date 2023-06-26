@@ -255,6 +255,7 @@ export class CasperEditDialogPage extends LitElement {
         if (!saveData[request][type]) {
           saveData[request][type] = {
             payloads: [{
+              relationship: this.__type,
               urn: `${type}${!isNew ? '/' + id : ''}`,
               payload: {
                 data: {
