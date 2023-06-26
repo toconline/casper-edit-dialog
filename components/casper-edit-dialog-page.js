@@ -103,6 +103,12 @@ export class CasperEditDialogPage extends LitElement {
     this.layout = 'grid';
   }
 
+
+
+  //***************************************************************************************//
+  //                              ~~~ Public methods  ~~~                                  //
+  //***************************************************************************************//
+
   validate () {
     console.warn('A validate method should be defined for the page.');
     return true;
@@ -279,6 +285,38 @@ export class CasperEditDialogPage extends LitElement {
     this.editDialog.hideStatusAndProgress();
   }
 
+  disableLabels () {
+    this.editDialog.disableLabels();
+  }
+
+  enableLabels () {
+    this.editDialog.enableLabels();
+  }
+
+  disablePrevious () {
+    this.editDialog.disablePrevious();
+  }
+
+  enablePrevious () {
+    this.editDialog.enablePrevious();
+  }
+
+  disableNext () {
+    this.editDialog.disableNext();
+  }
+
+  enableNext () {
+    this.editDialog.enableNext();
+  }
+
+  disableAllActions () {
+    this.editDialog.disableAllActions();
+  }
+
+  enableAllActions () {
+    this.editDialog.enableAllActions();
+  }
+
   close () {
     this.editDialog.close();
   }
@@ -302,6 +340,12 @@ export class CasperEditDialogPage extends LitElement {
   afterSave (saveData, data, isNew = false) {
     return;
   }
+
+
+  
+  //***************************************************************************************//
+  //                              ~~~ Private methods  ~~~                                 //
+  //***************************************************************************************//
 
   _getValue (binding, relAttribute, data) {
     let value;

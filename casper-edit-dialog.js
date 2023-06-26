@@ -531,8 +531,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         </div>
 
         <div class="edit-dialog__footer">
-          <button class="edit-dialog__button secondary" ?disabled=${this._disablePrevious} @click=${this.save.bind(this, false)}>Gravar</button>
-          <button class="edit-dialog__button" ?disabled=${this._disableNext} @click=${this.save.bind(this)}>Gravar e sair</button>
+          <button class="edit-dialog__button secondary previous" ?disabled=${this._disablePrevious}>Gravar</button>
+          <button class="edit-dialog__button next" ?disabled=${this._disableNext}>Gravar e sair</button>
         </div>
       </dialog>
 
@@ -547,10 +547,20 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._pagesContainerEl = this.shadowRoot.querySelector('.edit-dialog__pages-container');
     this._confirmationDialogEl = this.shadowRoot.getElementById('confirmationDialog');
     this._toastLitEl = this.shadowRoot.getElementById('toastLit');
+    this._previousButton = this.shadowRoot.querySelector('.edit-dialog__button.previous');
+    this._nextButton = this.shadowRoot.querySelector('.edit-dialog__button.next');
 
     this._dialogEl.addEventListener('click', this._dialogClickHandler.bind(this));
     this._dialogEl.addEventListener('cancel', this._dialogCancelHandler.bind(this));
     this.addEventListener('casper-overlay-opened', this._casperOverlayOpenedHandler);
+
+    if (this.mode === 'wizard') {
+      this._previousButton.addEventListener('click', () => this._gotoPreviousPage());
+      this._nextButton.addEventListener('click', () => this._gotoNextPage());
+    } else {
+      this._previousButton.addEventListener('click', () => this.save(false));
+      this._nextButton.addEventListener('click', () => this.save());
+    }
   }
 
 
@@ -666,17 +676,43 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._activeIndex = +newIndex;
   }
 
-  disableAllActions () {
+  disableLabels () {
     this._disableLabels = true;
+  }
+
+  enableLabels () {
+    this._disableLabels = false;
+  }
+
+  disablePrevious () {
     this._disablePrevious = true;
+  }
+
+  enablePrevious () {
+    this._disablePrevious = false;
+  }
+
+  disableNext () {
     this._disableNext = true;
   }
 
-  enableAllActions () {
-    this._disableLabels = false;
-    this._disablePrevious = false;
+  enableNext () {
     this._disableNext = false;
   }
+
+  disableAllActions () {
+    if (this.mode === 'dialog') this.disableLabels();
+    this.disablePrevious();
+    this.disableNext();
+  }
+
+  enableAllActions () {
+    if (this.mode === 'dialog') this.enableLabels();
+    this.enablePrevious();
+    this.enableNext();
+  }
+
+  
 
   /**
    * Submit a job and return a promise to the caller
@@ -959,6 +995,35 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._nextButtonIcon.icon = this._activeIndex === this._pagesContainerEl.children.length - 1 && !this._getCurrentPage().hasAttribute('next')
       ? 'fa-light:check'
       : 'fa-light:arrow-right';
+  }
+
+  _gotoPreviousPage () {
+    if (typeof this._getCurrentPage().previous === 'function') {
+      this._getCurrentPage().previous();
+    } else if (typeof this['previousOn' + this._getCurrentPage().id] === 'function') {
+      this['previousOn' + this._getCurrentPage().id].apply(this);
+    } else {
+      if (this._activeIndex >= 1) this.activatePage(this._activeIndex - 1);
+    }
+  }
+
+  _gotoNextPage () {
+    if (this._nextClosesWizard === true) {
+      this.close();
+      return;
+    }
+
+    if (typeof this._getCurrentPage().next === 'function') {
+      this._getCurrentPage().next();
+    } else if (typeof this['nextOn' + this._getCurrentPage().id] === 'function') {
+      this['nextOn' + this._getCurrentPage().id].apply(this);
+    } else {
+      if (this._activeIndex < this._pagesContainerEl.children.length - 1) {
+        this.activatePage(this._activeIndex + 1);
+      } else {
+        this.close();
+      }
+    }
   }
 
   _gotoNextPageNoHandlers () {
