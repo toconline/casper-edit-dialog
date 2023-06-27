@@ -318,6 +318,10 @@ export class CasperEditDialogPage extends LitElement {
     this.editDialog.enableAllActions();
   }
 
+  openToast (text, type, duration) {
+    this.editDialog.openToast(text, type, duration);
+  }
+
   close () {
     this.editDialog.close();
   }

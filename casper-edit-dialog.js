@@ -805,6 +805,36 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._jobPromise.resolve(Object.keys(notification.response).length ? notification.response : notification);
   }
 
+  /**
+   * Show toast at the bottom of the pages-container
+   *
+   * @param {String} text the text to display.
+   * @param {Boolean} type controls the style.
+   * @param {Boolean} duration the time during which the toast is displayed.
+   */
+  openToast (text, type = '', duration = 3000) {
+    let color = '';
+
+    switch (type) {
+      case true:
+      case 'success':
+        color = 'var(--status-green)';
+        break;
+      case false:
+      case 'error':
+        color = 'var(--status-red)';
+        break;
+      case 'warning':
+        color = 'var(--status-orange)';
+        break;
+      case 'info':
+      default:
+        color = 'var(--status-blue)';
+    }
+
+    this._toastLitEl.open({'text': text, 'duration': duration, 'backgroundColor': color});
+  }
+
   validate () {
     let valid = true;
 
@@ -821,7 +851,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     if (this._invalidPagesIndexes.size > 0) {
       valid = false;
       this.activatePage(this._invalidPagesIndexes.values().next().value);
-      this._toastLitEl.open({'text': 'Não foi possível gravar as alterações. Por favor verifique se preencheu os campos corretamente.', 'duration': 3000, 'backgroundColor': 'var(--status-red)'});
+      this.openToast ('Não foi possível gravar as alterações. Por favor verifique se preencheu os campos corretamente.', 'error');
     }
 
     this.requestUpdate();
@@ -856,7 +886,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       await this._processSaveData(saveData, close);
     } catch (error) {
       console.error(error);
-      this._toastLitEl.open({'text':  error?.errors?.[0]?.detail ? error.errors[0].detail : 'Erro! Não foi possível gravar as alterações.', 'duration': 3000, 'backgroundColor': 'var(--status-red)'});
+      this.openToast (error?.errors?.[0]?.detail ? error.errors[0].detail : 'Erro! Não foi possível gravar as alterações.', 'error');
       return;
     }
   }
