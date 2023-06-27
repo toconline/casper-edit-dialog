@@ -16,6 +16,11 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       type: String,
       reflect: true
     },
+    noWhiteSpace: {
+      type: Boolean,
+      reflect: true,
+      attribute: 'no-white-space'
+    },
     _title: {
       type: String
     },
@@ -345,6 +350,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       padding: calc(var(--ced-wrapper-vertical-padding) / 2) calc(var(--ced-wrapper-horizontal-padding) / 2);
     }
 
+    :host([mode="wizard"][no-white-space]) .edit-dialog__content-wrapper {
+      padding: 0;
+    }
+
     .edit-dialog__pages-container {
       width: 50rem; /* 800px */
       height: 26.125rem; /* 418px */
@@ -370,8 +379,12 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       transform: translateY(-100%);
       transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.5s;
       overflow: auto;
-      /* This prevents layout shifts */
+      /* This prevents layout shifts when switching pages */
       scrollbar-gutter: stable;
+    }
+
+    :host([mode="wizard"]) [name^="page"] {
+      scrollbar-gutter: auto;
     }
 
     [name^="page"][active] {
@@ -594,6 +607,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     if (this.options.mode) this.mode = this.options.mode;
     if (this.options.type) this._type = this.options.type;
     if (this.options.dimensions && this.mode === 'wizard') this.overrideWizardDimensions(this.options.dimensions);
+    if (this.options.no_white_space && this.mode === 'wizard') this.noWhiteSpace = true;
 
     // First we import the classes
     try {
