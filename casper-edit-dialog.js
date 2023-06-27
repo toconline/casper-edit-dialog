@@ -927,9 +927,9 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
   hasUnsavedChanges () {
     for (let i = 0; i < this._pagesContainerEl.children.length; i++) {
-      if (this._pagesContainerEl.children[i].hasUnsavedChanges(this.data)) {
-        return true;
-      }
+      const page = this._pagesContainerEl.children[i];
+      if (this._isCasperPaWizardPage(page)) continue;
+      if (page.hasUnsavedChanges(this.data)) return true;
     }
 
     return false;
@@ -1023,7 +1023,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     if (index > this._activeIndex) newPage.style.transform = 'translateY(100%)';
 
     await newPage.updateComplete;
-    if (Object.getPrototypeOf(newPage.constructor).name === 'CasperPaWizardPage') return newPage;
+    if (this._isCasperPaWizardPage(newPage)) return newPage;
 
     if (this.options.urn) {
       newPage.load(this.data);
@@ -1046,6 +1046,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._statusProgressPageEl.classList.add('edit-dialog__status-progress-page');
     this._statusProgressPageEl.hidden = true;
     this._contentWrapperEl.appendChild(this._statusProgressPageEl);
+  }
+
+  _isCasperPaWizardPage (pageEl) {
+    return Object.getPrototypeOf(pageEl.constructor)?.name === 'CasperPaWizardPage';
   }
 
   // All components which use casper-overlay need to have their overlays moved to the stacking context of the top-layer, otherwise they wouldn't be visible
