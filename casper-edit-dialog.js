@@ -1023,6 +1023,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     if (index > this._activeIndex) newPage.style.transform = 'translateY(100%)';
 
     await newPage.updateComplete;
+    if (Object.getPrototypeOf(newPage.constructor).name === 'CasperPaWizardPage') return newPage;
 
     if (this.options.urn) {
       newPage.load(this.data);
