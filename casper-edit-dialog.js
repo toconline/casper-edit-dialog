@@ -2,6 +2,8 @@ import { html, css, LitElement } from 'lit';
 import {styleMap} from 'lit/directives/style-map.js';
 import { CasperSocketPromise } from  '@cloudware-casper/casper-socket/casper-socket.js';
 import { Casper } from '@cloudware-casper/casper-common-ui/casper-i18n-behavior.js';
+import '@cloudware-casper/casper-icons/casper-icon.js';
+import '@cloudware-casper/casper-icons/casper-icon-button.js';
 import './components/casper-confirmation-dialog.js';
 import './components/casper-toast-lit.js';
 
@@ -45,8 +47,26 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     _disableNext: {
       type: Boolean
     },
+    _hidePrevious: {
+      type: Boolean
+    },
+    _hideNext: {
+      type: Boolean
+    },
     _pagesContainerStyles: {
       type: Object
+    },
+    _previousText: {
+      type: String
+    },
+    _nextText: {
+      type: String
+    },
+    _previousIcon: {
+      type: String
+    },
+    _nextIcon: {
+      type: String
     }
   };
 
@@ -495,6 +515,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._disableLabels = false;
     this._disablePrevious = false;
     this._disableNext = false;
+    this._hidePrevious = false;
+    this._hideNext = false;
   }
 
   connectedCallback() {
@@ -549,8 +571,14 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         </div>
 
         <div class="edit-dialog__footer">
-          <button class="edit-dialog__button secondary previous" ?disabled=${this._disablePrevious}>Gravar</button>
-          <button class="edit-dialog__button next" ?disabled=${this._disableNext}>Gravar e sair</button>
+          <button class="edit-dialog__button secondary previous" ?disabled=${this._disablePrevious} ?hidden=${this._hidePrevious}>
+            ${this._previousIcon ? html`<casper-icon icon=${this._previousIcon}></casper-icon>` : ''}
+            ${this._previousText ? html`<span>${this._previousText}</span>` : ''}
+          </button>
+          <button class="edit-dialog__button next" ?disabled=${this._disableNext} ?hidden=${this._hideNext}>
+            ${this._nextIcon ? html`<casper-icon icon=${this._nextIcon}></casper-icon>` : ''}
+            ${this._nextText ? html`<span>${this._nextText}</span>` : ''}
+          </button>
         </div>
       </dialog>
 
@@ -565,8 +593,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._pagesContainerEl = this.shadowRoot.querySelector('.edit-dialog__pages-container');
     this._confirmationDialogEl = this.shadowRoot.getElementById('confirmationDialog');
     this._toastLitEl = this.shadowRoot.getElementById('toastLit');
-    this._previousButton = this.shadowRoot.querySelector('.edit-dialog__button.previous');
-    this._nextButton = this.shadowRoot.querySelector('.edit-dialog__button.next');
+    this._previousButtonEl = this.shadowRoot.querySelector('.edit-dialog__button.previous');
+    this._nextButtonEl = this.shadowRoot.querySelector('.edit-dialog__button.next');
 
     // Needed to hide jumps caused by changes in the wizard's dimensions
     if (this.options.hasOwnProperty('initial_opacity')) {
@@ -578,11 +606,11 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this.addEventListener('casper-overlay-opened', this._casperOverlayOpenedHandler);
 
     if (this.mode === 'wizard') {
-      this._previousButton.addEventListener('click', () => this._gotoPreviousPage());
-      this._nextButton.addEventListener('click', () => this._gotoNextPage());
+      this._previousButtonEl.addEventListener('click', () => this._gotoPreviousPage());
+      this._nextButtonEl.addEventListener('click', () => this._gotoNextPage());
     } else {
-      this._previousButton.addEventListener('click', () => this.save(false));
-      this._nextButton.addEventListener('click', () => this.save());
+      this._previousButtonEl.addEventListener('click', () => this.save(false));
+      this._nextButtonEl.addEventListener('click', () => this.save());
     }
   }
 
@@ -606,8 +634,17 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     if (this.options.root_dialog) this._rootDialog = this.options.root_dialog;
     if (this.options.mode) this.mode = this.options.mode;
     if (this.options.type) this._type = this.options.type;
-    if (this.options.dimensions && this.mode === 'wizard') this.overrideWizardDimensions(this.options.dimensions);
-    if (this.options.no_white_space && this.mode === 'wizard') this.noWhiteSpace = true;
+
+    if (this.mode === 'wizard') {
+      this.changePreviousButtonToIcon();
+      this.changeNextButtonToIcon();
+
+      if (this.options.dimensions) this.overrideWizardDimensions(this.options.dimensions);
+      if (this.options.no_white_space) this.noWhiteSpace = true;
+    } else {
+      this.changePreviousButtonToText('Gravar');
+      this.changeNextButtonToText('Gravar e sair');
+    }
 
     // First we import the classes
     try {
@@ -707,6 +744,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._activeIndex = +newIndex;
   }
 
+  /* --- Labels --- */
+
   disableLabels () {
     this._disableLabels = true;
   }
@@ -714,6 +753,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   enableLabels () {
     this._disableLabels = false;
   }
+
+  /* --- Previous button --- */
 
   disablePrevious () {
     this._disablePrevious = true;
@@ -723,12 +764,38 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._disablePrevious = false;
   }
 
+  hidePrevious () {
+    this._hidePrevious = true;
+  }
+
+  changePreviousButtonToText (text) {
+    this._changeButtonToText('previous', text);
+  }
+
+  changePreviousButtonToIcon (icon = 'fa-light:arrow-left') {
+    this._changeButtonToIcon('previous', icon);
+  }
+
+  /* --- Next button --- */
+
   disableNext () {
     this._disableNext = true;
   }
 
   enableNext () {
     this._disableNext = false;
+  }
+
+  hideNext () {
+    this._hideNext = true;
+  }
+
+  changeNextButtonToText (text) {
+    this._changeButtonToText('next', text);
+  }
+
+  changeNextButtonToIcon (icon = 'fa-light:arrow-right') {
+    this._changeButtonToIcon('next', icon);
   }
 
   disableAllActions () {
@@ -1030,10 +1097,22 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this.activatePage(newIndex);
   }
 
-  _updateWizardButtons () {
-    this._nextButtonIcon.icon = this._activeIndex === this._pagesContainerEl.children.length - 1 && !this._getCurrentPage().hasAttribute('next')
-      ? 'fa-light:check'
+  _changeButtonToText (type, text) {
+    this[`_${type}Text`] = text;
+    this[`_${type}Icon`] = null;
+  }
+
+  _changeButtonToIcon (type, icon) {
+    this[`_${type}Text`] = null;
+    this[`_${type}Icon`] = icon;
+  }
+
+  _updateButtons () {
+    const nextIcon = (this._activeIndex === this._pagesContainerEl.children.length - 1 && !this._getCurrentPage().hasAttribute('next')) 
+      ? 'fa-light:check' 
       : 'fa-light:arrow-right';
+
+    this.changeNextButtonToIcon(nextIcon);
   }
 
   _gotoPreviousPage () {
@@ -1188,7 +1267,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           this.subscribeJob(notification.response.channel, this._controlledSubmissionTTR);
           this._setControlledSubmission();
         } else {
-          // this._updateWizardButtons();
+          // this._updateButtons();
           this.jobCompleted(notification);
           if (notification.custom === true) {
             this.showCustomNotification(notification);
