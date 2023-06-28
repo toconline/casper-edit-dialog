@@ -7,6 +7,10 @@ export class CasperEditDialogPage extends LitElement {
     type: {
       type: String
     },
+    isNew: {
+      type: Boolean,
+      reflect: true
+    },
     layout: {
       type: String,
       reflect: true
@@ -115,11 +119,11 @@ export class CasperEditDialogPage extends LitElement {
   }
 
   async load (data) {
+    this.__isNew = !data;
     await this.beforeLoad(data);
 
     if (!this.__type) this.__type = this.getRootNode().host.options.root_dialog;
-    if (!data) return;
-
+    if (this.__isNew) return;
 
     for (const elem of this.shadowRoot.querySelectorAll('[binding]')) {
       const binding = elem.getAttribute('binding');
@@ -197,13 +201,12 @@ export class CasperEditDialogPage extends LitElement {
 
   hasUnsavedChanges (data) {
     if (this.isSaved) return false;
-    const isNew = data ? false : true;
 
     for (const elem of this.shadowRoot.querySelectorAll('[binding]')) {
       let hasNewValue;
       const binding = elem.getAttribute('binding');
       const relAttribute = elem.dataset.relationshipAttribute;
-      const initialValue = isNew ? null : this._getValue(binding, relAttribute, data);
+      const initialValue = this.__isNew ? null : this._getValue(binding, relAttribute, data);
 
       switch (elem.tagName.toLowerCase()) {
         case 'paper-checkbox':
@@ -224,17 +227,16 @@ export class CasperEditDialogPage extends LitElement {
   }
 
   save (saveData, data) {
-    const isNew = data ? false : true;
-    const request = isNew ? 'post' : 'patch';
-    if (isNew) data = { relationships: {} };
+    const request = this.__isNew ? 'post' : 'patch';
+    if (this.__isNew) data = { relationships: {} };
 
-    this.beforeSave(saveData, data, isNew);
+    this.beforeSave(saveData, data);
 
     for (const elem of this.shadowRoot.querySelectorAll('[binding]')) {
       let elemValue, newValue;
       const binding = elem.getAttribute('binding');
       const relAttribute = elem.dataset.relationshipAttribute;
-      const initialValue = isNew ? null : this._getValue(binding, relAttribute, data);
+      const initialValue = this.__isNew ? null : this._getValue(binding, relAttribute, data);
 
       switch (elem.tagName.toLowerCase()) {
         case 'paper-checkbox':
@@ -256,7 +258,7 @@ export class CasperEditDialogPage extends LitElement {
           saveData[request][type] = {
             payloads: [{
               relationship: this.__type,
-              urn: `${type}${!isNew ? '/' + id : ''}`,
+              urn: `${type}${!this.__isNew ? '/' + id : ''}`,
               payload: {
                 data: {
                   type: type,
@@ -275,7 +277,7 @@ export class CasperEditDialogPage extends LitElement {
       }
     }
 
-    this.afterSave(saveData, data, isNew);
+    this.afterSave(saveData, data);
   }
 
   showStatusPage (response) {
@@ -338,11 +340,11 @@ export class CasperEditDialogPage extends LitElement {
     return;
   }
 
-  beforeSave (saveData, data, isNew = false) {
+  beforeSave (saveData, data) {
     return;
   }
 
-  afterSave (saveData, data, isNew = false) {
+  afterSave (saveData, data) {
     return;
   }
 
