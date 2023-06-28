@@ -1,5 +1,6 @@
 import { html, css, LitElement } from 'lit';
 import {styleMap} from 'lit/directives/style-map.js';
+import {classMap} from 'lit/directives/class-map.js';
 import { CasperSocketPromise } from  '@cloudware-casper/casper-socket/casper-socket.js';
 import { Casper } from '@cloudware-casper/casper-common-ui/casper-i18n-behavior.js';
 import '@cloudware-casper/casper-icons/casper-icon.js';
@@ -470,6 +471,19 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       color: var(--button-primary-color);
     }
 
+    .edit-dialog__button.icon:not(.text) {
+      font-size: 1rem;
+      padding: 0;
+      border-radius: 50%;
+      width: 2.5em;
+      height: 2.5em;
+    }
+
+    .edit-dialog__button.icon:not(.text) casper-icon {
+      width: 1.5625em;
+      height: 1.5625em;
+    }
+
     .edit-dialog__button:hover {
       cursor: pointer;
       background-color: var(--light-primary-color);
@@ -537,6 +551,9 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   //***************************************************************************************//
 
   render () {
+    const previousClasses = { icon: this._previousIcon, text: this._previousText };
+    const nextClasses = { icon: this._nextIcon, text: this._nextText };
+
     return html`
       <dialog id="editDialog" class="edit-dialog">
         <ol class="edit-dialog__labels-list" ?disabled=${this._disableLabels}>
@@ -571,11 +588,11 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         </div>
 
         <div class="edit-dialog__footer">
-          <button class="edit-dialog__button secondary previous" ?disabled=${this._disablePrevious} ?hidden=${this._hidePrevious}>
+          <button class="edit-dialog__button secondary previous ${classMap(previousClasses)}" ?disabled=${this._disablePrevious} ?hidden=${this._hidePrevious}>
             ${this._previousIcon ? html`<casper-icon icon=${this._previousIcon}></casper-icon>` : ''}
             ${this._previousText ? html`<span>${this._previousText}</span>` : ''}
           </button>
-          <button class="edit-dialog__button next" ?disabled=${this._disableNext} ?hidden=${this._hideNext}>
+          <button class="edit-dialog__button next ${classMap(nextClasses)}" ?disabled=${this._disableNext} ?hidden=${this._hideNext}>
             ${this._nextIcon ? html`<casper-icon icon=${this._nextIcon}></casper-icon>` : ''}
             ${this._nextText ? html`<span>${this._nextText}</span>` : ''}
           </button>
