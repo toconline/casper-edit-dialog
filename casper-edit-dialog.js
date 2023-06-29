@@ -684,8 +684,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
 
     // Then we create only the first page
-    const firstPage = await this._createPage(0);
-    firstPage.setAttribute('active', '');
+    await this.activatePage(0, true);
     this._dialogEl.showModal();
   }
 
@@ -744,20 +743,39 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this.showStatusPage(notification);
   }
 
-  async activatePage (newIndex) {
-    if (+newIndex === +this._activeIndex) return;
+  async activatePage (newIndex, beforeShowModal = false) {
+    if (+newIndex === +this._activeIndex && !beforeShowModal) return;
 
     const previousIndex = this._activeIndex;
     const previousPage = this._pagesContainerEl.children.namedItem(`page-${previousIndex}`);
-    previousPage.removeAttribute('active');
+    if (previousPage) previousPage.removeAttribute('active');
 
-    const currentPage = this._pagesContainerEl.children.namedItem(`page-${newIndex}`);
+    let newPage = this._pagesContainerEl.children.namedItem(`page-${newIndex}`);
+    if (!newPage) newPage = await this._createPage(newIndex);
 
-    setTimeout(() => {
-      currentPage.setAttribute('active', '');
-      if (currentPage.style.transform) currentPage.style.removeProperty('transform');
-    }, 0);
+    if (beforeShowModal) {
+      newPage.setAttribute('active', '');
+    } else {
+      setTimeout(() => {
+        newPage.setAttribute('active', '');
+        if (newPage.style.transform) newPage.style.removeProperty('transform');
+      }, 0);
+    }
+    
+    if (this.mode === 'wizard') newIndex === 0 ? this.disablePrevious() : this.enablePrevious();
 
+    if (typeof newPage.enter === 'function') {
+      newPage.enter();
+    } else if (typeof this['enterOn' + newPage.id] === 'function') {
+      this['enterOn' + newPage.id].apply(this);
+    }
+    
+
+    if (this.mode === 'wizard') {
+      newPage.hasAttribute('previous') ? this.changePreviousButtonToText(newPage.getAttribute('previous')) : this.changePreviousButtonToIcon();
+      newPage.hasAttribute('next') ? this.changeNextButtonToText(newPage.getAttribute('next')) : this.changeNextButtonToIcon();
+    }
+    
     this._activeIndex = +newIndex;
   }
 
@@ -1108,15 +1126,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
   async _labelClickHandler (event) {
     if (!event?.currentTarget) return;
-
-    const newIndex = +event.currentTarget.index;
-
-    const currentPage = this._pagesContainerEl.children.namedItem(`page-${newIndex}`);
-    if (!currentPage) {
-      await this._createPage(newIndex);
-    }
-
-    this.activatePage(newIndex);
+    
+    this.activatePage(+event.currentTarget.index);
   }
 
   _changeButtonToText (type, text) {
