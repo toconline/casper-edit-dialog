@@ -428,6 +428,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       width: calc(100% - 2 * var(--ced-content-horizontal-padding));
       height: calc(100% - 2 * var(--ced-content-vertical-padding));
       z-index: 2;
+      transition: opacity 0.3s ease;
     }
 
     .edit-dialog__status-progress-page[hidden] {
@@ -718,13 +719,13 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._statusProgressPageEl.hidden = false;
   }
 
-  async showStatusPage (notification) {
+  async showStatusPage (notification, status) {
     if (this._state === 'show-status' || !notification) return;
 
     this.disableAllActions();
     if (!this._statusProgressPageEl) await this._createStatusProgressPage();
 
-    this._statusProgressPageEl.showStatus(notification);
+    this._statusProgressPageEl.showStatus(notification, status);
     this._state = 'show-status';
     this._statusProgressPageEl.hidden = false;
   }
@@ -732,10 +733,14 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   hideStatusAndProgress () {
     if (!this._statusProgressPageEl) return;
 
-    this._statusProgressPageEl.hidden = true;
-    this._statusProgressPageEl.resetValues();
-    this._state = 'normal';
-    this.enableAllActions();
+    this._statusProgressPageEl.style.opacity = 0;
+
+    setTimeout(() => {
+      this._statusProgressPageEl.hidden = true;
+      this._statusProgressPageEl.resetValues();
+      this._state = 'normal';
+      this.enableAllActions();
+    }, 300);
   }
 
   showFatalError (notification) {
@@ -850,20 +855,27 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   /**
    * Submit a job and return a promise to the caller
    *
-   * @param {Object} job     the job payload
+   * @param {Object} job the job payload
    * @param {Number} timeout in seconds, the maximum time the front will wait for the result
-   * @param {Number} ttr     time to run in seconds, maximum execution time on the server (counted after the job starts)
+   * @param {Number} ttr time to run in seconds, maximum execution time on the server (counted after the job starts)
+   * @param {Boolean} showStatusPage by default is true. pass value as false if the job is meant to run in the background
    * @returns the promise for the caller to await on
    */
-  async execJob (job, timeout, ttr) {
+  async execJob (job, timeout, ttr, showStatusPage = true) {
+    showStatusPage ? this._runJobInBackground = false : this._runJobInBackground = true; 
+    
     this._jobPromise = new CasperSocketPromise();
 
-    if (!this._statusProgressPageEl) await this._createStatusProgressPage();
-    this._statusProgressPageEl = this.submitJobWithStrictValidity(job, timeout, ttr, true);
-    this._statusProgressPageEl.timeout = timeout;
-    this._statusProgressPageEl.state = 'connecting';
-    this._statusProgressPageEl.progress = 0;
-    this._statusProgressPageEl.message = 'Em fila de espera. Por favor, aguarde';
+    if (this._runJobInBackground) {
+      this.submitJobWithStrictValidity(job, timeout, ttr, true);
+    } else {
+      if (!this._statusProgressPageEl) await this._createStatusProgressPage();
+      this.submitJobWithStrictValidity(job, timeout, ttr, true);
+      this._statusProgressPageEl.timeout = timeout;
+      this._statusProgressPageEl.state = 'connecting';
+      this._statusProgressPageEl.progress = 0;
+      this._statusProgressPageEl.message = 'Em fila de espera. Por favor, aguarde';
+    }
 
     return this._jobPromise;
   }
@@ -887,14 +899,15 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     if ( job.validity < 1 ) {
       throw 'Strict timing requires a timeout greater than ttr + 3!!!")';
     }
-    this.showProgressPage();
+
+    if (!this._runJobInBackground) this.showProgressPage();
     this._setControlledSubmission();
     this.socket.submitJob(job, this._submitJobResponse.bind(this), { validity: job.validity, ttr: lttr, timeout: ltimeout, hideTimeout: !!hideTimeout });
-    return this._statusProgressPageEl;
+    
   }
 
   subscribeJob (jobId, timeout) {
-    this.showProgressPage();
+    if (!this._runJobInBackground) this.showProgressPage();
     this.socket.subscribeJob(jobId, this._subscribeJobResponse.bind(this), timeout);
   }
 
@@ -1177,14 +1190,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
   }
 
-  _gotoNextPageNoHandlers () {
-    if (this._activeIndex < this._pagesContainerEl.children.length - 1) {
-      this.activatePage(this._activeIndex + 1);
-    } else {
-      this.close();
-    }
-  }
-
   _subscribeJobResponse (response) {
     CasperEditDialog._normalizeServerResponse(response);
     this._updateUI(response);
@@ -1283,12 +1288,14 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   async _updateUI (notification) {
     switch (notification.status) {
       case 'in-progress':
-        this.showProgressPage();
-        if (notification.index + 1 > this._statusProgressPageEl.progressCount) {
-          this._statusProgressPageEl.setProgressCount(notification.index + 1);
-        }
+        if (!this._runJobInBackground) {
+          this.showProgressPage();
+          if (notification.index + 1 > this._statusProgressPageEl.progressCount) {
+            this._statusProgressPageEl.setProgressCount(notification.index + 1);
+          }
 
-        this._statusProgressPageEl.updateProgress(notification.index, this.i18n.apply(this, notification.message), notification.progress);
+          this._statusProgressPageEl.updateProgress(notification.index, this.i18n.apply(this, notification.message), notification.progress);
+        }
 
         if (typeof this['jobProgressOn' + this._getCurrentPage().id] === 'function') {
           this['jobProgressOn' + this._getCurrentPage().id].apply(this, [notification.status_code, notification, notification.response]);
@@ -1300,14 +1307,38 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           this.subscribeJob(notification.response.channel, this._controlledSubmissionTTR);
           this._setControlledSubmission();
         } else {
-          // this._updateButtons();
-          this.jobCompleted(notification);
-          if (notification.custom === true) {
-            this.showCustomNotification(notification);
-          } 
+          if (this.mode === 'wizard') this._updateButtons();
+
+          if (typeof  this._getCurrentPage().jobCompleted === 'function') {
+            this._getCurrentPage().jobCompleted(notification);
+          } else if (typeof this['jobCompletedOn' + this._getCurrentPage().id] === 'function') {
+            if (notification.custom === true) {
+              // ... Pass the full notification to allow more flexible custom handling ...
+              this['jobCompletedOn' + this._getCurrentPage().id].apply(this, [notification.status_code, notification, notification.response]);
+            } else {
+              // ... passes only the notification message, it's an array that can be i18n'ed ...
+              this['jobCompletedOn' + this._getCurrentPage().id].apply(this, [notification.status_code, notification.message, notification.response]);
+            }
+          } else {
+            this.jobCompleted(notification);
+
+            if (notification.custom === true) {
+              if (!this._runJobInBackground) this.showCustomNotification(notification);
+            } else {
+              if (this.mode === 'wizard') {
+                if (this._activeIndex === this._pagesContainerEl.children.length - 1) {
+                  this.close();
+                } else {
+                  this.activatePage(this._activeIndex + 1);
+                }
+              }
+            }
+          }
+
           this._clearJob();
         }
         this.hideStatusAndProgress();
+        if (this._runJobInBackground) this._runJobInBackground = false;
         break;
       case 'failed':
       case 'error':
@@ -1324,6 +1355,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           }
         }
         this._clearJob();
+        if (this._runJobInBackground) this._runJobInBackground = false;
         break;
       case 'reset':
         break;
