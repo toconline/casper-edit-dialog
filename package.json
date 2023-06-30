@@ -1,7 +1,7 @@
 {
   "name": "@cloudware-casper/casper-edit-dialog",
   "main": "casper-edit-dialog.js",
-  "version": "0.2.9",
+  "version": "y",
   "description": "Casper edit dialog",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"
