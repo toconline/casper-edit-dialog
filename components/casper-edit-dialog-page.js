@@ -277,7 +277,7 @@ export class CasperEditDialogPage extends LitElement {
       }
     }
 
-    this.afterSave(saveData, data);
+    this.onSave(saveData, data);
   }
 
   showStatusPage (response) {
@@ -344,12 +344,40 @@ export class CasperEditDialogPage extends LitElement {
     return;
   }
 
+  onSave (saveData, data) {
+    return;
+  }
+
   afterSave (saveData, data) {
     return;
   }
 
+  updatePageData (saveData, data) {
+    for (const [operation, types] of Object.entries(saveData)) {
+      if (operation !== 'delete') {
+        for (const [type, typeData] of Object.entries(types)) {
+          if (typeData.response) {
+            typeData.payloads.forEach((entry) => {
+              if (entry.payload?.data?.attributes) {
+                for (const [key, value] of Object.entries(entry.payload.data.attributes)) {
+                  if (type == this.__type && data[key]) {
+                    data[key] = value;
+                  } else if (data.relationships?.[entry.relationship]?.element?.[key]) {
+                    data.relationships[entry.relationship].element[key] = value;
+                  } else if (data.relationships?.[type]?.element?.[key]) {
+                    data.relationships[type].element[key] = value;
+                  }
+                }
+              }
+            });
+          }
+        }
+      }
+    }
 
-  
+    return data;
+  }
+
   //***************************************************************************************//
   //                              ~~~ Private methods  ~~~                                 //
   //***************************************************************************************//

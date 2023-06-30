@@ -1347,7 +1347,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     return dimension / 16 + 'rem';
   }
 
-  async  _processSaveData (saveData, close) {
+  async _processSaveData (saveData, close) {
     try {
       for (const [operation, types] of Object.entries(saveData)) {
         for (const [type, data] of Object.entries(types)) {
@@ -1356,40 +1356,39 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
               if (operation !== 'delete') {
                 if (entry.urn && Object.keys(entry.payload.data.attributes).length) {
                   const response = await window.app.broker[operation](entry.urn, entry.payload, 10000);
-  
+
                   if (response) {
-                    for (const [key, value] of Object.entries(entry.payload.data.attributes)) {
-                      if (type == this._type && this.data[key]) {
-                        this.data[key] = value;
-                      } else if (this.data.relationships?.[entry.relationship]?.element?.[key]) {
-                        this.data.relationships[entry.relationship].element[key] = value;
-                      } else if (this.data.relationships?.[type]?.element?.[key]) {
-                        this.data.relationships[type].element[key] = value;
-                      }
-                    }
+                    saveData[operation][type]['response'] = response;
                   }
                 }
               } else {
                 if (entry.urn) {
                   await window.app.broker.delete(entry.urn, 30000);
-  
+
                   // TODO: update this.data in case closing the dialog is optional
                 }
               }
             } catch (error) {
               console.log(error);
-              this._toastLitEl.open({'text':  error?.errors?.[0]?.detail ? error.errors[0].detail : 'Erro! Não foi possível gravar as alterações.', 'duration': 3000, 'backgroundColor': 'var(--status-red)'});
+              this._toastLitEl.open({'text': error?.errors?.[0]?.detail ? error.errors[0].detail : 'Erro! Não foi possível gravar as alterações.', 'duration': 3000, 'backgroundColor': 'var(--status-red)'});
               return;
             }
           }
         }
       }
-  
+
       this._toastLitEl.open({'text': 'As alterações foram gravadas com sucesso.', 'duration': 3000, 'backgroundColor': 'var(--status-green)'});
-  
+      this._updatePageData(saveData);
       if (close) this.close();
     } catch (error) {
       console.log(error);
+    }
+  }
+
+  _updatePageData (saveData) {
+    for (let i = 0; i < this._pagesContainerEl.children.length; i++) {
+      this.data = this._pagesContainerEl.children[i].updatePageData(saveData, this.data);
+      this._pagesContainerEl.children[i].afterSave(saveData, this.data);
     }
   }
   
