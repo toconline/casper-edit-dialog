@@ -280,8 +280,8 @@ export class CasperEditDialogPage extends LitElement {
     this.afterSave(saveData, data);
   }
 
-  showStatusPage (response) {
-    this.editDialog.showStatusPage(response);
+  showStatusPage (response, status) {
+    this.editDialog.showStatusPage(response, status);
   }
 
   hideStatusAndProgress () {
