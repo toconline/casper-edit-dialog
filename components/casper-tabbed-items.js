@@ -11,6 +11,9 @@ class CasperTabbedItems extends LitElement {
     items: {
       type: Array
     },
+    relationships: {
+      type: Array
+    },
     showNewItemsAction: {
       type: Boolean
     },
@@ -250,6 +253,7 @@ class CasperTabbedItems extends LitElement {
     this.showDeleteItemsAction = true;
     this._activeIndex = 0;
     this._tabsWrapperClasses = { 'shadow-left': false, 'shadow-right': false };
+    this._relType = '';
   }
 
   connectedCallback() {
@@ -345,6 +349,10 @@ class CasperTabbedItems extends LitElement {
         this._tabsWrapperIntersectionObserver.observe(lastTab);
       }
     }
+
+    if (changedProperties.has('relationships')) { 
+      this._loadFromResource();
+    }
   }
 
 
@@ -364,12 +372,12 @@ class CasperTabbedItems extends LitElement {
    * The item with the given index must be removed from the items array. 
    * No changes must be made to the DOM or other internal properties, since this will be handled by Lit.
    */
-  deleteItem () {
-    console.warn('A deleteItem method must be defined for the component.');
-  }
-
   addNewItem () {
     console.warn('A addNewItem method must be defined for the component.');
+  }
+
+  shouldAllowDelete () {
+    return true;
   }
 
   /**
@@ -386,6 +394,155 @@ class CasperTabbedItems extends LitElement {
     }
   }
 
+  getSaveData (foreignKey) {
+    let saveData = {post:{},patch:{},delete:{}};
+
+    ['patch', 'post', 'delete'].forEach((request) => {
+      if (!saveData[request][this._relType]) {
+        saveData[request][this._relType] = {
+          payloads: [{
+            relationship: this._relType,
+            urn: null
+          }]
+        }
+      }
+
+      if (request != 'delete') {
+        saveData[request][this._relType]['payloads'][0]['payload'] = {
+          data: {
+            type: this._relType,
+            attributes: {}
+          }
+        }
+      }
+
+      if (request == 'patch') {
+        saveData[request][this._relType]['payloads'][0]['payload']['data']['id'] = null;
+      }
+    });
+
+
+    if (this.relationships?.data?.length) {
+      // if there's data, there are elements in the structure with the default values
+      // loop elements and find their respective tab via data-id
+      // if tab is missing, it must've been deleted and should be added to the 'delete' saveData
+      this.relationships.elements.forEach((item, index) => {
+        const tab = this._contentEl.querySelector(`.content__item[item-id="${item.id}"]`);
+
+        if (tab) {
+          const attributesPatch = {};
+
+          for (const elem of tab.querySelectorAll('[binding]')) {
+            const binding = elem.getAttribute('binding');
+
+            switch (elem.tagName.toLowerCase()) {
+              case 'casper-select':
+                // TODO: multiselect
+                if (elem.value != item[binding]) {
+                  const options = [];
+                  const values = elem.value.split(',');
+
+                  // debugger;
+                  // values.forEach((v, i) => {
+                  //   const option = this._contactCategories.find(c => c.id == v)?.name;
+
+                  //   if (option) {
+                  //     options.push(option);
+                  //   }
+                  // });
+
+                  // attributesPatch[binding] = options;
+                }
+                break;
+              case 'paper-checkbox':
+                if (elem.checked != item[binding]) {
+                  attributesPatch[binding] = elem.checked;
+                }
+                break;
+              case 'paper-input':
+              default:
+                if (item[binding]) {
+                  if (elem.value != item[binding]) {
+                    attributesPatch[binding] = elem.value;
+                  }
+                } else if (item.relationships[binding]) {
+                  if (elem.value != item.relationships[binding].data.id) {
+                    attributesPatch[binding] = elem.value;
+                  }
+                }
+
+                break;
+            }
+          }
+
+          if (Object.entries(attributesPatch)) {
+            if (!saveData.patch[this._relType].payloads[index]) {
+              saveData.patch[this._relType].payloads[index] = {
+                urn: `${this._relType}/${this.relationships.data[index].id}`,
+                payload: {
+                  data: {
+                    type: this._relType,
+                    id: this.relationships.data[index].id,
+                    attributes: attributesPatch
+                  }
+                }
+              }
+            } else {
+              saveData.patch[this._relType].payloads[index].urn = `${this._relType}/${this.relationships.data[index].id}`;
+              saveData.patch[this._relType].payloads[index].payload.data.id = this.relationships.data[index].id;
+              saveData.patch[this._relType].payloads[index].payload.data.attributes = attributesPatch;
+            }
+          }
+        } else {
+          // data missing, must've been deleted
+          saveData.delete[this._relType].payloads[index] = { urn: `${this._relType}/${this.relationships.data[index].id}` };
+        }
+      });
+
+      const newTabs = this._contentEl.querySelectorAll('.content__item[item-id=""]');
+
+      if (newTabs && newTabs.length) {
+        newTabs.forEach((newItem, index) => {
+          const attributesPost = {};
+          attributesPost[foreignKey.type] = foreignKey.typeValue;
+          attributesPost[foreignKey.idField] = foreignKey.id;
+
+          for (const elem of newItem.querySelectorAll('[binding]')) {
+            const binding = elem.getAttribute('binding');
+
+            switch (elem.tagName.toLowerCase()) {
+              case 'paper-checkbox':
+                attributesPost[binding] = elem.checked;
+                break;
+              case 'paper-input':
+              default:
+                attributesPost[binding] = elem.value;
+                break;
+            }
+          }
+
+          if (Object.entries(attributesPost)) {
+            if (!saveData.post[this._relType].payloads[index]) {
+              saveData.post[this._relType].payloads[index] = {
+                urn: this._relType,
+                payload: {
+                  data: {
+                    type: this._relType,
+                    attributes: attributesPost
+                  }
+                }
+              }
+            } else {
+              saveData.post[this._relType].payloads[index].urn = this._relType;
+              saveData.post[this._relType].payloads[index].payload.data.attributes = attributesPost;
+            }
+          }
+        });
+      }
+    }
+
+    return saveData;
+  }
 
 
   //***************************************************************************************//
@@ -401,15 +558,61 @@ class CasperTabbedItems extends LitElement {
   }
 
   _addNewItem () {
-    this.addNewItem();
-    this.activateItem(this.items.length);
+    this.items = [...this.items, this.addNewItem()];
+    this.activateItem(this.items.length-1);
     this.requestUpdate();
   }
 
   _deleteItem () {
-    this.deleteItem(this._activeIndex);
+    this.items.splice(this._activeIndex, 1)
     if (this._activeIndex > 0) this.activateItem(this._activeIndex - 1);
     this.requestUpdate();
+  }
+
+  async _loadFromResource () {
+    let tabs = [];
+    
+    if (this.relationships?.data?.length) {
+      // Set relationship elements
+      if (!this.relationships.elements) {
+        this.relationships.elements = [];
+      }      
+
+      let items = [];
+      this._relType = this.relationships?.data?.[0]?.type;
+      const idString = String(this.relationships.data.map(item => item.id));
+
+      if (idString && this._relType) {
+        const response = await app.broker.get(`${this._relType}?filter="id IN (${idString})"`, 10000);
+        this.relationships.elements = response.data;
+        items = response.data.map((element,index) => {
+          return {
+            id: element.id,
+            title: element.name,
+            values: element,
+            allow_delete: this.shouldAllowDelete(index)
+          };
+        });
+      }
+
+      tabs.push(...items);
+    }
+
+    this._setTabbedItems(tabs);
+  }
+
+  _setTabbedItems (data) {
+    const items = data.map((item, index) => {
+      const newTab = {
+        id: item.id || null,
+        title: item.title,
+        values: item.values || null,
+      }
+      if (item.allow_delete) newTab.allow_delete = item.allow_delete;
+      return newTab;
+    });
+
+    this.items = [...this.items, ...items];
   }
 
   /**
