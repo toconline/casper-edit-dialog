@@ -437,21 +437,13 @@ class CasperTabbedItems extends LitElement {
 
             switch (elem.tagName.toLowerCase()) {
               case 'casper-select':
-                // TODO: multiselect
                 if (elem.value != item[binding]) {
-                  const options = [];
-                  const values = elem.value.split(',');
-
-                  // debugger;
-                  // values.forEach((v, i) => {
-                  //   const option = this._contactCategories.find(c => c.id == v)?.name;
-
-                  //   if (option) {
-                  //     options.push(option);
-                  //   }
-                  // });
-
-                  // attributesPatch[binding] = options;
+                  if (elem.multiSelection) {
+                    const values = elem.value.split(',');
+                    attributesPatch[binding] = values;
+                  } else {
+                    attributesPatch[binding] = elem.value;
+                  }
                 }
                 break;
               case 'paper-checkbox':
@@ -469,6 +461,8 @@ class CasperTabbedItems extends LitElement {
                   if (elem.value != item.relationships[binding].data.id) {
                     attributesPatch[binding] = elem.value;
                   }
+                } else {
+                  attributesPatch[binding] = elem.value;
                 }
 
                 break;
@@ -511,6 +505,16 @@ class CasperTabbedItems extends LitElement {
             const binding = elem.getAttribute('binding');
 
             switch (elem.tagName.toLowerCase()) {
+              case 'casper-select':
+                if (elem.value) {
+                  if (elem.multiSelection) {
+                    const values = elem.value.split(',');
+                    attributesPost[binding] = values;
+                  } else {
+                    attributesPost[binding] = elem.value;
+                  }
+                }
+                break;
               case 'paper-checkbox':
                 attributesPost[binding] = elem.checked;
                 break;
