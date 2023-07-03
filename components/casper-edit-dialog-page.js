@@ -203,7 +203,7 @@ export class CasperEditDialogPage extends LitElement {
     if (this.isSaved) return false;
 
     for (const elem of this.shadowRoot.querySelectorAll('[binding]')) {
-      let hasNewValue;
+      let hasNewValue, elemValue;
       const binding = elem.getAttribute('binding');
       const relAttribute = elem.dataset.relationshipAttribute;
       const initialValue = this.__isNew ? null : this._getValue(binding, relAttribute, data);
@@ -214,8 +214,9 @@ export class CasperEditDialogPage extends LitElement {
           break;
         case 'paper-input':
         default:
-          if (elem.value || initialValue) {
-            hasNewValue = elem.value != initialValue;
+          elemValue = elem.value || null;
+          if (elemValue || initialValue) {
+            hasNewValue = elemValue != initialValue;
           }
           break;
       }
@@ -245,11 +246,11 @@ export class CasperEditDialogPage extends LitElement {
         case 'paper-input':
         default:
           elemValue = elem.value || null;
-          newValue = elemValue !== initialValue ? elemValue : null;
+          if (elemValue !== initialValue) newValue = elemValue;
           break;
       }
 
-      if (newValue !== null && initialValue !== newValue) {
+      if (newValue !== undefined && initialValue !== newValue) {
         let type = data.relationships[binding]?.data?.type ?? (data.relationships[this.__type]?.data?.type ?? this.__type);
         let id = data.relationships[binding]?.data?.id ?? (data.relationships[this.__type]?.data?.id ?? data.id);
         let attribute = relAttribute ?? binding;
@@ -383,7 +384,7 @@ export class CasperEditDialogPage extends LitElement {
   //***************************************************************************************//
 
   _getValue (binding, relAttribute, data) {
-    let value;
+    let value = null;
 
     if (data[binding]) {
       // set attribute from key
