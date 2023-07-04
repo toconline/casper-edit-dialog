@@ -7,7 +7,8 @@ import '@cloudware-casper/casper-timed-status/casper-timed-status.js';
 export class CasperEditDialogStatusPage extends LitElement {
   static properties = {
     state: { 
-      type: String 
+      type: String,
+      reflect: true
     },
     progress: { 
       type: Number
@@ -32,13 +33,23 @@ export class CasperEditDialogStatusPage extends LitElement {
         --status-red-rgb: 233, 68, 95;
         --status-orange-rgb: 243, 145, 42;
         --status-gray-rgb: 78, 77, 77;
+
         --icon-height: 5rem;
+        --state-color-rgb: var(--status-blue-rgb);
 
         display: flex;
         justify-content: center;
         align-items: center;
         background-color: #f5f4f4;
         color: var(--primary-text-color);
+      }
+
+      :host([state="error"]) {
+        --state-color-rgb: var(--status-red-rgb);
+      }
+
+      :host([state="success"]) {
+        --state-color-rgb: var(--status-green-rgb);
       }
 
       * {
@@ -82,7 +93,7 @@ export class CasperEditDialogStatusPage extends LitElement {
         transform: translate(-50%, 50%);
         width: 78%;
         height: 1.2rem;
-        background: var(--status-red);
+        background-color: rgb(var(--state-color-rgb));
         border-radius: var(--radius-primary, 8px);
 
         z-index: -1;
@@ -106,7 +117,7 @@ export class CasperEditDialogStatusPage extends LitElement {
         position: relative;
         top: -2rem;
         margin-bottom: -2rem;
-        box-shadow: 0px 2px 20px 3px rgba(var(--status-red-rgb), 0.6);
+        box-shadow: 0px 2px 20px 3px rgba(var(--state-color-rgb), 0.6);
       }
 
       .status-page__icon {
