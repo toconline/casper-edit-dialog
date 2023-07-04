@@ -863,8 +863,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
    * @returns the promise for the caller to await on
    */
   async execJob (job, timeout, ttr, showStatusPage = true) {
-    showStatusPage ? this._runJobInBackground = false : this._runJobInBackground = true; 
-    
+    this._runJobInBackground = showStatusPage ? false : true;
     this._jobPromise = new CasperSocketPromise();
 
     if (this._runJobInBackground) {
@@ -1326,6 +1325,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
             if (notification.custom === true) {
               if (!this._runJobInBackground) this.showCustomNotification(notification);
             } else {
+              this.showStatusPage(notification, 'success');
               if (this.mode === 'wizard') {
                 if (this._activeIndex === this._pagesContainerEl.children.length - 1) {
                   this.close();
@@ -1338,7 +1338,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
           this._clearJob();
         }
-        this.hideStatusAndProgress();
+        setTimeout(() => {
+          this.hideStatusAndProgress();
+        }, 5000);
+
         if (this._runJobInBackground) this._runJobInBackground = false;
         break;
       case 'failed':

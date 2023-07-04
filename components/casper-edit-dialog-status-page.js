@@ -16,11 +16,17 @@ export class CasperEditDialogStatusPage extends LitElement {
     timeout: { 
       type: Number 
     },
-    message: { 
+    title: { 
+      type: String 
+    },
+    description: { 
       type: String 
     },
     _custom: {
       type: String
+    },
+    _hideButton: {
+      type: Boolean
     }
   }
 
@@ -50,6 +56,10 @@ export class CasperEditDialogStatusPage extends LitElement {
 
       :host([state="success"]) {
         --state-color-rgb: var(--status-green-rgb);
+      }
+
+      :host([state="connected"]) {
+        --state-color-rgb: var(--status-blue-rgb);
       }
 
       * {
@@ -104,7 +114,6 @@ export class CasperEditDialogStatusPage extends LitElement {
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: space-between;
         border-radius: var(--radius-primary, 8px);
         padding: 0.625rem;
         background: radial-gradient(#ffffff 80%, #f5f4f4);
@@ -112,12 +121,14 @@ export class CasperEditDialogStatusPage extends LitElement {
       }
 
       .status-page__icon-container {
+        --icon-top: calc(var(--icon-height) / 2.5 * -1);
+
         background-color: #FFF;
         border-radius: 50%;
         position: relative;
-        top: -2rem;
-        margin-bottom: -2rem;
-        box-shadow: 0px 2px 20px 3px rgba(var(--state-color-rgb), 0.6);
+        top: var(--icon-top);
+        margin-bottom: calc(var(--icon-top) + 1rem);
+        box-shadow: 0px 2px 20px 3px rgba(var(--state-color-rgb), 0.4);
       }
 
       .status-page__icon {
@@ -135,6 +146,7 @@ export class CasperEditDialogStatusPage extends LitElement {
         flex-direction: column;
         gap: 1rem;
         max-width: calc(100% - 3rem);
+        flex-grow: 1;
       }
 
       .status-page__text-container > * {
@@ -183,7 +195,10 @@ export class CasperEditDialogStatusPage extends LitElement {
     this.state    = undefined;
     this.progress = undefined;
     this.timeout  = 25;
-    this.message  = '';
+    this.title  = '';
+    this.description  = '';
+
+    this._hideButton = true;
   }
 
 
@@ -210,10 +225,11 @@ export class CasperEditDialogStatusPage extends LitElement {
             ${this._custom 
               ? unsafeHTML(this._custom) 
               : html`
-                <h1 class="status-page__title">${this.message}</h1>
+                <h1 class="status-page__title">${this.title}</h1>
+                ${this.description ? html`<p class="status-page__description">${this.description}</p>` : ''}
             `}
           </div>
-          <button class="status-page__button" @click=${this.editDialog.hideStatusAndProgress.bind(this.editDialog)}>Continuar</button>
+          <button class="status-page__button" ?hidden=${this._hideButton} @click=${this.editDialog.hideStatusAndProgress.bind(this.editDialog)}>Continuar</button>
         </div>
       </div>
     `;
@@ -235,29 +251,52 @@ export class CasperEditDialogStatusPage extends LitElement {
 
   clearCustom () {
     this._custom = undefined;
+    this._hideButton = true;
+  }
+
+  clearText () {
+    this.title  = '';
+    this.description  = '';
   }
 
   resetValues () {
     this.state    = undefined;
     this.progress = undefined;
-    this.message  = '';
+    this.clearText();
     this.clearCustom();
   }
 
+
   showStatus (notification, state = 'error') {
-    if (!notification) {
-      this.state = 'error';
-      this.message = 'Erro!';
+    this.state = state;
+    if (!notification) this.state = 'error';
+    this.clearText();
+
+    if (notification?.custom === true) {
+      this.setCustom(notification.message[0]);
       return;
     }
+      
+    this.clearCustom();
 
-    this.state = state;
+    if (notification?.message || notification?.response?.body?.message) {
+      this.description = this.editDialog.i18n.apply(this.editDialog, notification.message || [notification.response?.body?.message]);
+    }
+      
+    switch (this.state) {
+      case 'success':
+        this.title = 'Sucesso!';
+        if (!this.description) this.description = 'A ação foi concluída com sucesso.';
+        this._hideButton = false;
+        break;
+    
 
-    if (notification.custom === true) {
-      this.setCustom(notification.message[0]);
-    } else {
-      this.clearCustom();
-      this.message = this.editDialog.i18n.apply(this.editDialog, notification.message || [notification?.response?.body?.message]);
+      case 'error':
+      default:
+        this.title = 'Erro!';
+        if (!this.description) this.description = 'Por favor contacte o suporte técnico.';
+        this._hideButton = false;
+        break;
     }
   }
 
@@ -277,13 +316,15 @@ export class CasperEditDialogStatusPage extends LitElement {
    * Update the progress display
    *
    * @param {Number} index  not used here we only have one bar
-   * @param {String} message text to display
+   * @param {String} description smaller text to display
    * @param {Number} progress integer value between 0 and 100
+   * @param {String} title bigger text to display
    */
-  updateProgress (index = null, message, progress) {
-    this.state    = 'connected';
+  updateProgress (index = null, description = '', progress, title = 'Em progresso...' ) {
+    this.state = 'connected';
     this.progress = progress;
-    this.message  = message;
+    this.title = title;
+    this.description = description;
   }
 
   showResponse (response) {
@@ -293,7 +334,7 @@ export class CasperEditDialogStatusPage extends LitElement {
       this.setCustom(response.message[0]);
     } else {
       this.clearCustom();
-      this.message = response.message[0];
+      this.title = response.message[0];
     }
   }
 }
