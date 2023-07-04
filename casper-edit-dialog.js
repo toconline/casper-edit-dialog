@@ -76,7 +76,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       --ced-vertical-padding: 0.625rem;
       --ced-horizontal-padding: 1.25rem;
       --ced-background-color: #FFF;
-      --ced-disabled-color-rgb: 224, 224, 224;
+      --ced-disabled-light-color-rgb: 224, 224, 224;
+      --ced-disabled-dark-color-rgb: 175, 175, 175;
       --ced-border-radius: var(--radius-primary, 8px);
       --ced-labels-background-color: var(--primary-color);
       --ced-labels-max-width: 13.75rem;
@@ -141,7 +142,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
 
     .edit-dialog__labels-list[disabled] {
-      --ced-label-number-color-rgb: var(--ced-disabled-color-rgb);
+      --ced-label-number-color-rgb: var(--ced-disabled-light-color-rgb);
     }
 
     :host([mode="wizard"]) .edit-dialog__labels-list {
@@ -173,8 +174,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
 
     .edit-dialog__label[disabled] {
-      color: rgb(var(--ced-disabled-color-rgb));
-      --ced-label-number-color-rgb: var(--ced-disabled-color-rgb);
+      color: rgb(var(--ced-disabled-light-color-rgb));
+      --ced-label-number-color-rgb: var(--ced-disabled-light-color-rgb);
     }
 
     .edit-dialog__label-number {
@@ -493,8 +494,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     .edit-dialog__button[disabled] {
       color: #FFF;
-      background-color: rgb(var(--ced-disabled-color-rgb));
-      border: 2px solid rgb(var(--ced-disabled-color-rgb));
+      background-color: rgb(var(--ced-disabled-light-color-rgb));
+      border: 2px solid rgb(var(--ced-disabled-light-color-rgb));
     }
 
     #toastLit {

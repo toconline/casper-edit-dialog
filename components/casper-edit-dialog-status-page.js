@@ -26,14 +26,15 @@ export class CasperEditDialogStatusPage extends LitElement {
   static styles = [
     css`
       :host {
+        --icon-height: 5rem;
+
         display: flex;
         flex-direction: column;
         justify-content: center;
-        background-color: #efefef;
+        background-color: #f5f4f4;
         color: var(--primary-text-color);
-        padding: 3.75rem;
+        padding: 3.75rem 7rem;
 
-        --icon-height: 5rem;
       }
 
       * {
@@ -67,27 +68,48 @@ export class CasperEditDialogStatusPage extends LitElement {
         position: relative;
       }
 
-      .status-page__message {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        background-color: #FFF;
+      .status-page__frame::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        transform: translate(-50%, 50%);
+        width: 78%;
+        height: 1.2rem;
+        background: var(--status-red);
         border-radius: var(--radius-primary, 8px);
-        padding: 2.5rem;
-        overflow: auto;
-      }
-
-      .status-page__message > *:first-child {
-        margin-top: 1rem;
+        z-index: -1;
       }
 
       .status-page__icon-container {
         background-color: #FFF;
         border-radius: 50%;
-        position: absolute;
-        top: 0;
-        left: 50%;
-        transform: translate(-50%, -50%);
+        position: relative;
+        top: -2rem;
+        margin-bottom: -2rem;
+      }
+
+      .status-page__message {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        border-radius: var(--radius-primary, 8px);
+        padding: 0.625rem;
+        min-height: 500px;
+        box-shadow: 0 5px 21px 3px rgba(0, 0, 0, 0.19);
+        background: radial-gradient(#ffffff 80%, #f5f4f4);
+      }
+
+      .status-page__text-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .status-page__description {
+        color: darkgrey;
+        margin: 0;
       }
 
       .status-page__icon {
@@ -129,17 +151,24 @@ export class CasperEditDialogStatusPage extends LitElement {
     return html`
       <div class="status-page__frame">
         <div class="status-page__message">
-          ${this._custom ? unsafeHTML(this._custom) : html`<h1>${this.message}</h1>`}
-        </div>
-        <div class="status-page__icon-container">
-          <casper-timed-status
-            id="status"
-            class="status-page__icon"
-            state=${this.state}
-            progress=${this.progress}
-            ?no-reset
-            timeout=${this.timeout}>
-          </casper-timed-status>
+          <div class="status-page__icon-container">
+            <casper-timed-status
+              id="status"
+              class="status-page__icon"
+              state=${this.state}
+              progress=${this.progress}
+              ?no-reset
+              timeout=${this.timeout}>
+            </casper-timed-status>
+          </div>
+          ${this._custom 
+            ? unsafeHTML(this._custom) 
+            : html`
+              <div clas="status-page__text-container">
+                <h1 class="status-page__title">${this.message}</h1>
+              </div>
+            `}
+          <button class="edit-dialog__button" @click=${this.editDialog.hideStatusAndProgress.bind(this.editDialog)}>Continuar</button>
         </div>
       </div>
     `;
