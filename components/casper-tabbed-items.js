@@ -42,6 +42,7 @@ class CasperTabbedItems extends LitElement {
       border: none;
       cursor: pointer;
       background-color: transparent;
+      outline: none;
     }
 
     button[hidden] {
@@ -210,6 +211,66 @@ class CasperTabbedItems extends LitElement {
       position: relative;
     }
 
+    .content__placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      color: var(--primary-text-color);
+      border-bottom: 1px solid rgb(217, 217, 217);
+      text-align: center;
+    }
+
+    .content__placeholder-icon {
+      box-sizing: border-box;
+      font-size: 1rem;
+      width: 6em;
+      height: 6em;
+      padding: 1.375em;
+      border-radius: 50%;
+      background-color: #f5f4f4;
+      color: var(--primary-color);
+      margin-bottom: 1em;
+    }
+
+    .content__placeholder-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .content__placeholder-description {
+      font-size: 1rem;
+      margin: 0.5em 0 0 0;
+      color: var(--cti-grey);
+    }
+
+    .content__placeholder-button {
+      display: flex;
+      align-items: center;
+      font-size: 0.875rem;
+      margin-top: 2.28em;
+      gap: 0.357em;
+      padding: 0 0 0.25em 0;
+      border-bottom: solid 1px var(--primary-color);
+      color: var(--primary-color);
+      opacity: 0.9;
+      transform: none;
+      transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    }
+
+    .content__placeholder-button:hover {
+      opacity: 1;
+      transform: scale(1.01);
+    }
+
+    .content__placeholder-button casper-icon {
+      border-radius: 50%;
+      width: 1em;
+      height: 1em;
+    }
+
     .content__item {
       display: none;
       grid-row-gap: 0.625rem;
@@ -289,7 +350,7 @@ class CasperTabbedItems extends LitElement {
       <div class="content">
         ${(this.items.length > 0)
           ? this.items.map((item, index) => this._renderItem(item, index))
-          : ''
+          : this._renderPlaceholder()
         }
 
         ${this.showDeleteItemsAction 
@@ -552,6 +613,22 @@ class CasperTabbedItems extends LitElement {
   //***************************************************************************************//
   //                              ~~~ Private methods  ~~~                                 //
   //***************************************************************************************//
+
+  _renderPlaceholder () {
+    return html`
+      <div class="content__placeholder">
+        <casper-icon class="content__placeholder-icon" icon="fa-light/wind"></casper-icon>
+        <h3 class="content__placeholder-title">Não existe nada aqui!</h3>
+        ${this.showNewItemsAction ? html`
+          <p class="content__placeholder-description">Carregue no botão para começar a adicionar novos itens.</p>
+          <button class="content__placeholder-button" @click=${this._addNewItem} ?disabled=${!this.allowNewItems}>
+            <casper-icon icon="fa-regular/plus"></casper-icon>
+            Criar novo item
+          </button>
+        ` : ''}
+      </div>
+    `;
+  }
 
   _renderItem (item, index) {
     return html`
