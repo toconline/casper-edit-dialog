@@ -3,15 +3,12 @@ import {styleMap} from 'lit/directives/style-map.js';
 import {classMap} from 'lit/directives/class-map.js';
 import { CasperSocketPromise } from  '@cloudware-casper/casper-socket/casper-socket.js';
 import { Casper } from '@cloudware-casper/casper-common-ui/casper-i18n-behavior.js';
+import { mediaQueriesBreakpoints } from './components/casper-edit-dialog-constants.js';
+import { CasperEditDialogPage } from './components/casper-edit-dialog-page.js';
 import '@cloudware-casper/casper-icons/casper-icon.js';
 import '@cloudware-casper/casper-icons/casper-icon-button.js';
 import './components/casper-confirmation-dialog.js';
 import './components/casper-toast-lit.js';
-
-export const mediaQueriesBreakpoints = {
-  mobile: css`30rem`,
-  tablet: css`60rem`
-};
 
 export class CasperEditDialog extends Casper.I18n(LitElement) {
   static properties = {
@@ -976,7 +973,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   hasUnsavedChanges () {
     for (let i = 0; i < this._pagesContainerEl.children.length; i++) {
       const page = this._pagesContainerEl.children[i];
-      if (this._isCasperPaWizardPage(page)) continue;
+      if (!this._isCasperEditDialogPage(page)) continue;
       if (page.hasUnsavedChanges(this.data)) return true;
     }
 
@@ -1071,7 +1068,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     if (index > this._activeIndex) newPage.style.transform = 'translateY(100%)';
 
     await newPage.updateComplete;
-    if (this._isCasperPaWizardPage(newPage)) return newPage;
+    if (!this._isCasperEditDialogPage(newPage)) return newPage;
 
     if (this.options.urn) {
       newPage.load(this.data);
@@ -1096,8 +1093,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._contentWrapperEl.appendChild(this._statusProgressPageEl);
   }
 
-  _isCasperPaWizardPage (pageEl) {
-    return Object.getPrototypeOf(pageEl.constructor)?.name === 'CasperPaWizardPage';
+  _isCasperEditDialogPage (pageEl) {
+    return pageEl instanceof CasperEditDialogPage;
   }
 
   // All components which use casper-overlay need to have their overlays moved to the stacking context of the top-layer, otherwise they wouldn't be visible

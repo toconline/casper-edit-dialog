@@ -1,5 +1,5 @@
 import { LitElement, css } from 'lit';
-import { mediaQueriesBreakpoints } from '../casper-edit-dialog.js';
+import { mediaQueriesBreakpoints } from './casper-edit-dialog-constants.js';
 
 
 export class CasperEditDialogPage extends LitElement {
