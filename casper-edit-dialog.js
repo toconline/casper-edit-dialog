@@ -78,6 +78,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       --ced-border-radius: var(--radius-primary, 8px);
       --ced-labels-background-color: var(--primary-color);
       --ced-labels-max-width: 13.75rem;
+      --ced-labels-buttons-transition-duration: 0.5s;
 
       --ced-content-vertical-padding: calc(var(--ced-vertical-padding) * 3);
       --ced-content-horizontal-padding: calc(var(--ced-horizontal-padding) * 2);
@@ -114,7 +115,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       background-color: rgba(204, 204, 204, 65%);
     }
 
-    .edit-dialog__wrapper {
+    .edit-dialog__inner {
       display: grid;
       grid-template-areas:
         "labels header"
@@ -128,7 +129,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     .edit-dialog__labels-list {
       --ced-label-number-color-rgb: 255, 255, 255;
-      --ced-label-transition-duration: 0.5s;
 
       grid-area: labels;
       list-style-type: none;
@@ -139,9 +139,12 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       margin-right: calc(var(--ced-border-radius) * -1);
       box-shadow: rgba(0, 0, 0, 6%) calc(-15px - var(--ced-border-radius)) -7px 10px inset;
       color: rgb(var(--ced-label-number-color-rgb));
+      background-color: var(--ced-labels-background-color);
+      transition: all var(--ced-labels-buttons-transition-duration);
     }
 
     .edit-dialog__labels-list[disabled] {
+      --ced-labels-background-color: rgb(var(--ced-disabled-dark-color-rgb));
       --ced-label-number-color-rgb: var(--ced-disabled-light-color-rgb);
     }
 
@@ -158,7 +161,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       gap: 0.625em;
       cursor: pointer;
       opacity: 0.6;
-      transition: opacity var(--ced-label-transition-duration);
+      transition: opacity var(--ced-labels-buttons-transition-duration);
 
       --ced-label-bold: 500;
     }
@@ -191,7 +194,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       line-height: 0;
       background: transparent;
       border: solid 1px rgba(var(--ced-label-number-color-rgb), 56%);
-      transition: all var(--ced-label-transition-duration);
+      transition: all var(--ced-labels-buttons-transition-duration);
     }
 
     .edit-dialog__label[active] .edit-dialog__label-number {
@@ -218,7 +221,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       opacity: 0;
       width: 0;
       height: 0;
-      transition: opacity var(--ced-label-transition-duration), width var(--ced-label-transition-duration), height var(--ced-label-transition-duration);
+      transition: opacity var(--ced-labels-buttons-transition-duration), width var(--ced-labels-buttons-transition-duration), height var(--ced-labels-buttons-transition-duration);
     }
 
     .edit-dialog__label[invalid] .edit-dialog__label-number::after {
@@ -261,7 +264,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       border-radius: 0 0 0 0.2em;
       background-color: var(--ced-background-color);
       opacity: 0;
-      transition: opacity var(--ced-label-transition-duration);
+      transition: opacity var(--ced-labels-buttons-transition-duration);
     }
 
     .edit-dialog__label[active]::after {
@@ -269,7 +272,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
 
 
-    .edit-dialog__wrapper > *:not(.edit-dialog__labels-list) {
+    .edit-dialog__inner > *:not(.edit-dialog__labels-list) {
       background-color: var(--ced-background-color);
     }
 
@@ -464,7 +467,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       border-radius: 1.428em;
       outline: none;
       text-transform: uppercase;
-      transition: all 0.5s;
+      transition: all var(--ced-labels-buttons-transition-duration);
       font-family: inherit;
     }
 
@@ -558,7 +561,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     return html`
       <dialog id="editDialog" class="edit-dialog">
-        <div class="edit-dialog__wrapper">
+        <div class="edit-dialog__inner">
           <ol class="edit-dialog__labels-list" ?disabled=${this._disableLabels}>
             ${(this._pages.length > 0 && this.mode === 'dialog')
               ? this._pages.map((page, index) => html`
