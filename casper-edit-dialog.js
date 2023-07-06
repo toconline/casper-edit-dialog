@@ -103,23 +103,26 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       padding: 0;
       border-radius: var(--ced-border-radius);
       overflow: hidden;
-      grid-template-areas:
-        "labels header"
-        "labels page"
-        "labels footer";
-      grid-template-columns: fit-content(var(--ced-labels-max-width)) minmax(calc(100% - var(--ced-labels-max-width)), auto);
-      grid-template-rows: min-content 1fr min-content;
       transition: opacity 0.3s ease;
     }
 
     .edit-dialog[open] {
-      display: grid;
+      display: flex;
     }
 
     .edit-dialog::backdrop {
       background-color: rgba(204, 204, 204, 65%);
     }
 
+    .edit-dialog__wrapper {
+      display: grid;
+      grid-template-areas:
+        "labels header"
+        "labels page"
+        "labels footer";
+      grid-template-columns: fit-content(var(--ced-labels-max-width)) minmax(calc(100% - var(--ced-labels-max-width)), auto);
+      grid-template-rows: min-content 1fr min-content;
+    }
 
     /* LABELS */
 
@@ -266,7 +269,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
 
 
-    .edit-dialog > *:not(.edit-dialog__labels-list) {
+    .edit-dialog__wrapper > *:not(.edit-dialog__labels-list) {
       background-color: var(--ced-background-color);
     }
 
@@ -555,46 +558,48 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     return html`
       <dialog id="editDialog" class="edit-dialog">
-        <ol class="edit-dialog__labels-list" ?disabled=${this._disableLabels}>
-          ${(this._pages.length > 0 && this.mode === 'dialog')
-            ? this._pages.map((page, index) => html`
-              <li class="edit-dialog__label" ?active=${index === this._activeIndex} ?invalid=${this._invalidPagesIndexes.has(index)} .index=${index} @click=${this._labelClickHandler}>
-                <span class="edit-dialog__label-number">${index + 1}</span>
-                <span class="edit-dialog__label-text" text=${page.label}>${page.label}</span>
-              </li>
-            `)
-            : ''}
-        </ol>
+        <div class="edit-dialog__wrapper">
+          <ol class="edit-dialog__labels-list" ?disabled=${this._disableLabels}>
+            ${(this._pages.length > 0 && this.mode === 'dialog')
+              ? this._pages.map((page, index) => html`
+                <li class="edit-dialog__label" ?active=${index === this._activeIndex} ?invalid=${this._invalidPagesIndexes.has(index)} .index=${index} @click=${this._labelClickHandler}>
+                  <span class="edit-dialog__label-number">${index + 1}</span>
+                  <span class="edit-dialog__label-text" text=${page.label}>${page.label}</span>
+                </li>
+              `)
+              : ''}
+          </ol>
 
-        <div class="edit-dialog__header">
-          <casper-icon-button tooltip="Fechar" class="edit-dialog__close" icon="fa-light:times-circle" @click=${this.close.bind(this)}></casper-icon-button>
+          <div class="edit-dialog__header">
+            <casper-icon-button tooltip="Fechar" class="edit-dialog__close" icon="fa-light:times-circle" @click=${this.close.bind(this)}></casper-icon-button>
 
-          <hgroup class="edit-dialog__header-text">
-            ${(this._pages.length > 0 && this._pages[this._activeIndex].title)
-              ? html`<h2 class="edit-dialog__page-title">${this._pages[this._activeIndex].title}</h2>`
-              : ''
-            }
-            ${(this._title)
-              ? html`<h1 class="edit-dialog__general-title">${this._title}</h1>`
-              : ''
-            }
-          </hgroup>
-        </div>
+            <hgroup class="edit-dialog__header-text">
+              ${(this._pages.length > 0 && this._pages[this._activeIndex].title)
+                ? html`<h2 class="edit-dialog__page-title">${this._pages[this._activeIndex].title}</h2>`
+                : ''
+              }
+              ${(this._title)
+                ? html`<h1 class="edit-dialog__general-title">${this._title}</h1>`
+                : ''
+              }
+            </hgroup>
+          </div>
 
-        <div class="edit-dialog__content-wrapper">
-          <div class="edit-dialog__pages-container" style=${this._pagesContainerStyles !== undefined ? styleMap(this._pagesContainerStyles) : ''}></div>
-          <casper-toast-lit id="toastLit"></casper-toast-lit>
-        </div>
+          <div class="edit-dialog__content-wrapper">
+            <div class="edit-dialog__pages-container" style=${this._pagesContainerStyles !== undefined ? styleMap(this._pagesContainerStyles) : ''}></div>
+            <casper-toast-lit id="toastLit"></casper-toast-lit>
+          </div>
 
-        <div class="edit-dialog__footer">
-          <button class="edit-dialog__button secondary previous ${classMap(previousClasses)}" ?disabled=${this._disablePrevious} ?hidden=${this._hidePrevious}>
-            ${this._previousIcon ? html`<casper-icon icon=${this._previousIcon}></casper-icon>` : ''}
-            ${this._previousText ? html`<span>${this._previousText}</span>` : ''}
-          </button>
-          <button class="edit-dialog__button next ${classMap(nextClasses)}" ?disabled=${this._disableNext} ?hidden=${this._hideNext}>
-            ${this._nextIcon ? html`<casper-icon icon=${this._nextIcon}></casper-icon>` : ''}
-            ${this._nextText ? html`<span>${this._nextText}</span>` : ''}
-          </button>
+          <div class="edit-dialog__footer">
+            <button class="edit-dialog__button secondary previous ${classMap(previousClasses)}" ?disabled=${this._disablePrevious} ?hidden=${this._hidePrevious}>
+              ${this._previousIcon ? html`<casper-icon icon=${this._previousIcon}></casper-icon>` : ''}
+              ${this._previousText ? html`<span>${this._previousText}</span>` : ''}
+            </button>
+            <button class="edit-dialog__button next ${classMap(nextClasses)}" ?disabled=${this._disableNext} ?hidden=${this._hideNext}>
+              ${this._nextIcon ? html`<casper-icon icon=${this._nextIcon}></casper-icon>` : ''}
+              ${this._nextText ? html`<span>${this._nextText}</span>` : ''}
+            </button>
+          </div>
         </div>
       </dialog>
 
