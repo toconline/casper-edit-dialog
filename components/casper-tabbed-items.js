@@ -437,6 +437,10 @@ class CasperTabbedItems extends LitElement {
     console.warn('A addNewItem method must be defined for the component.');
   }
 
+  addFirstItem () {
+    this._addNewItem();
+  }
+
   shouldAllowDelete () {
     return true;
   }
