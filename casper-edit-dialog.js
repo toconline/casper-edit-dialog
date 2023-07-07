@@ -740,13 +740,22 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     if (!this._statusProgressPageEl) return;
 
     this._statusProgressPageEl.style.opacity = 0;
+    this.enableAllActions();
 
     setTimeout(() => {
       this._statusProgressPageEl.hidden = true;
       this._statusProgressPageEl.resetValues();
       this._state = 'normal';
-      this.enableAllActions();
     }, 300);
+  }
+
+  async hideStatusAndProgressWithTimeout (value) {
+    await this._statusProgressPageEl.updateComplete;
+    this._statusProgressPageEl.selfClose();
+
+    setTimeout(() => {
+      this.hideStatusAndProgress();
+    }, value);
   }
 
   showFatalError (notification) {
@@ -874,6 +883,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     if (this._runJobInBackground) {
       this.submitJobWithStrictValidity(job, timeout, ttr, true);
     } else {
+      this.disableAllActions();
       if (!this._statusProgressPageEl) await this._createStatusProgressPage();
       this.submitJobWithStrictValidity(job, timeout, ttr, true);
       this._statusProgressPageEl.timeout = timeout;
@@ -1343,9 +1353,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
           this._clearJob();
         }
-        setTimeout(() => {
-          this.hideStatusAndProgress();
-        }, 5000);
+
+        this.hideStatusAndProgressWithTimeout(5000);
 
         if (this._runJobInBackground) this._runJobInBackground = false;
         break;

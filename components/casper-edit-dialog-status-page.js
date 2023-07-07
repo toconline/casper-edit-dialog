@@ -27,6 +27,11 @@ export class CasperEditDialogStatusPage extends LitElement {
     },
     _hideButton: {
       type: Boolean
+    },
+    _selfClose: {
+      type: String,
+      reflect: true,
+      attribute: 'self-close'
     }
   }
 
@@ -58,6 +63,7 @@ export class CasperEditDialogStatusPage extends LitElement {
         --state-color-rgb: var(--status-green-rgb);
       }
 
+      :host([state="connecting"]),
       :host([state="connected"]) {
         --state-color-rgb: var(--status-blue-rgb);
       }
@@ -171,12 +177,41 @@ export class CasperEditDialogStatusPage extends LitElement {
         align-self: stretch;
         margin-top: 2rem;
         transition: all 0.5s;
+        position: relative;
       }
 
       .status-page__button:hover {
         cursor: pointer;
         color: var(--primary-color);
         border-color: var(--primary-color);
+      }
+
+      .status-page__button::before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 100%;
+        width: 0;
+        border-top-left-radius: calc(var(--radius-primary, 8px) - 3px);
+        border-bottom-left-radius: calc(var(--radius-primary, 8px) - 3px);
+        background: transparent;
+        border: solid 1px rgb(var(--state-color-rgb));
+        border-right-color: rgba(var(--state-color-rgb), 0);
+        box-sizing: border-box;
+      }
+
+      :host([self-close]) .status-page__button::before {
+        width: 100%;
+        border-right-color: rgba(var(--state-color-rgb), 1);
+        border-top-right-radius: calc(var(--radius-primary, 8px) - 3px);
+        border-bottom-right-radius: calc(var(--radius-primary, 8px) - 3px);
+        transition: width 5s, border-right-color 0.15s linear 4.85s, border-radius 1s linear 4s;
+      }
+
+      .status-page__button-text {
+        /* Needed to fix the stacking context */
+        position: relative;
       }
 
       /* .bordered {
@@ -229,7 +264,7 @@ export class CasperEditDialogStatusPage extends LitElement {
                 ${this.description ? html`<p class="status-page__description">${this.description}</p>` : ''}
             `}
           </div>
-          <button class="status-page__button" ?hidden=${this._hideButton} @click=${this.editDialog.hideStatusAndProgress.bind(this.editDialog)}>Continuar</button>
+          <button class="status-page__button" ?hidden=${this._hideButton} @click=${this.editDialog.hideStatusAndProgress.bind(this.editDialog)}><span class="status-page__button-text">Continuar</span></button>
         </div>
       </div>
     `;
@@ -264,6 +299,10 @@ export class CasperEditDialogStatusPage extends LitElement {
     this.progress = undefined;
     this.clearText();
     this.clearCustom();
+  }
+
+  selfClose (value) {
+    this._selfClose = true;
   }
 
 
