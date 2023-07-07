@@ -314,7 +314,7 @@ class CasperTabbedItems extends LitElement {
     this.showDeleteItemsAction = true;
     this._activeIndex = 0;
     this._tabsWrapperClasses = { 'shadow-left': false, 'shadow-right': false };
-    this._relType = '';
+    this.type = '';
   }
 
   connectedCallback() {
@@ -463,26 +463,26 @@ class CasperTabbedItems extends LitElement {
     let saveData = {post:{},patch:{},delete:{}};
 
     ['patch', 'post', 'delete'].forEach((request) => {
-      if (!saveData[request][this._relType]) {
-        saveData[request][this._relType] = {
+      if (!saveData[request][this.type]) {
+        saveData[request][this.type] = {
           payloads: [{
-            relationship: this._relType,
+            relationship: this.type,
             urn: null
           }]
         }
       }
 
       if (request != 'delete') {
-        saveData[request][this._relType]['payloads'][0]['payload'] = {
+        saveData[request][this.type]['payloads'][0]['payload'] = {
           data: {
-            type: this._relType,
+            type: this.type,
             attributes: {}
           }
         }
       }
 
       if (request == 'patch') {
-        saveData[request][this._relType]['payloads'][0]['payload']['data']['id'] = null;
+        saveData[request][this.type]['payloads'][0]['payload']['data']['id'] = null;
       }
     });
 
@@ -535,79 +535,79 @@ class CasperTabbedItems extends LitElement {
           }
 
           if (Object.entries(attributesPatch)) {
-            if (!saveData.patch[this._relType].payloads[index]) {
-              saveData.patch[this._relType].payloads[index] = {
-                urn: `${this._relType}/${this.relationships.data[index].id}`,
+            if (!saveData.patch[this.type].payloads[index]) {
+              saveData.patch[this.type].payloads[index] = {
+                urn: `${this.type}/${this.relationships.data[index].id}`,
                 payload: {
                   data: {
-                    type: this._relType,
+                    type: this.type,
                     id: this.relationships.data[index].id,
                     attributes: attributesPatch
                   }
                 }
               }
             } else {
-              saveData.patch[this._relType].payloads[index].urn = `${this._relType}/${this.relationships.data[index].id}`;
-              saveData.patch[this._relType].payloads[index].payload.data.id = this.relationships.data[index].id;
-              saveData.patch[this._relType].payloads[index].payload.data.attributes = attributesPatch;
+              saveData.patch[this.type].payloads[index].urn = `${this.type}/${this.relationships.data[index].id}`;
+              saveData.patch[this.type].payloads[index].payload.data.id = this.relationships.data[index].id;
+              saveData.patch[this.type].payloads[index].payload.data.attributes = attributesPatch;
             }
           }
         } else {
           // data missing, must've been deleted
-          saveData.delete[this._relType].payloads[index] = { urn: `${this._relType}/${this.relationships.data[index].id}` };
+          saveData.delete[this.type].payloads[index] = { urn: `${this.type}/${this.relationships.data[index].id}` };
         }
       });
 
-      const newTabs = this._contentEl.querySelectorAll('.content__item[item-id=""]');
+    }
+    const newTabs = this._contentEl.querySelectorAll('.content__item[item-id=""]');
 
-      if (newTabs && newTabs.length) {
-        newTabs.forEach((newItem, index) => {
-          const attributesPost = {};
-          attributesPost[foreignKey.type] = foreignKey.typeValue;
-          attributesPost[foreignKey.idField] = foreignKey.id;
+    if (newTabs && newTabs.length) {
+      newTabs.forEach((newItem, index) => {
+        const attributesPost = {};
+        attributesPost[foreignKey.type] = foreignKey.typeValue;
+        attributesPost[foreignKey.idField] = foreignKey.id;
 
-          for (const elem of newItem.querySelectorAll('[binding]')) {
-            const binding = elem.getAttribute('binding');
+        for (const elem of newItem.querySelectorAll('[binding]')) {
+          const binding = elem.getAttribute('binding');
 
-            switch (elem.tagName.toLowerCase()) {
-              case 'casper-select':
-                if (elem.value) {
-                  if (elem.multiSelection) {
-                    const values = elem.value.split(',');
-                    attributesPost[binding] = values;
-                  } else {
-                    attributesPost[binding] = elem.value;
-                  }
-                }
-                break;
-              case 'paper-checkbox':
-                attributesPost[binding] = elem.checked;
-                break;
-              case 'paper-input':
-              default:
-                attributesPost[binding] = elem.value;
-                break;
-            }
-          }
-
-          if (Object.entries(attributesPost)) {
-            if (!saveData.post[this._relType].payloads[index]) {
-              saveData.post[this._relType].payloads[index] = {
-                urn: this._relType,
-                payload: {
-                  data: {
-                    type: this._relType,
-                    attributes: attributesPost
-                  }
+          switch (elem.tagName.toLowerCase()) {
+            case 'casper-select':
+              if (elem.value) {
+                if (elem.multiSelection) {
+                  const values = elem.value.split(',');
+                  attributesPost[binding] = values;
+                } else {
+                  attributesPost[binding] = elem.value;
                 }
               }
-            } else {
-              saveData.post[this._relType].payloads[index].urn = this._relType;
-              saveData.post[this._relType].payloads[index].payload.data.attributes = attributesPost;
-            }
+              break;
+            case 'paper-checkbox':
+              attributesPost[binding] = elem.checked;
+              break;
+            case 'paper-input':
+            default:
+              attributesPost[binding] = elem.value;
+              break;
           }
-        });
-      }
+        }
+
+        if (Object.entries(attributesPost)) {
+          if (!saveData.post[this.type].payloads[index]) {
+            saveData.post[this.type].payloads[index] = {
+              urn: this.type,
+              payload: {
+                data: {
+                  type: this.type,
+                  attributes: attributesPost
+                }
+              }
+            }
+          } else {
+            saveData.post[this.type].payloads[index].urn = this.type;
+            saveData.post[this.type].payloads[index].payload.data.attributes = attributesPost;
+          }
+        }
+      });
     }
 
     return saveData;
@@ -666,11 +666,11 @@ class CasperTabbedItems extends LitElement {
       }      
 
       let items = [];
-      this._relType = this.relationships?.data?.[0]?.type;
+      this.type = this.relationships?.data?.[0]?.type;
       const idString = String(this.relationships.data.map(item => item.id));
 
-      if (idString && this._relType) {
-        const response = await app.broker.get(`${this._relType}?filter="id IN (${idString})"`, 10000);
+      if (idString && this.type) {
+        const response = await app.broker.get(`${this.type}?filter="id IN (${idString})"`, 10000);
         this.relationships.elements = response.data;
         items = response.data.map((element,index) => {
           return {

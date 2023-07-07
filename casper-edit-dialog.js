@@ -1404,7 +1404,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     try {
       for (const [operation, types] of Object.entries(saveData)) {
         for (const [type, data] of Object.entries(types)) {
-          for (const entry of data.payloads) {
+          for (const entry of (data?.payloads|| [])) {
             try {
               if (operation !== 'delete') {
                 if (entry.urn && Object.keys(entry.payload.data.attributes).length) {
