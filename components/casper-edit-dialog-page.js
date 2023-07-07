@@ -134,12 +134,14 @@ export class CasperEditDialogPage extends LitElement {
       const nodeName = element.nodeName.toLowerCase();
 
       switch (nodeName) {
-        default:
+        case 'paper-input':
           if (element.value.toString().trim() === '') {
             element.invalid = true;
             element.errorMessage = 'Campo obrigatório.';
             isValid = false;
           }
+          break;
+        default:
           break;
       }
     }
