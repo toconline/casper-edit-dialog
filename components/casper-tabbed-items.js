@@ -642,10 +642,12 @@ class CasperTabbedItems extends LitElement {
     `;
   }
 
-  _addNewItem () {
+  async _addNewItem () {
     this.items = [...this.items, this.addNewItem()];
     this.activateItem(this.items.length-1);
     this.requestUpdate();
+    await this.updateComplete;
+    this._setDefaultData(this.items[this.items.length-1]);
   }
 
   _deleteItem () {
@@ -686,7 +688,7 @@ class CasperTabbedItems extends LitElement {
     this._setTabbedItems(tabs);
   }
 
-  _setTabbedItems (data) {
+  async _setTabbedItems (data) {
     const items = data.map((item, index) => {
       const newTab = {
         id: item.id || null,
@@ -698,6 +700,35 @@ class CasperTabbedItems extends LitElement {
     });
 
     this.items = [...this.items, ...items];
+
+    await this.updateComplete;
+    
+    this._setBindingData(data);
+  }
+
+  _setBindingData (data) {
+    data.forEach(page => {
+      for (const elem of this.shadowRoot.querySelector(`[item-id="${page.id}"]`)?.querySelectorAll('[binding]')) {
+        const binding = elem.getAttribute('binding');
+        if (page?.values[binding]) {
+          this._setValue(elem, page.values[binding]);
+        } else if (page?.values?.relationships?.[binding]?.data?.id) {
+          this._setValue(elem, page?.values?.relationships?.[binding]?.data?.id);
+        }
+      }
+    });
+  }
+
+  _setDefaultData (page) {
+    const pages = this.shadowRoot.querySelectorAll('[item-id]');
+    for (const elem of pages[pages.length-1]?.querySelectorAll('[binding]')) {
+      const binding = elem.getAttribute('binding');
+      if (page?.values[binding]) {
+        this._setValue(elem, page.values[binding]);
+      } else if (page?.values?.relationships?.[binding]?.data?.id) {
+        this._setValue(elem, page?.values?.relationships?.[binding]?.data?.id);
+      }
+    }
   }
 
   /**
@@ -749,6 +780,21 @@ class CasperTabbedItems extends LitElement {
         this.requestUpdate();
       }
     });
+  }
+
+  _setValue (elem, value) {
+    switch (elem.tagName.toLowerCase()) {
+      case 'paper-checkbox':
+        elem.checked = value;
+        break;
+      case 'casper-select-lit':
+        elem.initialId = value;
+        break;
+      case 'paper-input':
+      default:
+        elem.value = value;
+        break;
+    }
   }
 }
 
