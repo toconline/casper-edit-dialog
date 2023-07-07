@@ -1343,7 +1343,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
             if (notification.custom === true) {
               if (!this._runJobInBackground) this.showCustomNotification(notification);
             } else {
-              this.showStatusPage(notification, 'success');
+              if (!this._runJobInBackground) this.showStatusPage(notification, 'success');
               if (this.mode === 'wizard') {
                 if (this._activeIndex === this._pagesContainerEl.children.length - 1) {
                   this.close();
@@ -1357,9 +1357,12 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           this._clearJob();
         }
 
-        this.hideStatusAndProgressWithTimeout(5000);
+        if (this._runJobInBackground) {
+          this._runJobInBackground = false;
+        } else {
+          this.hideStatusAndProgressWithTimeout(5000);
+        }
 
-        if (this._runJobInBackground) this._runJobInBackground = false;
         break;
       case 'failed':
       case 'error':
