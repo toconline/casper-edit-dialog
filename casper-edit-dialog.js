@@ -1089,9 +1089,9 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     if (!this._isCasperEditDialogPage(newPage)) return newPage;
 
     if (this.options.urn) {
-      newPage.load(this.data);
+      await newPage.load(this.data);
     } else {
-      newPage.load();
+      await newPage.load();
     }
 
     return newPage;
