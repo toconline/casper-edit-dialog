@@ -118,6 +118,48 @@ export class CasperEditDialogPage extends LitElement {
     return true;
   }
 
+  // validates all fields which have the "required" attribute
+  validateRequiredFields () {
+    if (!this._requiredFields) {
+      this._requiredFields = this.shadowRoot.querySelectorAll('[required]');
+
+      for (const element of this._requiredFields) {
+        element.addEventListener('keydown', (event) => this.clearFieldErrorMessage(event?.currentTarget));
+      }
+    }
+
+    let isValid = true;
+
+    for (const element of this._requiredFields) {
+      const nodeName = element.nodeName.toLowerCase();
+
+      switch (nodeName) {
+        default:
+          if (element.value.toString().trim() === '') {
+            element.invalid = true;
+            element.errorMessage = 'Campo obrigatório.';
+            isValid = false;
+          }
+          break;
+      }
+    }
+
+    return isValid;
+  }
+
+  clearFieldErrorMessage (element) {
+    if (element?.invalid) {
+      element.invalid = false;
+      element.errorMessage = ''; 
+    }
+  }
+
+  handleFieldsErrorMessageClear (elementsArr) {
+    for (const element of elementsArr) {
+      element.addEventListener('keydown', (event) => this.clearFieldErrorMessage(event?.currentTarget));
+    }
+  }
+
   async load (data) {
     this.__isNew = !data;
     await this.beforeLoad(data);
