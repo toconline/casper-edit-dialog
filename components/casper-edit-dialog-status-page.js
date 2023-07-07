@@ -47,6 +47,7 @@ export class CasperEditDialogStatusPage extends LitElement {
 
         --icon-height: 5rem;
         --state-color-rgb: var(--status-blue-rgb);
+        --self-close-transition-duration: 4s;
 
         display: flex;
         justify-content: center;
@@ -206,7 +207,7 @@ export class CasperEditDialogStatusPage extends LitElement {
         border-right-color: rgba(var(--state-color-rgb), 1);
         border-top-right-radius: calc(var(--radius-primary, 8px) - 3px);
         border-bottom-right-radius: calc(var(--radius-primary, 8px) - 3px);
-        transition: width 5s, border-right-color 0.15s linear 4.85s, border-radius 1s linear 4s;
+        transition: width var(--self-close-transition-duration), border-right-color 0.15s linear calc(var(--self-close-transition-duration) - 0.15s), border-radius 1s linear calc(var(--self-close-transition-duration) - 1s);
       }
 
       .status-page__button-text {
@@ -302,6 +303,7 @@ export class CasperEditDialogStatusPage extends LitElement {
   }
 
   selfClose (value) {
+    this.style.setProperty('--self-close-transition-duration', `${value}s`);
     this._selfClose = true;
   }
 

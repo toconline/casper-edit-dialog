@@ -751,7 +751,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
   async hideStatusAndProgressWithTimeout (value) {
     await this._statusProgressPageEl.updateComplete;
-    this._statusProgressPageEl.selfClose();
+    this._statusProgressPageEl.selfClose(value / 1000);
 
     setTimeout(() => {
       this.hideStatusAndProgress();
