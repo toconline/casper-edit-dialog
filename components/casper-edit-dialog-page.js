@@ -120,21 +120,28 @@ export class CasperEditDialogPage extends LitElement {
 
   // validates all fields which have the "required" attribute
   validateRequiredFields () {
-    if (!this._requiredFields) {
-      this._requiredFields = this.shadowRoot.querySelectorAll('[required]');
-
-      for (const element of this._requiredFields) {
-        element.addEventListener('keydown', (event) => this.clearFieldErrorMessage(event?.currentTarget));
-      }
-    }
-
     let isValid = true;
+    const requiredFields = this.shadowRoot.querySelectorAll('[required]');
 
-    for (const element of this._requiredFields) {
+    for (const element of requiredFields) {
+      if (!element.hasAttribute('has-keydown-listener')) {
+        element.addEventListener('keydown', (event) => this.clearFieldErrorMessage(event?.currentTarget));
+        element.setAttribute('has-keydown-listener', '');
+      }
+
       const nodeName = element.nodeName.toLowerCase();
       const message = 'Campo obrigatório.';
 
       switch (nodeName) {
+        case 'casper-date-picker':
+          if (!element.value) {
+            element.invalid = true;
+            element.requiredErrorMessage = message;
+            element.__errorMessage = message;
+            isValid = false;
+          }
+          break;
+
         case 'casper-select-lit':
           if (element.value === undefined) {
             element.searchInput.invalid = true;

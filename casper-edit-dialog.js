@@ -983,7 +983,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     if (this._invalidPagesIndexes.size > 0) {
       valid = false;
-      this.activatePage(this._invalidPagesIndexes.values().next().value);
+      if (!this._invalidPagesIndexes.has(this._activeIndex)) this.activatePage(this._invalidPagesIndexes.values().next().value);
       this.openToast ('Não foi possível gravar as alterações. Por favor verifique se preencheu os campos corretamente.', 'error');
     }
 
