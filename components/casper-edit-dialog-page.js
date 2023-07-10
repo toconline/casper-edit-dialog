@@ -132,15 +132,34 @@ export class CasperEditDialogPage extends LitElement {
 
     for (const element of this._requiredFields) {
       const nodeName = element.nodeName.toLowerCase();
+      const message = 'Campo obrigatório.';
 
       switch (nodeName) {
-        case 'paper-input':
-          if (element.value.toString().trim() === '') {
-            element.invalid = true;
-            element.errorMessage = 'Campo obrigatório.';
+        case 'casper-select-lit':
+          if (element.value === undefined) {
+            element.searchInput.invalid = true;
+            element.error = message;
             isValid = false;
           }
           break;
+
+        case 'casper-select':
+          if (element.value === undefined) {
+            const input = element.searchInput;
+            input.invalid = true;
+            input.errorMessage = message;
+            isValid = false;
+          }
+          break;
+      
+        case 'paper-input':
+          if (element.value?.toString()?.trim() === '') {
+            element.invalid = true;
+            element.errorMessage = message;
+            isValid = false;
+          }
+          break;
+
         default:
           break;
       }
@@ -150,9 +169,19 @@ export class CasperEditDialogPage extends LitElement {
   }
 
   clearFieldErrorMessage (element) {
-    if (element?.invalid) {
-      element.invalid = false;
-      element.errorMessage = ''; 
+    if (!element) return;
+    const nodeName = element.nodeName.toLowerCase();
+
+    switch (nodeName) {
+      case 'paper-input':
+        if (element.invalid) {
+          element.invalid = false;
+          element.errorMessage = ''; 
+        }
+        break;
+
+      default:
+        break;
     }
   }
 
