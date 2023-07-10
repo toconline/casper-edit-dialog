@@ -202,7 +202,7 @@ export class CasperEditDialogPage extends LitElement {
     this.__isNew = !data;
     await this.beforeLoad(data);
 
-    if (!this.__type) this.__type = this.getRootNode().host.options.root_dialog;
+    if (!this.__type) this.__type = this.getRootNode().host.options.urn.split('/')[0];
     if (this.__isNew) return;
 
     for (const elem of this.shadowRoot.querySelectorAll('[binding]')) {

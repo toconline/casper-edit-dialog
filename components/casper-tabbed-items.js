@@ -607,6 +607,10 @@ class CasperTabbedItems extends LitElement {
             saveData.post[this.type].payloads[index].payload.data.attributes = attributesPost;
           }
         }
+
+        if (foreignKey.id === 'delay') {
+          saveData.post[this.type].payloads[index].delayField = foreignKey.idField;
+        }
       });
     }
 

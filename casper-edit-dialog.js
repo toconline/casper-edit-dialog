@@ -27,9 +27,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     _type: {
       type: String
     },
-    _rootDialog: {
-      type: String
-    },
     _pages: {
       type: Array
     },
@@ -527,7 +524,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._title = '';
     this._type = '';
     this._pages = [];
-    this._rootDialog = '';
     this._activeIndex = 0;
     this._invalidPagesIndexes = new Set();
 
@@ -655,7 +651,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
   async open () {
     if (this.options.title) this._title = this.options.title;
-    if (this.options.root_dialog) this._rootDialog = this.options.root_dialog;
     if (this.options.mode) this.mode = this.options.mode;
     if (this.options.type) this._type = this.options.type;
 
@@ -1047,6 +1042,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
   }
 
+  getDialogAction () {
+    return this.options.urn.split('/').length > 1 ? 'edit' : 'create';
+  }
+
 
 
   //***************************************************************************************//
@@ -1060,7 +1059,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     // For backwards compatibility
     newPage.wizard = this;
 
-    if (!this.data && this.options.urn) {
+    if (!this.data && this.getDialogAction() === 'edit') {
       try {
         const response = await window.app.broker.get(this.options.urn, 10000);
         this.data  = response.data;
@@ -1091,7 +1090,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     await newPage.updateComplete;
     if (!this._isCasperEditDialogPage(newPage)) return newPage;
 
-    if (this.options.urn) {
+    if (this.getDialogAction() === 'edit') {
       await newPage.load(this.data);
     } else {
       await newPage.load();
@@ -1409,6 +1408,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         for (const [type, data] of Object.entries(types)) {
           for (const entry of (data?.payloads|| [])) {
             try {
+              if (entry.delayField) continue;
+
               if (operation !== 'delete') {
                 if (entry.urn && Object.keys(entry.payload.data.attributes).length) {
                   const response = await window.app.broker[operation](entry.urn, entry.payload, 10000);
@@ -1432,6 +1433,40 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           }
         }
       }
+
+      if (this.getDialogAction() === 'create') {
+        // Proccess delayed requests
+        const rootObjectId = saveData.post[this.options.urn]['response'].id;
+        const createdRootObject = await window.app.broker.get(`${this.options.urn}/${rootObjectId}`, 10000);
+        for (const [operation, types] of Object.entries(saveData)) {
+          for (const [type, data] of Object.entries(types)) {
+            for (const entry of (data?.payloads|| [])) {
+              try {
+                if (!entry.delayField) continue;
+
+                if (entry.urn && Object.keys(entry.payload.data.attributes).length) {
+                  entry.payload.data.attributes[entry.delayField] = rootObjectId;
+                  if (entry.payload.data.id) {
+                    entry.payload.data.id = createdRootObject.data.relationships[entry.payload.data.id].data.id
+                  }
+                  
+                  const response = await window.app.broker[operation](entry.urn, entry.payload, 10000);
+
+                  if (response) {
+                    saveData[operation][type]['response'] = response;
+                  }
+                }
+              } catch (error) {
+                console.log(error);
+                this._toastLitEl.open({'text': error?.errors?.[0]?.detail ? error.errors[0].detail : 'Erro! Não foi possível gravar as alterações.', 'duration': 3000, 'backgroundColor': 'var(--status-red)'});
+                return;
+              }
+            }
+          }
+        }  
+      }
+
+      
 
       this._toastLitEl.open({'text': 'As alterações foram gravadas com sucesso.', 'duration': 3000, 'backgroundColor': 'var(--status-green)'});
       this._updatePageData(saveData);
