@@ -69,7 +69,7 @@ class CasperTabbedItems extends LitElement {
     }
 
     .header {
-      --header-padding-bottom: 0.5rem;
+      --header-vertical-padding: 0.5rem;
       --header-background-color: #FFF;
 
       display: flex;
@@ -100,7 +100,7 @@ class CasperTabbedItems extends LitElement {
       -ms-overflow-style: none;  /* Hides scrollbar for IE and Edge */
       scrollbar-width: none;  /* Hides scrollbar for Firefox */
       display: flex;
-      padding-bottom: var(--header-padding-bottom);
+      padding: var(--header-vertical-padding) 0;
       /* Trick to fix bug where 1px of a not yet scrolled into view item would be visible */
       clip-path: inset(0px 1px 0px 1px);
     }
@@ -119,7 +119,8 @@ class CasperTabbedItems extends LitElement {
       position: sticky;
       width: var(--width);
       margin-left: calc(var(--width) * -1);
-      margin-bottom: calc(var(--header-padding-bottom) * -1);
+      margin-bottom: calc(var(--header-vertical-padding) * -1);
+      margin-top: calc(var(--header-vertical-padding) * -1);
       pointer-events: none;
       flex-shrink: 0;
       /* Necessary to stay above the tabs */
@@ -165,7 +166,7 @@ class CasperTabbedItems extends LitElement {
       content: '';
       position: absolute;
       left: 50%;
-      bottom: calc(var(--header-padding-bottom) * -1);
+      bottom: calc(var(--header-vertical-padding) * -1);
       width: 0;
       height: 2.5px;
       transform: translate(-50%, 0%);
@@ -185,6 +186,37 @@ class CasperTabbedItems extends LitElement {
       width: 100%;
     }
 
+    .header__tab::before {
+      content: "!";
+      position: absolute;
+      top: 0;
+      right: 0;
+      font-size: 0.75rem;
+      box-sizing: border-box;
+      transform: translate(-1px, calc(var(--header-vertical-padding) * -1));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      border: solid 1px #FFF;
+      color: #FFF;
+      background-color: var(--status-red);
+      opacity: 0;
+      width: 0;
+      height: 0;
+      transition: opacity var(--ced-labels-buttons-transition-duration), width var(--ced-labels-buttons-transition-duration), height var(--ced-labels-buttons-transition-duration);
+    }
+
+    .header__tab[invalid]::before {
+      height: 1.4em;
+      width: 1.4em;
+      opacity: 0.6;
+    }
+
+    .header__tab[active][invalid]::before {
+      opacity: 1;
+    }
+
     .header__tab-text {
       display: block;
       white-space: nowrap;
@@ -198,7 +230,7 @@ class CasperTabbedItems extends LitElement {
       color: var(--primary-color);
       border-radius: 50%;
       transition: background-color 0.5s ease;
-      margin-bottom: var(--header-padding-bottom);
+      margin: var(--header-vertical-padding) 0;
     }
 
     .header__add:hover {
