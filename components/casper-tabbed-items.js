@@ -465,9 +465,8 @@ class CasperTabbedItems extends LitElement {
     }
   }
 
-
   validate () {
-    let valid = true;
+    let isValid = true;
     const contentItems = this._contentEl.querySelectorAll('.content__item');
 
     for (const item of contentItems) {
@@ -484,12 +483,85 @@ class CasperTabbedItems extends LitElement {
     }
 
     if (this._invalidTabsIndexes.size > 0) {
-      valid = false;
+      isValid = false;
       if (!this._invalidTabsIndexes.has(this._activeIndex)) this.activateItem(this._invalidTabsIndexes.values().next().value);
     }
 
     this.requestUpdate();
-    return valid;
+    return isValid;
+  }
+
+  validateRequiredFields (item) {
+    let isItemValid = true;
+    const requiredFields = item.querySelectorAll('[required]');
+
+    for (const element of requiredFields) {
+      if (!element.hasAttribute('has-keydown-listener')) {
+        element.addEventListener('keydown', (event) => this.clearFieldErrorMessage(event?.currentTarget));
+        element.setAttribute('has-keydown-listener', '');
+      }
+
+      const nodeName = element.nodeName.toLowerCase();
+      const message = 'Campo obrigatório.';
+
+      switch (nodeName) {
+        case 'casper-date-picker':
+          if (!element.value) {
+            element.invalid = true;
+            element.requiredErrorMessage = message;
+            element.__errorMessage = message;
+            isItemValid = false;
+          }
+          break;
+
+        case 'casper-select-lit':
+          if (element.value === undefined) {
+            element.searchInput.invalid = true;
+            element.error = message;
+            isItemValid = false;
+          }
+          break;
+
+        case 'casper-select':
+          if (element.value === undefined) {
+            const input = element.searchInput;
+            input.invalid = true;
+            input.errorMessage = message;
+            isItemValid = false;
+          }
+          break;
+      
+        case 'paper-input':
+          if (element.value?.toString()?.trim() === '') {
+            element.invalid = true;
+            element.errorMessage = message;
+            isItemValid = false;
+          }
+          break;
+
+        default:
+          break;
+      }
+    }
+
+    return isItemValid;
+  }
+
+  clearFieldErrorMessage (element) {
+    if (!element) return;
+    const nodeName = element.nodeName.toLowerCase();
+
+    switch (nodeName) {
+      case 'paper-input':
+        if (element.invalid) {
+          element.invalid = false;
+          element.errorMessage = ''; 
+        }
+        break;
+
+      default:
+        break;
+    }
   }
 
   getSaveData (foreignKey) {

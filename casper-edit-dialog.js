@@ -966,10 +966,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     for (const page of this._pagesContainerEl.children) {
       const index = +page.getAttribute('name')?.split('-')[1];
 
-      const requiredValidations = page.validateRequiredFields();
-      const otherValidations = page.validate(this.data);
-
-      if (requiredValidations && otherValidations) {
+      if (page._validate(this.data)) {
         if (this._invalidPagesIndexes.has(index)) this._invalidPagesIndexes.delete(index);
       } else {
         this._invalidPagesIndexes.add(index);

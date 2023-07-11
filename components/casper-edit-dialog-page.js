@@ -120,7 +120,7 @@ export class CasperEditDialogPage extends LitElement {
 
   // validates all fields which have the "required" attribute
   validateRequiredFields () {
-    let isValid = true;
+    let isPageValid = true;
     const requiredFields = this.shadowRoot.querySelectorAll('[required]');
 
     for (const element of requiredFields) {
@@ -138,7 +138,7 @@ export class CasperEditDialogPage extends LitElement {
             element.invalid = true;
             element.requiredErrorMessage = message;
             element.__errorMessage = message;
-            isValid = false;
+            isPageValid = false;
           }
           break;
 
@@ -146,7 +146,7 @@ export class CasperEditDialogPage extends LitElement {
           if (element.value === undefined) {
             element.searchInput.invalid = true;
             element.error = message;
-            isValid = false;
+            isPageValid = false;
           }
           break;
 
@@ -155,7 +155,7 @@ export class CasperEditDialogPage extends LitElement {
             const input = element.searchInput;
             input.invalid = true;
             input.errorMessage = message;
-            isValid = false;
+            isPageValid = false;
           }
           break;
       
@@ -163,7 +163,7 @@ export class CasperEditDialogPage extends LitElement {
           if (element.value?.toString()?.trim() === '') {
             element.invalid = true;
             element.errorMessage = message;
-            isValid = false;
+            isPageValid = false;
           }
           break;
 
@@ -172,7 +172,7 @@ export class CasperEditDialogPage extends LitElement {
       }
     }
 
-    return isValid;
+    return isPageValid;
   }
 
   clearFieldErrorMessage (element) {
@@ -502,5 +502,22 @@ export class CasperEditDialogPage extends LitElement {
         elem.value = value;
         break;
     }
+  }
+
+  _validate (data) {
+    let isPageValid = true;
+
+    const requiredValidations = this.validateRequiredFields();
+    const otherValidations = this.validate(data);
+
+    if (!requiredValidations || !otherValidations) isPageValid = false;
+
+    const tabbedItems = this.shadowRoot.querySelectorAll('casper-tabbed-items');
+    for (const element of tabbedItems) {
+      const isValid = element.validate();
+      if (!isValid) isPageValid = false;
+    }
+
+    return isPageValid;
   }
 }
