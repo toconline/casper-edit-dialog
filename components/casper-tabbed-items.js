@@ -313,6 +313,7 @@ class CasperTabbedItems extends LitElement {
     this.allowNewItems = true;
     this.showDeleteItemsAction = true;
     this._activeIndex = 0;
+    this._invalidTabsIndexes = new Set();
     this._tabsWrapperClasses = { 'shadow-left': false, 'shadow-right': false };
     this.type = '';
   }
@@ -330,7 +331,7 @@ class CasperTabbedItems extends LitElement {
           ? html`
             <div class="header__tabs-wrapper ${classMap(this._tabsWrapperClasses)}" @click=${this._findScrollDirection}>
               ${this.items.map((item, index) => html`
-                <button class="header__tab" ?active=${index === this._activeIndex} .index=${index} name="tab-${index}" @click=${this.activateItem.bind(this, index)}>
+                <button class="header__tab" ?active=${index === this._activeIndex} ?invalid=${this._invalidTabsIndexes.has(index)} .index=${index} name="tab-${index}" @click=${this.activateItem.bind(this, index)}>
                   <span class="header__tab-text">${item.title ? item.title : index + 1}</span>
                 </button>
               `)}
@@ -441,6 +442,11 @@ class CasperTabbedItems extends LitElement {
     this._addNewItem();
   }
 
+  validateItem () {
+    console.warn('A validateItem method should be defined for the component.');
+    return true;
+  }
+
   shouldAllowDelete () {
     return true;
   }
@@ -457,6 +463,33 @@ class CasperTabbedItems extends LitElement {
     } else if (direction === 'left') {
       this._tabsWrapperEl.scrollLeft -= value;
     }
+  }
+
+
+  validate () {
+    let valid = true;
+    const contentItems = this._contentEl.querySelectorAll('.content__item');
+
+    for (const item of contentItems) {
+      const index = +item.getAttribute('name')?.split('-')[1];
+
+      const requiredValidations = this.validateRequiredFields(item);
+      const otherValidations = this.validateItem(item);
+
+      if (requiredValidations && otherValidations) {
+        if (this._invalidTabsIndexes.has(index)) this._invalidTabsIndexes.delete(index);
+      } else {
+        this._invalidTabsIndexes.add(index);
+      }
+    }
+
+    if (this._invalidTabsIndexes.size > 0) {
+      valid = false;
+      if (!this._invalidTabsIndexes.has(this._activeIndex)) this.activateItem(this._invalidTabsIndexes.values().next().value);
+    }
+
+    this.requestUpdate();
+    return valid;
   }
 
   getSaveData (foreignKey) {
@@ -640,7 +673,7 @@ class CasperTabbedItems extends LitElement {
 
   _renderItem (item, index) {
     return html`
-      <div class="content__item" item-id=${item.id ? item.id : ''} ?active=${+index === +this._activeIndex}>
+      <div class="content__item" item-id=${item.id ? item.id : ''} ?active=${+index === +this._activeIndex} name="item-${index}">
         ${this.renderItem(item)}
       </div>
     `;
