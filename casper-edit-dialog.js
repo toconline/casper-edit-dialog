@@ -1040,6 +1040,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   }
 
   getDialogAction () {
+    if (!this.options?.urn) return null;
     return this.options.urn.split('/').length > 1 ? 'edit' : 'create';
   }
 
@@ -1055,20 +1056,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     newPage.editDialog = this;
     // For backwards compatibility
     newPage.wizard = this;
-
-    if (!this.data && this.getDialogAction() === 'edit') {
-      try {
-        const response = await window.app.broker.get(this.options.urn, 10000);
-        this.data  = response.data;
-        this._id   = response.id;
-        this._type = response.type;
-      } catch (error) {
-        console.log(error);
-
-        await this.showStatusPage({ message: ['Erro! Ocorreu um problema ao tentar carregar os dados.'] });
-        return;
-      }
-    }
 
     let closestPreviousSibling;
     for (let i = +index - 1; i >= 0; i--) {
@@ -1088,8 +1075,22 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     if (!this._isCasperEditDialogPage(newPage)) return newPage;
 
     if (this.getDialogAction() === 'edit') {
+      if (!this.data) {
+        try {
+          const response = await window.app.broker.get(this.options.urn, 10000);
+          this.data  = response.data;
+          this._id   = response.id;
+          this._type = response.type;
+        } catch (error) {
+          console.log(error);
+  
+          await this.showStatusPage({ message: ['Erro! Ocorreu um problema ao tentar carregar os dados.'] });
+          return;
+        }
+      }
+
       await newPage.load(this.data);
-    } else {
+    } else if (this.getDialogAction() === 'create') {
       await newPage.load();
     }
 
