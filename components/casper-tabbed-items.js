@@ -523,6 +523,7 @@ class CasperTabbedItems extends LitElement {
     return isValid;
   }
 
+  /* Validates fields which have the "required" attribute. */
   validateRequiredFields (item) {
     let isItemValid = true;
     const requiredFields = item.querySelectorAll('[required]');
@@ -579,6 +580,7 @@ class CasperTabbedItems extends LitElement {
     return isItemValid;
   }
 
+  /* Event listener which is fired when the user interacts with an invalid field. This will clear the error message. */
   clearFieldErrorMessage (element) {
     if (!element) return;
     const nodeName = element.nodeName.toLowerCase();
@@ -594,6 +596,14 @@ class CasperTabbedItems extends LitElement {
       default:
         break;
     }
+  }
+
+  /** This receives an array of strings with elements' classNames, whose error messages will be cleared by the tabbedItems. 
+    * By default, elements with the "required" attribute are already taken care of.
+    * This method must be called before the first item is created. 
+    */
+  handleFieldsErrorMessageClear (classesArr) {
+    this._classesToAddEMCListener = classesArr;
   }
 
   getSaveData (foreignKey) {
@@ -785,10 +795,21 @@ class CasperTabbedItems extends LitElement {
 
   async _addNewItem () {
     this.items = [...this.items, this.addNewItem()];
-    this.activateItem(this.items.length-1);
+
+    const itemIndex = this.items.length - 1;
+    this.activateItem(itemIndex);
     this.requestUpdate();
     await this.updateComplete;
-    this._setDefaultData(this.items[this.items.length-1]);
+    this._setDefaultData(this.items[itemIndex]);
+
+    if (this._classesToAddEMCListener) {
+      const newItem = this._contentEl.children.namedItem(`item-${itemIndex}`);
+
+      for (const className of this._classesToAddEMCListener) {
+        const elements = newItem.querySelectorAll(`.${className}`);
+        for (const el of elements) { this._addErrorMessageClearListener(el); }
+      }
+    }
   }
 
   _deleteItem () {
@@ -935,6 +956,16 @@ class CasperTabbedItems extends LitElement {
       default:
         elem.value = value;
         break;
+    }
+  }
+
+  /* Adds the necessary event listeners to clear a field's error message. */
+  _addErrorMessageClearListener (element) {
+    if (!element) return;
+
+    if (!element.hasAttribute('has-keydown-listener')) {
+      element.addEventListener('keydown', (event) => this.clearFieldErrorMessage(event?.currentTarget));
+      element.setAttribute('has-keydown-listener', '');
     }
   }
 }

@@ -190,7 +190,9 @@ export class CasperEditDialogPage extends LitElement {
     }
   }
 
-  /* This receives an array of elements, whose error messages will be cleared by the editDialog. */
+  /** This receives an array of elements, whose error messages will be cleared by the editDialog. 
+    * By default, elements with the "required" attribute are already taken care of.
+    */
   handleFieldsErrorMessageClear (elementsArr) {
     for (const element of elementsArr) {
       this._addErrorMessageClearListener(element);
