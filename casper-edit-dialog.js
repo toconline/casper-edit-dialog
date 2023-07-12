@@ -980,7 +980,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     if (this._invalidPagesIndexes.size > 0) {
       valid = false;
       if (!this._invalidPagesIndexes.has(this._activeIndex)) this.activatePage(this._invalidPagesIndexes.values().next().value);
-      this.openToast ('Não foi possível gravar as alterações. Por favor verifique se preencheu os campos corretamente.', 'error');
+      this.openToast('Não foi possível gravar as alterações. Por favor verifique se preencheu os campos corretamente.', 'error');
     }
 
     this.requestUpdate();
@@ -1015,8 +1015,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       await this._processSaveData(saveData, close);
     } catch (error) {
       console.error(error);
-      this.openToast (error?.errors?.[0]?.detail ? error.errors[0].detail : 'Erro! Não foi possível gravar as alterações.', 'error');
       return;
+      this.openToast(error?.errors?.[0]?.detail ? error.errors[0].detail : 'Erro! Não foi possível gravar as alterações.', 'error');
     }
   }
 

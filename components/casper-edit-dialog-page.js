@@ -118,16 +118,13 @@ export class CasperEditDialogPage extends LitElement {
     return true;
   }
 
-  // validates all fields which have the "required" attribute
+  /* Validates fields which have the "required" attribute. */
   validateRequiredFields () {
     let isPageValid = true;
     const requiredFields = this.shadowRoot.querySelectorAll('[required]');
 
     for (const element of requiredFields) {
-      if (!element.hasAttribute('has-keydown-listener')) {
-        element.addEventListener('keydown', (event) => this.clearFieldErrorMessage(event?.currentTarget));
-        element.setAttribute('has-keydown-listener', '');
-      }
+      this._addErrorMessageClearListener(element);
 
       const nodeName = element.nodeName.toLowerCase();
       const message = 'Campo obrigatório.';
@@ -175,6 +172,7 @@ export class CasperEditDialogPage extends LitElement {
     return isPageValid;
   }
 
+  /* Event listener which is fired when the user interacts with an invalid field. This will clear the error message. */
   clearFieldErrorMessage (element) {
     if (!element) return;
     const nodeName = element.nodeName.toLowerCase();
@@ -192,9 +190,10 @@ export class CasperEditDialogPage extends LitElement {
     }
   }
 
+  /* This receives an array of elements, whose error messages will be cleared by the editDialog. */
   handleFieldsErrorMessageClear (elementsArr) {
     for (const element of elementsArr) {
-      element.addEventListener('keydown', (event) => this.clearFieldErrorMessage(event?.currentTarget));
+      this._addErrorMessageClearListener(element);
     }
   }
 
@@ -502,6 +501,16 @@ export class CasperEditDialogPage extends LitElement {
       default:
         elem.value = value;
         break;
+    }
+  }
+
+  /* Adds the necessary event listeners to clear a field's error message. */
+  _addErrorMessageClearListener (element) {
+    if (!element) return;
+
+    if (!element.hasAttribute('has-keydown-listener')) {
+      element.addEventListener('keydown', (event) => this.clearFieldErrorMessage(event?.currentTarget));
+      element.setAttribute('has-keydown-listener', '');
     }
   }
 
