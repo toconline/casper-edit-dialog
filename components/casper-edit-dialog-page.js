@@ -199,11 +199,10 @@ export class CasperEditDialogPage extends LitElement {
   }
 
   async load (data) {
-    this.__isNew = !data;
     await this.beforeLoad(data);
 
-    if (!this.__type) this.__type = this.getRootNode().host.options.urn.split('/')[0];
-    if (this.__isNew) return;
+    if (!this.__type) this.__type = this.editDialog.options.urn.split('/')[0];
+    if (this.isCreate()) return;
 
     for (const elem of this.shadowRoot.querySelectorAll('[binding]')) {
       const binding = elem.getAttribute('binding');
@@ -280,13 +279,11 @@ export class CasperEditDialogPage extends LitElement {
   }
 
   hasUnsavedChanges (data) {
-    if (this.isSaved) return false;
-
     for (const elem of this.shadowRoot.querySelectorAll('[binding]')) {
       let hasNewValue, elemValue;
       const binding = elem.getAttribute('binding');
       const relAttribute = elem.dataset.relationshipAttribute;
-      const initialValue = this.__isNew ? null : this._getValue(binding, relAttribute, data);
+      const initialValue = this.isCreate() ? null : this._getValue(binding, relAttribute, data);
 
       switch (elem.tagName.toLowerCase()) {
         case 'paper-checkbox':
@@ -307,9 +304,13 @@ export class CasperEditDialogPage extends LitElement {
     return false;
   }
 
+  isCreate () {
+    return this.editDialog.getDialogAction() === 'create';
+  }
+
   save (saveData, data) {
-    const request = this.__isNew ? 'post' : 'patch';
-    if (this.__isNew) data = { relationships: {} };
+    const request = this.isCreate() ? 'post' : 'patch';
+    if (this.isCreate()) data = { relationships: {} };
 
     this.beforeSave(saveData, data);
 
@@ -317,7 +318,7 @@ export class CasperEditDialogPage extends LitElement {
       let elemValue, newValue;
       const binding = elem.getAttribute('binding');
       const relAttribute = elem.dataset.relationshipAttribute;
-      const initialValue = this.__isNew ? null : this._getValue(binding, relAttribute, data);
+      const initialValue = this.isCreate() ? null : this._getValue(binding, relAttribute, data);
 
       switch (elem.tagName.toLowerCase()) {
         case 'paper-checkbox':
@@ -339,7 +340,7 @@ export class CasperEditDialogPage extends LitElement {
           saveData[request][type] = {
             payloads: [{
               relationship: this.__type,
-              urn: `${type}${!this.__isNew ? '/' + id : ''}`,
+              urn: `${type}${!this.isCreate() ? '/' + id : ''}`,
               payload: {
                 data: {
                   type: type,
@@ -443,9 +444,9 @@ export class CasperEditDialogPage extends LitElement {
                 for (const [key, value] of Object.entries(entry.payload.data.attributes)) {
                   if (type == this.__type && data[key]) {
                     data[key] = value;
-                  } else if (data.relationships?.[entry.relationship]?.element?.[key]) {
+                  } else if (data?.relationships?.[entry.relationship]?.element?.[key]) {
                     data.relationships[entry.relationship].element[key] = value;
-                  } else if (data.relationships?.[type]?.element?.[key]) {
+                  } else if (data?.relationships?.[type]?.element?.[key]) {
                     data.relationships[type].element[key] = value;
                   }
                 }

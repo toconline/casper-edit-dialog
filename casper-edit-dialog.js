@@ -1410,9 +1410,9 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         for (const [type, data] of Object.entries(types)) {
           for (const entry of (data?.payloads|| [])) {
             try {
-              if (entry.delayField) continue;
+              if (entry && operation !== 'delete') {
 
-              if (operation !== 'delete') {
+                if (entry.delayField) continue;
                 if (entry.urn && Object.keys(entry.payload.data.attributes).length) {
                   const response = await window.app.broker[operation](entry.urn, entry.payload, 10000);
 
@@ -1421,7 +1421,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
                   }
                 }
               } else {
-                if (entry.urn) {
+                if (entry?.urn) {
                   await window.app.broker.delete(entry.urn, 30000);
 
                   // TODO: update this.data in case closing the dialog is optional
@@ -1439,7 +1439,9 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       if (this.getDialogAction() === 'create') {
         // Proccess delayed requests
         const rootObjectId = saveData.post[this.options.urn]['response'].id;
-        const createdRootObject = await window.app.broker.get(`${this.options.urn}/${rootObjectId}`, 10000);
+        this.options.urn = `${this.options.urn}/${rootObjectId}`;
+        const createdRootObject = await window.app.broker.get(this.options.urn, 10000);
+        this.data = createdRootObject.data;
         for (const [operation, types] of Object.entries(saveData)) {
           for (const [type, data] of Object.entries(types)) {
             for (const entry of (data?.payloads|| [])) {
@@ -1467,8 +1469,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           }
         }  
       }
-
-      
 
       this._toastLitEl.open({'text': 'As alterações foram gravadas com sucesso.', 'duration': 3000, 'backgroundColor': 'var(--status-green)'});
       this._updatePageData(saveData);
