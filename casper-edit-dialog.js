@@ -706,8 +706,12 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         }.bind(this)
       };
 
-      this._confirmationDialogEl.open(options);
+      this.openConfirmationDialog(options);
     }
+  }
+
+  openConfirmationDialog (options) {
+    this._confirmationDialogEl.open(options);
   }
 
   async showProgressPage () {
