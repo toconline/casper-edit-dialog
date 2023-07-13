@@ -950,7 +950,7 @@ class CasperTabbedItems extends LitElement {
         elem.checked = value;
         break;
       case 'casper-select-lit':
-        elem.initialId = value;
+        elem.setValue(value);
         break;
       case 'paper-input':
       default:
