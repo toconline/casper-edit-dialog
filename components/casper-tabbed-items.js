@@ -551,9 +551,15 @@ class CasperTabbedItems extends LitElement {
           break;
 
         case 'casper-select':
-          if (element.value === undefined) {
-            element.searchInput.invalid = true;
-            element.searchInput.errorMessage = message;
+          if (!element.value) {
+            if (element.multiSelection) {
+              const paperInputContainer = element.shadowRoot.querySelector('paper-input-container');
+              if (paperInputContainer) paperInputContainer.invalid = true;
+            } else {
+              element.searchInput.invalid = true;
+              element.searchInput.errorMessage = message;
+            }
+            
             isItemValid = false;
           }
           break;
@@ -604,9 +610,14 @@ class CasperTabbedItems extends LitElement {
         break;
 
       case 'casper-select':
-        if (element.searchInput?.invalid) {
-          element.searchInput.invalid = false;
-          element.searchInput.errorMessage = '';
+        if (element.multiSelection) {
+          const paperInputContainer = element.shadowRoot.querySelector('paper-input-container');
+          if (paperInputContainer?.invalid) paperInputContainer.invalid = false;
+        } else {
+          if (element.searchInput?.invalid) {
+            element.searchInput.invalid = false;
+            element.searchInput.errorMessage = '';
+          }
         }
         break;
 
@@ -1000,9 +1011,14 @@ class CasperTabbedItems extends LitElement {
   _addErrorMessageClearListener (element) {
     if (!element) return;
 
-    if (!element.hasAttribute('has-keydown-listener')) {
-      element.addEventListener('keydown', (event) => this.clearFieldErrorMessage(event?.currentTarget));
-      element.setAttribute('has-keydown-listener', '');
+    if (!element.hasAttribute('has-clear-listener')) {
+      let eventType = 'value-changed';
+      const nodeName = element.nodeName.toLowerCase();
+
+      if (nodeName === 'paper-checkbox' || nodeName === 'paper-radio-button') eventType = 'checked-changed';
+
+      element.addEventListener(eventType, (event) => this.clearFieldErrorMessage(event?.currentTarget));
+      element.setAttribute('has-clear-listener', '');
     }
   }
 }
