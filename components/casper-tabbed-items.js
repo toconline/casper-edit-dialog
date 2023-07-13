@@ -37,6 +37,10 @@ class CasperTabbedItems extends LitElement {
       --header-before-height: 0;
     }
 
+    paper-checkbox[invalid] {
+      --paper-checkbox-label-color: var(--paper-checkbox-error-color, var(--error-color));
+    }
+
     button {
       font-family: inherit;
       border: none;
@@ -538,15 +542,6 @@ class CasperTabbedItems extends LitElement {
       const message = 'Campo obrigatório.';
 
       switch (nodeName) {
-        case 'casper-date-picker':
-          if (!element.value) {
-            element.invalid = true;
-            element.requiredErrorMessage = message;
-            element.__errorMessage = message;
-            isItemValid = false;
-          }
-          break;
-
         case 'casper-select-lit':
           if (element.value === undefined) {
             element.searchInput.invalid = true;
@@ -557,9 +552,24 @@ class CasperTabbedItems extends LitElement {
 
         case 'casper-select':
           if (element.value === undefined) {
-            const input = element.searchInput;
-            input.invalid = true;
-            input.errorMessage = message;
+            element.searchInput.invalid = true;
+            element.searchInput.errorMessage = message;
+            isItemValid = false;
+          }
+          break;
+
+        case 'casper-date-picker':
+          if (!element.value) {
+            element.invalid = true;
+            element.requiredErrorMessage = message;
+            element.__errorMessage = message;
+            isItemValid = false;
+          }
+          break;
+
+        case 'paper-checkbox':
+          if (!element.checked) {
+            element.invalid = true;
             isItemValid = false;
           }
           break;
@@ -586,6 +596,33 @@ class CasperTabbedItems extends LitElement {
     const nodeName = element.nodeName.toLowerCase();
 
     switch (nodeName) {
+      case 'casper-select-lit':
+        if (element.searchInput?.invalid) {
+          element.searchInput.invalid = false;
+          element.error = ''; 
+        }
+        break;
+
+      case 'casper-select':
+        if (element.searchInput?.invalid) {
+          element.searchInput.invalid = false;
+          element.searchInput.errorMessage = '';
+        }
+        break;
+
+      case 'casper-date-picker':
+        if (element.invalid) {
+          element.invalid = false;
+          element.__errorMessage = '';
+        }
+        break;
+
+      case 'paper-checkbox':
+        if (element.invalid) {
+          element.invalid = false;
+        }
+        break;
+
       case 'paper-input':
         if (element.invalid) {
           element.invalid = false;
