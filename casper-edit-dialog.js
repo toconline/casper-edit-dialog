@@ -1429,7 +1429,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
               }
             } catch (error) {
               console.log(error);
-              this._toastLitEl.open({'text': error?.errors?.[0]?.detail ? error.errors[0].detail : 'Erro! Não foi possível gravar as alterações.', 'duration': 3000, 'backgroundColor': 'var(--status-red)'});
+              this.openToast(error?.errors?.[0]?.detail ? error.errors[0].detail : 'Erro! Não foi possível gravar as alterações.', 'error');
               return;
             }
           }
@@ -1462,7 +1462,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
                 }
               } catch (error) {
                 console.log(error);
-                this._toastLitEl.open({'text': error?.errors?.[0]?.detail ? error.errors[0].detail : 'Erro! Não foi possível gravar as alterações.', 'duration': 3000, 'backgroundColor': 'var(--status-red)'});
+                this.openToast(error?.errors?.[0]?.detail ? error.errors[0].detail : 'Erro! Não foi possível gravar as alterações.', 'error');
                 return;
               }
             }
@@ -1470,7 +1470,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         }  
       }
 
-      this._toastLitEl.open({'text': 'As alterações foram gravadas com sucesso.', 'duration': 3000, 'backgroundColor': 'var(--status-green)'});
+      this.openToast('As alterações foram gravadas com sucesso.', 'success');
       this._updatePageData(saveData);
       if (close) this.close();
     } catch (error) {

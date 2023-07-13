@@ -34,6 +34,7 @@ class CasperTabbedItems extends LitElement {
       --cti-grey: rgb(179, 179, 179);
       --cti-dark-grey: rgb(149, 149, 149);
       --tab-vertical-padding: 0.25rem;
+      --tab-transition-duration: 0.5s;
       --header-before-height: 0;
     }
 
@@ -155,7 +156,7 @@ class CasperTabbedItems extends LitElement {
       padding: var(--tab-vertical-padding) 0.875rem;
       background-color: transparent;
       color: var(--cti-grey);
-      transition: color 0.5s ease;
+      transition: color var(--tab-transition-duration) ease;
     }
 
     .header__tab:not(:last-of-type) {
@@ -176,7 +177,7 @@ class CasperTabbedItems extends LitElement {
       transform: translate(-50%, 0%);
       z-index: 1;
       background-color: transparent;
-      transition: background-color 0.5s ease, width 0.5s ease;
+      transition: background-color var(--tab-transition-duration) ease, width var(--tab-transition-duration) ease;
     }
 
     .header__tab[active] {
@@ -208,7 +209,7 @@ class CasperTabbedItems extends LitElement {
       opacity: 0;
       width: 0;
       height: 0;
-      transition: opacity var(--ced-labels-buttons-transition-duration), width var(--ced-labels-buttons-transition-duration), height var(--ced-labels-buttons-transition-duration);
+      transition: opacity var(--tab-transition-duration), width var(--tab-transition-duration), height var(--tab-transition-duration);
     }
 
     .header__tab[invalid]::before {
