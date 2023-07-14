@@ -327,29 +327,41 @@ export class CasperEditDialogPage extends LitElement {
   }
 
   hasUnsavedChanges (data) {
-    for (const elem of this.shadowRoot.querySelectorAll('[binding]')) {
-      let hasNewValue, elemValue;
-      const binding = elem.getAttribute('binding');
-      const relAttribute = elem.dataset.relationshipAttribute;
-      const initialValue = this.isCreate() ? null : this._getValue(binding, relAttribute, data);
-
-      switch (elem.tagName.toLowerCase()) {
-        case 'paper-checkbox':
-          hasNewValue = elem.checked != (initialValue || false);
-          break;
-        case 'paper-input':
-        default:
-          elemValue = elem.value || null;
-          if (elemValue || initialValue) {
-            hasNewValue = elemValue != initialValue;
-          }
-          break;
+    const checkBindings = (bindedElements, data) => {
+      for (const elem of bindedElements) {
+        let hasNewValue, elemValue;
+        const binding = elem.getAttribute('binding');
+        const relAttribute = elem.dataset.relationshipAttribute;
+        const initialValue = this.isCreate() ? null : this._getValue(binding, relAttribute, data);
+  
+        switch (elem.tagName.toLowerCase()) {
+          case 'paper-checkbox':
+            hasNewValue = elem.checked != (initialValue || false);
+            break;
+          case 'paper-input':
+          default:
+            elemValue = elem.value || null;
+            if (elemValue || initialValue) {
+              hasNewValue = elemValue != initialValue;
+            }
+            break;
+        }
+        if (hasNewValue) return true;
       }
-
-      if (hasNewValue) return true;
+      return false;
     }
 
-    return false;
+    let unsavedChanges = false;
+    unsavedChanges = checkBindings(this.shadowRoot.querySelectorAll('[binding]'), data);
+    if (!unsavedChanges) {
+      this.shadowRoot.querySelectorAll('casper-tabbed-items').forEach((cti) => {
+        cti._contentEl.querySelectorAll('.content__item').forEach((tab,idx) => {
+          if (!unsavedChanges) unsavedChanges = checkBindings(tab.querySelectorAll('[binding]'), data?.relationships?.[cti.type]?.elements?.[idx]);
+        });
+      });
+    }
+
+    return unsavedChanges;
   }
 
   isCreate () {
@@ -529,6 +541,8 @@ export class CasperEditDialogPage extends LitElement {
               value = data.relationships[binding].element[relAttribute];
             } else if (data.relationships[binding]?.element?.[binding]) {
               value = data.relationships[binding].element[binding];
+            } else if (data?.relationships?.[binding]?.data?.id){
+              value = data.relationships[binding].data.id;
             }
           }
         });
