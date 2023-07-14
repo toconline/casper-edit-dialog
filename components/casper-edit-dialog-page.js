@@ -355,7 +355,9 @@ export class CasperEditDialogPage extends LitElement {
     unsavedChanges = checkBindings(this.shadowRoot.querySelectorAll('[binding]'), data);
     if (!unsavedChanges) {
       this.shadowRoot.querySelectorAll('casper-tabbed-items').forEach((cti) => {
-        cti._contentEl.querySelectorAll('.content__item').forEach((tab,idx) => {
+        const tabs = cti._contentEl.querySelectorAll('.content__item');
+        if (tabs.length !== (data?.relationships?.[cti.type]?.elements.length || 0)) unsavedChanges = true;
+        tabs.forEach((tab,idx) => {
           if (!unsavedChanges) unsavedChanges = checkBindings(tab.querySelectorAll('[binding]'), data?.relationships?.[cti.type]?.elements?.[idx]);
         });
       });
