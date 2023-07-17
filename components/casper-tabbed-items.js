@@ -861,10 +861,12 @@ class CasperTabbedItems extends LitElement {
     }
   }
 
-  _deleteItem () {
+  async _deleteItem () {
     this.items.splice(this._activeIndex, 1)
     if (this._activeIndex > 0) this.activateItem(this._activeIndex - 1);
     this.requestUpdate();
+    await this.updateComplete;
+    this._setBindingData(this.items);
   }
 
   async _loadFromResource () {

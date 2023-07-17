@@ -975,7 +975,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     for (const page of this._pagesContainerEl.children) {
       const index = +page.getAttribute('name')?.split('-')[1];
 
-      if (page._validate(this.data)) {
+      if (page._validate()) {
         if (this._invalidPagesIndexes.has(index)) this._invalidPagesIndexes.delete(index);
       } else {
         this._invalidPagesIndexes.add(index);
@@ -996,7 +996,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     for (let i = 0; i < this._pagesContainerEl.children.length; i++) {
       const page = this._pagesContainerEl.children[i];
       if (!this._isCasperEditDialogPage(page)) continue;
-      if (page.hasUnsavedChanges(this.data)) return true;
+      if (page.hasUnsavedChanges()) return true;
     }
 
     return false;
@@ -1017,7 +1017,13 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         this._pagesContainerEl.children[i].save(saveData, this.data);
       }
 
-      await this._processSaveData(saveData, close);
+      await this._processSaveData(saveData);
+
+      for (let i = 0; i < this._pagesContainerEl.children.length; i++) {
+        this._pagesContainerEl.children[i].afterSave(saveData, this.data);
+      }
+
+      if (close) this.close();
     } catch (error) {
       console.error(error);
       return;
@@ -1415,33 +1421,38 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     return dimension / 16 + 'rem';
   }
 
-  async _processSaveData (saveData, close) {
+  async _processSaveData (saveData) {
     try {
       for (const [operation, types] of Object.entries(saveData)) {
         for (const [type, data] of Object.entries(types)) {
           for (const entry of (data?.payloads|| [])) {
-            try {
-              if (entry && operation !== 'delete') {
-
-                if (entry.delayField) continue;
-                if (entry.urn && Object.keys(entry.payload.data.attributes).length) {
-                  const response = await window.app.broker[operation](entry.urn, entry.payload, 10000);
-
-                  if (response) {
-                    saveData[operation][type]['response'] = response;
+            if (!entry || !entry?.urn || entry.delayField) continue;
+            const sUrn = entry.urn.split('/');
+            if (operation !== 'delete') {
+              if (Object.keys(entry.payload.data.attributes).length) {
+                const response = await window.app.broker[operation](entry.urn, entry.payload, 10000);
+                if (response?.data && operation === 'patch') {
+                  if (this._type === sUrn[0]) {
+                    // Updating root element
+                    response.data.relationships = this.data.relationships;
+                    this.data = response.data;
+                  } else {
+                    // Updating relationships
+                    response.data.relationships = this.data.relationships[sUrn[0]].elements.find(e => e.id == sUrn[1]).relationships;
+                    const itemIndex = this.data.relationships[sUrn[0]].elements.indexOf(this.data.relationships[sUrn[0]].elements.find(e => e.id == sUrn[1]));
+                    this.data.relationships[sUrn[0]].elements[itemIndex] = response.data;
                   }
-                }
-              } else {
-                if (entry?.urn) {
-                  await window.app.broker.delete(entry.urn, 30000);
-
-                  // TODO: update this.data in case closing the dialog is optional
+                } else if (response?.data && operation === 'post' && this._type !== sUrn[0]) {
+                  // Creating new elements in relationships
+                  this.data.relationships[sUrn[0]].data.push({type: response.type, id: response.id});
+                  this.data.relationships[sUrn[0]].elements.push(response.data);
                 }
               }
-            } catch (error) {
-              console.log(error);
-              this.openToast(error?.errors?.[0]?.detail ? error.errors[0].detail : 'Erro! Não foi possível gravar as alterações.', 'error');
-              return;
+            } else {
+              await window.app.broker.delete(entry.urn, 30000);
+              const itemIndex = this.data.relationships[sUrn[0]].elements.indexOf(this.data.relationships[sUrn[0]].elements.find(e => e.id == sUrn[1]));
+              this.data.relationships[sUrn[0]].data.splice(itemIndex, 1);
+              this.data.relationships[sUrn[0]].elements.splice(itemIndex, 1);
             }
           }
         }
@@ -1456,25 +1467,18 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         for (const [operation, types] of Object.entries(saveData)) {
           for (const [type, data] of Object.entries(types)) {
             for (const entry of (data?.payloads|| [])) {
-              try {
-                if (!entry.delayField) continue;
-
-                if (entry.urn && Object.keys(entry.payload.data.attributes).length) {
-                  entry.payload.data.attributes[entry.delayField] = rootObjectId;
-                  if (entry.payload.data.id) {
-                    entry.payload.data.id = createdRootObject.data.relationships[entry.payload.data.id].data.id
-                  }
-                  
-                  const response = await window.app.broker[operation](entry.urn, entry.payload, 10000);
-
-                  if (response) {
-                    saveData[operation][type]['response'] = response;
-                  }
+              if (!entry.delayField) continue;
+              if (entry.urn && Object.keys(entry.payload.data.attributes).length) {
+                entry.payload.data.attributes[entry.delayField] = rootObjectId;
+                if (entry.payload.data.id) {
+                  entry.payload.data.id = createdRootObject.data.relationships[entry.payload.data.id].data.id
                 }
-              } catch (error) {
-                console.log(error);
-                this.openToast(error?.errors?.[0]?.detail ? error.errors[0].detail : 'Erro! Não foi possível gravar as alterações.', 'error');
-                return;
+                
+                const response = await window.app.broker[operation](entry.urn, entry.payload, 10000);
+
+                if (response) {
+                  saveData[operation][type]['response'] = response;
+                }
               }
             }
           }
@@ -1482,20 +1486,12 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       }
 
       this.openToast('As alterações foram gravadas com sucesso.', 'success');
-      this._updatePageData(saveData);
-      if (close) this.close();
     } catch (error) {
       console.log(error);
+      this.openToast(error?.errors?.[0]?.detail ? error.errors[0].detail : 'Erro! Não foi possível gravar as alterações.', 'error');
+      return;
     }
   }
-
-  _updatePageData (saveData) {
-    for (let i = 0; i < this._pagesContainerEl.children.length; i++) {
-      this.data = this._pagesContainerEl.children[i].updatePageData(saveData, this.data);
-      this._pagesContainerEl.children[i].afterSave(saveData, this.data);
-    }
-  }
-  
 }
 
 customElements.define('casper-edit-dialog', CasperEditDialog);

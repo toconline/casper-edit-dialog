@@ -319,14 +319,14 @@ export class CasperEditDialogPage extends LitElement {
 
       if (value) {
         value = this.onLoad(value, elem, data);
-        this._setValue(elem, value, data);
+        this._setValue(elem, value);
       }
     }
 
     this.afterLoad(data);
   }
 
-  hasUnsavedChanges (data) {
+  hasUnsavedChanges () {
     const checkBindings = (bindedElements, data) => {
       for (const elem of bindedElements) {
         let hasNewValue, elemValue;
@@ -352,13 +352,13 @@ export class CasperEditDialogPage extends LitElement {
     }
 
     let unsavedChanges = false;
-    unsavedChanges = checkBindings(this.shadowRoot.querySelectorAll('[binding]'), data);
+    unsavedChanges = checkBindings(this.shadowRoot.querySelectorAll('[binding]'), this.editDialog.data);
     if (!unsavedChanges) {
       this.shadowRoot.querySelectorAll('casper-tabbed-items').forEach((cti) => {
         const tabs = cti._contentEl.querySelectorAll('.content__item');
-        if (tabs.length !== (data?.relationships?.[cti.type]?.elements.length || 0)) unsavedChanges = true;
+        if (tabs.length !== (this.editDialog.data?.relationships?.[cti.type]?.elements.length || 0)) unsavedChanges = true;
         tabs.forEach((tab,idx) => {
-          if (!unsavedChanges) unsavedChanges = checkBindings(tab.querySelectorAll('[binding]'), data?.relationships?.[cti.type]?.elements?.[idx]);
+          if (!unsavedChanges) unsavedChanges = checkBindings(tab.querySelectorAll('[binding]'), this.editDialog.data?.relationships?.[cti.type]?.elements?.[idx]);
         });
       });
     }
@@ -496,32 +496,6 @@ export class CasperEditDialogPage extends LitElement {
     return;
   }
 
-  updatePageData (saveData, data) {
-    for (const [operation, types] of Object.entries(saveData)) {
-      if (operation !== 'delete') {
-        for (const [type, typeData] of Object.entries(types)) {
-          if (typeData.response) {
-            typeData.payloads.forEach((entry) => {
-              if (entry.payload?.data?.attributes) {
-                for (const [key, value] of Object.entries(entry.payload.data.attributes)) {
-                  if (type == this.__type && data[key]) {
-                    data[key] = value;
-                  } else if (data?.relationships?.[entry.relationship]?.element?.[key]) {
-                    data.relationships[entry.relationship].element[key] = value;
-                  } else if (data?.relationships?.[type]?.element?.[key]) {
-                    data.relationships[type].element[key] = value;
-                  }
-                }
-              }
-            });
-          }
-        }
-      }
-    }
-
-    return data;
-  }
-
   //***************************************************************************************//
   //                              ~~~ Private methods  ~~~                                 //
   //***************************************************************************************//
@@ -554,7 +528,7 @@ export class CasperEditDialogPage extends LitElement {
     return value;
   }
 
-  _setValue (elem, value, data = null) {
+  _setValue (elem, value) {
     switch (elem.tagName.toLowerCase()) {
       case 'paper-checkbox':
         elem.checked = value;
@@ -584,11 +558,11 @@ export class CasperEditDialogPage extends LitElement {
     }
   }
 
-  _validate (data) {
+  _validate () {
     let isPageValid = true;
 
     const requiredValidations = this.validateRequiredFields();
-    const otherValidations = this.validate(data);
+    const otherValidations = this.validate();
 
     if (!requiredValidations || !otherValidations) isPageValid = false;
 
