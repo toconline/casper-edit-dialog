@@ -11,6 +11,9 @@ class CasperToastLit extends LitElement {
       type: Boolean,
       attribute: 'show-dialog',
       reflect: true
+    },
+    transitionDuration: {
+      type: Number
     }
   };
 
@@ -23,7 +26,7 @@ class CasperToastLit extends LitElement {
       left: 1rem;
       width: calc(100% - 2rem);
       opacity: 0;
-      transition: opacity 0.3s;
+      transition: opacity var(--transition-duration, 300);
       pointer-events: none;
     }
 
@@ -70,8 +73,10 @@ class CasperToastLit extends LitElement {
     super();
 
     this._text = '';
-    this._duration = 5000;
+    this._toastDuration = 5000;
     this._showDialog = false;
+
+    this.transitionDuration = 300;
   }
 
   render () {
@@ -83,13 +88,19 @@ class CasperToastLit extends LitElement {
     `;
   }
 
+  willUpdate (changedProperties) {
+    if (changedProperties.has('transitionDuration')) {
+      this.style.setProperty('--transition-duration', `${this.transitionDuration}ms`);
+    }
+  }
+
   firstUpdated () {
     this._toastEl = this.shadowRoot.getElementById('toast');
   }
 
   open (options) {
     if (options.text) this._text = options.text;
-    if (options.duration) this._duration = options.duration;
+    if (options.duration) this._toastDuration = options.duration;
     if (options.backgroundColor) this.style.setProperty('--toast-background-color', options.backgroundColor);
 
     this._toastEl.show();
@@ -97,7 +108,7 @@ class CasperToastLit extends LitElement {
 
     setTimeout(() => {
       this.close();
-    }, this._duration);
+    }, this._toastDuration);
   }
 
   close () {
@@ -105,7 +116,7 @@ class CasperToastLit extends LitElement {
 
     setTimeout(() => {
       this._toastEl.close();
-    }, 300);
+    }, this.transitionDuration);
   }
 }
 
