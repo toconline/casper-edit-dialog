@@ -384,7 +384,7 @@ export class CasperEditDialogPage extends LitElement {
 
       switch (elem.tagName.toLowerCase()) {
         case 'paper-checkbox':
-          newValue = elem.checked !== initialValue ? elem.checked : null;
+          if (elem.checked !== initialValue) newValue = elem.checked;
           break;
         case 'paper-input':
         default:
