@@ -363,6 +363,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     /* CONTENT */
 
     .edit-dialog__content-wrapper {
+      --pages-container-z-index: 0;
+      --status-page-z-index: calc(var(--pages-container-z-index) + 1);
+      --toast-z-index: calc(var(--status-page-z-index) + 1);
+
       grid-area: page;
       position: relative;
       padding: var(--ced-wrapper-vertical-padding) var(--ced-wrapper-horizontal-padding);
@@ -387,7 +391,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       justify-content: center;
       align-items: flex-start;
       position: relative;
-      z-index: 1;
+      z-index: var(--pages-container-z-index);
     }
 
     [name^="page"] {
@@ -416,7 +420,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       pointer-events: auto;
       transform: none;
       transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0s;
-      z-index: 2;
+      z-index: 1;
     }
 
     [name^="page"][active] ~ * {
@@ -425,11 +429,11 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     .edit-dialog__status-progress-page {
       position: absolute;
-      z-index: 2;
       top: var(--ced-wrapper-vertical-padding);
       left: var(--ced-wrapper-horizontal-padding);
       width: calc(100% - 2 * var(--ced-wrapper-horizontal-padding));
       height: calc(100% - 2 * var(--ced-wrapper-vertical-padding));
+      z-index: var(--status-page-z-index);
       transition: opacity 0.3s ease;
     }
 
@@ -504,7 +508,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       bottom: calc(var(--ced-vertical-padding) * 2);
       left: var(--ced-horizontal-padding);
       width: calc(100% - var(--ced-horizontal-padding) * 2);
-      z-index: 2;
+      z-index: var(--toast-z-index);
     }
 
 
