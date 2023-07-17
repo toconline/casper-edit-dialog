@@ -748,6 +748,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       this._statusProgressPageEl.hidden = true;
       this._statusProgressPageEl.resetValues();
       this._state = 'normal';
+      this._statusProgressPageEl.style.removeProperty('opacity');
     }, 300);
   }
 
