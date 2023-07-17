@@ -3,7 +3,7 @@ import { LitElement, html, css } from 'lit';
 
 class CasperButtonLit extends LitElement {
   static properties = {
-    _text: {
+    text: {
       type: String
     }
   };
@@ -19,15 +19,17 @@ class CasperButtonLit extends LitElement {
       font-size: var(--button-font-size);
       font-weight: 600;
       padding: 0.714em 1em;
+      min-width: 4.5em;
       border-radius: 1.428em;
       outline: none;
       text-transform: uppercase;
+      border: 1.5px solid;
       cursor: pointer;
     }
 
      .button[theme="regular"] {
       background-color: var(--button-primary-color);
-      border: 1.5px solid var(--button-primary-color);
+      border-color: var(--button-primary-color);
     }
 
     .button[theme="regular"]:hover {
@@ -37,12 +39,12 @@ class CasperButtonLit extends LitElement {
 
     .button[theme="warning"] {
       background-color: var(--error-color-soft);
-      border: 1.5px solid var(--error-color-soft);
+      border-color: var(--error-color-soft);
     }
 
     .button[theme="warning"]:hover {
       background-color: var(--error-color-soft-hover);
-      border: 1.5px solid var(--error-color-soft-hover);
+      border-color: var(--error-color-soft-hover);
     }
 
     .button[theme][type="secondary"],
@@ -64,11 +66,14 @@ class CasperButtonLit extends LitElement {
       border-color: #808080;
     }
 
-    .button[disabled] {
+    :host([disabled]) {
+      pointer-events: none !important;
+    }
+
+    :host([disabled]) .button {
       color: #FFF !important;
       background-color: #e0e0e0 !important;
-      border: 1.5px solid #e0e0e0 !important;
-      pointer-events: none !important;
+      border-color: #e0e0e0 !important;
     }
   `;
 
@@ -77,13 +82,13 @@ class CasperButtonLit extends LitElement {
 
     this._theme = 'regular';
     this._type = 'primary';
-    this._text = '';
+    this.text = '';
   }
 
   render () {
     return html`
       <button class="button" type=${this._type} theme=${this._theme}>
-        ${this._text}
+        ${this.text}
       </button>
     `;
   }
