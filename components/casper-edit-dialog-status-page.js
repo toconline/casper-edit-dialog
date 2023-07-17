@@ -308,36 +308,51 @@ export class CasperEditDialogStatusPage extends LitElement {
   }
 
 
-  showStatus (notification, state = 'error') {
-    this.state = state;
-    if (!notification) this.state = 'error';
+  showNotificationStatus (notification, state = '') {
     this.clearText();
-
-    if (notification?.custom === true) {
-      this.setCustom(notification.message[0]);
-      return;
-    }
-      
     this.clearCustom();
+    this.state = state;
 
-    if (notification?.message || notification?.response?.body?.message) {
-      this.description = this.editDialog.i18n.apply(this.editDialog, notification.message || [notification.response?.body?.message]);
-    }
-      
-    switch (this.state) {
-      case 'success':
-        this.title = 'Sucesso!';
-        if (!this.description) this.description = 'A ação foi concluída com sucesso.';
-        this._hideButton = false;
-        break;
+    if (notification) {
+      if (notification.custom === true) {
+        this.setCustom(notification.message[0]);
+      } else {
+        if (notification.response?.title) {
+          this.title = notification.response.title;
+        } else if (notification.title) {
+          this.title = this.editDialog.i18n.apply(this.editDialog, notification.title);
+        }
     
+        if (notification.message || notification.response?.body?.message) {
+          this.description = this.editDialog.i18n.apply(this.editDialog, notification.message || [notification.response?.body?.message]);
+        }
+      }
+    } else {
+      this.state = 'error';
+    }
 
-      case 'error':
-      default:
-        this.title = 'Erro!';
-        if (!this.description) this.description = 'Por favor contacte o suporte técnico.';
-        this._hideButton = false;
-        break;
+    this._setStateDefaultValues();
+  }
+
+  /**
+   * Shows a customizable status page
+   *
+   * @param {Object} options Available options include: state, title, description, hide_button, self_close_duration
+   */
+  async showFreeStatus (options) {
+    this.clearText();
+    this.clearCustom();
+    this.state = options.state;
+
+    if (Object.hasOwn(options, 'title')) this.title = options.title;
+    if (Object.hasOwn(options, 'description')) this.description = options.description;
+
+    this._setStateDefaultValues();
+
+    if (Object.hasOwn(options, 'hide_button')) this._hideButton = options.hide_button;
+    if (Object.hasOwn(options, 'self_close_duration')) {
+      await this.updateComplete;
+      this.selfClose(options.self_close_duration);
     }
   }
 
@@ -354,7 +369,7 @@ export class CasperEditDialogStatusPage extends LitElement {
   }
 
   /**
-   * Update the progress display
+   * Updates the progress display
    *
    * @param {Number} index  not used here we only have one bar
    * @param {String} description smaller text to display
@@ -376,6 +391,40 @@ export class CasperEditDialogStatusPage extends LitElement {
     } else {
       this.clearCustom();
       this.title = response.message[0];
+    }
+  }
+
+
+
+  //***************************************************************************************//
+  //                              ~~~ Private methods  ~~~                                 //
+  //***************************************************************************************//
+
+  _setStateDefaultValues () {
+    switch (this.state) {
+      case 'connecting':
+        if (!this.title) this.title = 'Em progresso...';
+        if (!this.description) this.description = 'A realizar ação, por favor aguarde.';
+        this._hideButton = true;
+        break;
+
+      case 'success':
+        if (!this.title) this.title = 'Sucesso!';
+        if (!this.description) this.description = 'A ação foi concluída com sucesso.';
+        this._hideButton = false;
+        break;
+    
+      case 'error':
+        if (!this.title) this.title = 'Erro!';
+        if (!this.description) this.description = 'Por favor contacte o suporte técnico.';
+        this._hideButton = false;
+        break;
+
+      default:
+        this.title = '';
+        this.description = '';
+        this._hideButton = true;
+        break;
     }
   }
 }

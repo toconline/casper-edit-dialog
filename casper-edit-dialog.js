@@ -733,7 +733,18 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this.disableAllActions();
     if (!this._statusProgressPageEl) await this._createStatusProgressPage();
 
-    this._statusProgressPageEl.showStatus(notification, status);
+    this._statusProgressPageEl.showNotificationStatus(notification, status);
+    this._state = 'show-status';
+    this._statusProgressPageEl.hidden = false;
+  }
+
+  async showFreeStatusPage (options) {
+    if (this._state === 'show-status') return;
+
+    this.disableAllActions();
+    if (!this._statusProgressPageEl) await this._createStatusProgressPage();
+
+    this._statusProgressPageEl.showFreeStatus(options);
     this._state = 'show-status';
     this._statusProgressPageEl.hidden = false;
   }
@@ -1006,6 +1017,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     if (!isValid) return;
 
     try {
+      await this.showFreeStatusPage({state: 'connecting', description: 'A guardar as alterações efetuadas, por favor aguarde.'});
+
       const saveData = {
         patch: {}, // patch is the default operation
         post: {}, // only filled if specified in overcharged page save to handle it
@@ -1025,8 +1038,9 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       if (close) this.close();
     } catch (error) {
       console.error(error);
-      return;
       this.openToast(error?.errors?.[0]?.detail ? error.errors[0].detail : 'Erro! Não foi possível gravar as alterações.', 'error');
+    } finally {
+      this.hideStatusAndProgress();
     }
   }
 
