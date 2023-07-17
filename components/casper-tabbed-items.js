@@ -912,7 +912,7 @@ class CasperTabbedItems extends LitElement {
       return newTab;
     });
 
-    this.items = [...this.items, ...items];
+    this.items = items;
 
     await this.updateComplete;
     

@@ -249,7 +249,7 @@ export class CasperEditDialogPage extends LitElement {
   async load (data) {
     await this.beforeLoad(data);
 
-    if (!this.__type) this.__type = this.editDialog.options.urn.split('/')[0];
+    if (!this.__type) this.__type = this.editDialog.rootObjectType();
     if (this.isCreate()) return;
 
     for (const elem of this.shadowRoot.querySelectorAll('[binding]')) {

@@ -527,7 +527,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this.mode = 'dialog';
     this._state = 'normal';
     this._title = '';
-    this._type = '';
     this._pages = [];
     this._activeIndex = 0;
     this._invalidPagesIndexes = new Set();
@@ -657,7 +656,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   async open () {
     if (this.options.title) this._title = this.options.title;
     if (this.options.mode) this.mode = this.options.mode;
-    if (this.options.type) this._type = this.options.type;
 
     if (this.mode === 'wizard') {
       this.changePreviousButtonToIcon();
@@ -1059,6 +1057,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     return this.options.urn.split('/').length > 1 ? 'edit' : 'create';
   }
 
+  rootObjectType () {
+    return this.options.urn.split('/')[0];
+  }
+
 
 
   //***************************************************************************************//
@@ -1095,7 +1097,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           const response = await window.app.broker.get(this.options.urn, 10000);
           this.data  = response.data;
           this._id   = response.id;
-          this._type = response.type;
         } catch (error) {
           console.log(error);
   
@@ -1432,7 +1433,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
               if (Object.keys(entry.payload.data.attributes).length) {
                 const response = await window.app.broker[operation](entry.urn, entry.payload, 10000);
                 if (response?.data && operation === 'patch') {
-                  if (this._type === sUrn[0]) {
+                  if (this.rootObjectType() === sUrn[0]) {
                     // Updating root element
                     response.data.relationships = this.data.relationships;
                     this.data = response.data;
@@ -1442,10 +1443,13 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
                     const itemIndex = this.data.relationships[sUrn[0]].elements.indexOf(this.data.relationships[sUrn[0]].elements.find(e => e.id == sUrn[1]));
                     this.data.relationships[sUrn[0]].elements[itemIndex] = response.data;
                   }
-                } else if (response?.data && operation === 'post' && this._type !== sUrn[0]) {
+                } else if (response?.data && operation === 'post' && this.rootObjectType() !== sUrn[0]) {
                   // Creating new elements in relationships
                   this.data.relationships[sUrn[0]].data.push({type: response.type, id: response.id});
                   this.data.relationships[sUrn[0]].elements.push(response.data);
+                } else if (!this.data && operation === 'post' && this.rootObjectType() === sUrn[0]) {
+                  // Creating new root element
+                  this.data = {id: response.id};
                 }
               }
             } else {
@@ -1458,9 +1462,9 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         }
       }
 
-      if (this.getDialogAction() === 'create') {
+      if (this.getDialogAction() === 'create' && this.data?.id) {
         // Proccess delayed requests
-        const rootObjectId = saveData.post[this.options.urn]['response'].id;
+        const rootObjectId = this.data?.id;
         this.options.urn = `${this.options.urn}/${rootObjectId}`;
         const createdRootObject = await window.app.broker.get(this.options.urn, 10000);
         this.data = createdRootObject.data;
@@ -1473,11 +1477,20 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
                 if (entry.payload.data.id) {
                   entry.payload.data.id = createdRootObject.data.relationships[entry.payload.data.id].data.id
                 }
-                
                 const response = await window.app.broker[operation](entry.urn, entry.payload, 10000);
-
-                if (response) {
-                  saveData[operation][type]['response'] = response;
+                if (response?.data) {
+                  if (this.data.relationships[type].elements?.length > -1) {
+                    this.data.relationships[type].elements.push(response.data);
+                  } else {
+                    this.data.relationships[type].elements = [response.data];
+                  }
+                  if (operation === 'post') {
+                    if (this.data.relationships[type].data?.length > -1) {
+                      this.data.relationships[type].data.push({type: response.type, id: response.id});
+                    } else {
+                      this.data.relationships[type].data = [{type: response.type, id: response.id}];
+                    } 
+                  }
                 }
               }
             }
