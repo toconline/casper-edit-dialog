@@ -16,6 +16,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       type: String,
       reflect: true
     },
+    /* Removes extra white space. Only available for wizard mode */
     noWhiteSpace: {
       type: Boolean,
       reflect: true,
@@ -424,11 +425,11 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     .edit-dialog__status-progress-page {
       position: absolute;
-      top: var(--ced-content-vertical-padding);
-      left: var(--ced-content-horizontal-padding);
-      width: calc(100% - 2 * var(--ced-content-horizontal-padding));
-      height: calc(100% - 2 * var(--ced-content-vertical-padding));
       z-index: 2;
+      top: var(--ced-wrapper-vertical-padding);
+      left: var(--ced-wrapper-horizontal-padding);
+      width: calc(100% - 2 * var(--ced-wrapper-horizontal-padding));
+      height: calc(100% - 2 * var(--ced-wrapper-vertical-padding));
       transition: opacity 0.3s ease;
     }
 
@@ -1400,6 +1401,12 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     return parseFloat(dimension.slice(0, -2));
   }
 
+  /**
+   * Converts the given dimension to a rem value.
+   * 1 rem = 16px, which is the browser's default font-size
+   *
+   * @param {Number} dimension numeric value that can be specified only in px.
+   */
   _convertDimensionToRem (dimension) {
     return dimension / 16 + 'rem';
   }
