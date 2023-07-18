@@ -1501,7 +1501,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
                     const itemIndex = this.data.relationships[sUrn[0]].elements.indexOf(this.data.relationships[sUrn[0]].elements.find(e => e.id == sUrn[1]));
                     this.data.relationships[sUrn[0]].elements[itemIndex] = response.data;
                   }
-                } else if (response?.data && operation === 'post' && this.rootObjectType() !== sUrn[0]) {
+                } else if (response?.data && this.data?.relationships && operation === 'post' && this.rootObjectType() !== sUrn[0]) {
                   // Creating new elements in relationships
                   this.data.relationships[sUrn[0]].data.push({type: response.type, id: response.id});
                   this.data.relationships[sUrn[0]].elements.push(response.data);
@@ -1537,7 +1537,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
                 }
                 const response = await window.app.broker[operation](entry.urn, entry.payload, 10000);
                 if (response?.data) {
-                  if (this.data.relationships[type].elements?.length > -1) {
+                  if (this.data.relationships[type]?.elements?.length > -1) {
                     this.data.relationships[type].elements.push(response.data);
                   } else {
                     this.data.relationships[type].elements = [response.data];

@@ -345,7 +345,6 @@ export class CasperEditDialogPage extends LitElement {
           }
           break;
         }
-      if (hasNewValue) console.log(elem)
       if (hasNewValue) return true;
     }
     return false;
@@ -357,7 +356,7 @@ export class CasperEditDialogPage extends LitElement {
     if (!unsavedChanges) {
       this.shadowRoot.querySelectorAll('casper-tabbed-items').forEach((cti) => {
         const tabs = cti._contentEl.querySelectorAll('.content__item');
-        if (tabs.length !== (this.editDialog.data?.relationships?.[cti.type]?.elements.length || 0)) unsavedChanges = true;
+        if (tabs.length !== (this.editDialog.data?.relationships?.[cti.type]?.elements?.length || 0)) unsavedChanges = true;
         tabs.forEach((tab,idx) => {
           if (!unsavedChanges) unsavedChanges = this.checkBindings(tab.querySelectorAll('[binding]'), this.editDialog.data?.relationships?.[cti.type]?.elements?.[idx]);
         });
