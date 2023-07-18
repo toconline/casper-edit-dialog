@@ -705,6 +705,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         message: 'Tem a certeza de que pretende fechar o diálogo sem gravar? Todas as alterações feitas serão perdidas.',
         type: 'warning',
         accept_callback: function () {
+          if (this.options.promise) this.options.promise.resolve();
           this.parentNode.removeChild(this);
         }.bind(this)
       };
@@ -1113,7 +1114,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           this.data  = response.data;
           this._id   = response.id;
         } catch (error) {
-          console.log(error);
+          console.error(error);
   
           await this.showStatusPage({ message: ['Erro! Ocorreu um problema ao tentar carregar os dados.'] });
           return;
@@ -1516,7 +1517,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
       this.openToast('As alterações foram gravadas com sucesso.', 'success');
     } catch (error) {
-      console.log(error);
+      console.error(error);
       this.openToast(error?.errors?.[0]?.detail ? error.errors[0].detail : 'Erro! Não foi possível gravar as alterações.', 'error');
       return;
     }
