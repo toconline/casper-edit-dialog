@@ -642,6 +642,19 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     if (changedProperties.has('_pagesContainerStyles')) {
       setTimeout(() => this.fixWizardOpacity(), 300);
     }
+
+    if (changedProperties.has('_activeIndex')) {
+      const index = this._activeIndex;
+
+      // This is the first time a page is created, so we don't have to wait for the transition to end
+      if (changedProperties.get('_activeIndex') === undefined) {
+        this.focusPageFirstEditableField(index);
+      } else {
+        setTimeout(() => {
+          this.focusPageFirstEditableField(index);
+        }, 1000);
+      }
+    }
   }
 
 
@@ -812,6 +825,34 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
     
     this._activeIndex = +newIndex;
+  }
+
+  focusPageFirstEditableField (pageIndex) {
+    const pageEl = this._pagesContainerEl.children.namedItem(`page-${pageIndex}`);
+    if (!pageEl) return;
+
+    const bindingEl = pageEl.shadowRoot.querySelector('[binding]:not([disabled]):not([readonly])');
+    const tabbedItemsEl = pageEl.shadowRoot.querySelector('casper-tabbed-items:not([disabled]):not([readonly])');
+
+    if (!bindingEl && !tabbedItemsEl) return;
+
+    const childrenArray = Array.from(pageEl.shadowRoot.children);
+    const bindingIndex = childrenArray.indexOf(bindingEl);
+    const tabbedItemsIndex = childrenArray.indexOf(tabbedItemsEl);
+
+    if (bindingIndex === -1 && tabbedItemsIndex !== -1) {
+      tabbedItemsEl.focusItemFirstEditableField(tabbedItemsEl.getActiveIndex());
+
+    } else if (tabbedItemsIndex === -1 && bindingIndex !== -1) {
+      bindingEl.focus({preventScroll: true});
+
+    } else {
+      if (bindingIndex < tabbedItemsIndex) {
+        bindingEl.focus({preventScroll: true});
+      } else {
+        tabbedItemsEl.focusItemFirstEditableField(tabbedItemsEl.getActiveIndex());
+      }
+    }
   }
 
   /* --- Labels --- */

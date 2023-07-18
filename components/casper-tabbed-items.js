@@ -452,6 +452,10 @@ class CasperTabbedItems extends LitElement {
     if (changedProperties.has('relationships')) { 
       this._loadFromResource();
     }
+
+    if (changedProperties.has('_activeIndex')) {
+      this.focusItemFirstEditableField(this._activeIndex);
+    }
   }
 
 
@@ -488,6 +492,10 @@ class CasperTabbedItems extends LitElement {
     return true;
   }
 
+  getActiveIndex () {
+    return this._activeIndex;
+  }
+
   /**
    * This method is responsible for scrolling the tabs wrapper.
    *
@@ -500,6 +508,13 @@ class CasperTabbedItems extends LitElement {
     } else if (direction === 'left') {
       this._tabsWrapperEl.scrollLeft -= value;
     }
+  }
+
+  focusItemFirstEditableField (index) {
+    const itemEl = this._contentEl.children.namedItem(`item-${index}`);
+
+    const bindingEl = itemEl?.querySelector('[binding]:not([disabled]):not([readonly])');
+    if (bindingEl) bindingEl.focus({preventScroll: true});
   }
 
   validate () {
