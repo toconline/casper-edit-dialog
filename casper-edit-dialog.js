@@ -1444,6 +1444,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           for (const entry of (data?.payloads|| [])) {
             if (!entry || !entry?.urn || entry.delayField) continue;
             const sUrn = entry.urn.split('/');
+            if (entry.relationship) sUrn[0] = entry.relationship;
             if (operation !== 'delete') {
               if (Object.keys(entry.payload.data.attributes).length) {
                 const response = await window.app.broker[operation](entry.urn, entry.payload, 10000);

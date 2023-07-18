@@ -264,12 +264,12 @@ export class CasperEditDialogPage extends LitElement {
       } else if (data.relationships) {
         // check for attribute within relationships
         // check within previously loaded element
-        if (data.relationships[this.__type]?.element) {
+        if (data.relationships[this.__type]?.elements?.[0]) {
           // using page type attribute
-          value = data.relationships[this.__type].element[relAttribute] ?? data.relationships[this.__type].element[binding];
-        } else if (data.relationships[binding]?.element) {
+          value = data.relationships[this.__type].elements[0][relAttribute] ?? data.relationships[this.__type].elements[0][binding];
+        } else if (data.relationships[binding]?.elements?.[0]) {
           // using element binding
-          value = data.relationships[binding].element[relAttribute] ?? data.relationships[binding].element[binding];
+          value = data.relationships[binding].elements[0][relAttribute] ?? data.relationships[binding].elements[0][binding];
         } else {
           // data does not contain relationship data loaded into element
           // attempt to get relationship data via broker
@@ -306,10 +306,10 @@ export class CasperEditDialogPage extends LitElement {
 
           if (route && id) {
             const response = await app.broker.get(`${route}/${id}`, 10000);
-            data.relationships[relationship].element = {};
+            data.relationships[relationship].elements = [{}];
 
             if (response.data) {
-              data.relationships[relationship].element = response.data;
+              data.relationships[relationship].elements[0] = response.data;
 
               value = relAttribute ? response.data[relAttribute] : response.data[binding];
             }
@@ -326,39 +326,40 @@ export class CasperEditDialogPage extends LitElement {
     this.afterLoad(data);
   }
 
-  hasUnsavedChanges () {
-    const checkBindings = (bindedElements, data) => {
-      for (const elem of bindedElements) {
-        let hasNewValue, elemValue;
-        const binding = elem.getAttribute('binding');
-        const relAttribute = elem.dataset.relationshipAttribute;
-        const initialValue = this.isCreate() ? null : this._getValue(binding, relAttribute, data);
-  
-        switch (elem.tagName.toLowerCase()) {
-          case 'paper-checkbox':
-            hasNewValue = elem.checked != (initialValue || false);
-            break;
-          case 'paper-input':
-          default:
-            elemValue = elem.value || null;
-            if (elemValue || initialValue) {
-              hasNewValue = elemValue != initialValue;
-            }
-            break;
+  checkBindings (bindedElements, data) {
+    for (const elem of bindedElements) {
+      let hasNewValue, elemValue;
+      const binding = elem.getAttribute('binding');
+      const relAttribute = elem.dataset.relationshipAttribute;
+      const initialValue = this.isCreate() ? null : this._getValue(binding, relAttribute, data);
+      switch (elem.tagName.toLowerCase()) {
+        case 'paper-checkbox':
+          hasNewValue = elem.checked != (initialValue || false);
+          if (hasNewValue) console.log(elem)
+          break;
+        case 'paper-input':
+        default:
+          elemValue = elem.value || null;
+          if (elemValue || initialValue) {
+            hasNewValue = elemValue != initialValue;
+          }
+          break;
         }
-        if (hasNewValue) return true;
-      }
-      return false;
+      if (hasNewValue) console.log(elem)
+      if (hasNewValue) return true;
     }
+    return false;
+  }
 
+  hasUnsavedChanges () {
     let unsavedChanges = false;
-    unsavedChanges = checkBindings(this.shadowRoot.querySelectorAll('[binding]'), this.editDialog.data);
+    unsavedChanges = this.checkBindings(this.shadowRoot.querySelectorAll('[binding]'), this.editDialog.data);
     if (!unsavedChanges) {
       this.shadowRoot.querySelectorAll('casper-tabbed-items').forEach((cti) => {
         const tabs = cti._contentEl.querySelectorAll('.content__item');
         if (tabs.length !== (this.editDialog.data?.relationships?.[cti.type]?.elements.length || 0)) unsavedChanges = true;
         tabs.forEach((tab,idx) => {
-          if (!unsavedChanges) unsavedChanges = checkBindings(tab.querySelectorAll('[binding]'), this.editDialog.data?.relationships?.[cti.type]?.elements?.[idx]);
+          if (!unsavedChanges) unsavedChanges = this.checkBindings(tab.querySelectorAll('[binding]'), this.editDialog.data?.relationships?.[cti.type]?.elements?.[idx]);
         });
       });
     }
@@ -509,14 +510,14 @@ export class CasperEditDialogPage extends LitElement {
     } else if (data.relationships) {
       // only load first entry by default
       if (this.__type && data.relationships[this.__type]) {
-        value = data.relationships[this.__type].element[binding];
+        value = data.relationships[this.__type].elements?.[0][binding];
       } else {
         Object.keys(data.relationships).forEach((key) => {
           if (key == binding) {
-            if (relAttribute && data.relationships[binding]?.element?.[relAttribute]) {
-              value = data.relationships[binding].element[relAttribute];
-            } else if (data.relationships[binding]?.element?.[binding]) {
-              value = data.relationships[binding].element[binding];
+            if (relAttribute && data.relationships[binding]?.elements?.[0]?.[relAttribute]) {
+              value = data.relationships[binding].elements[0][relAttribute];
+            } else if (data.relationships[binding]?.elements?.[0]?.[binding]) {
+              value = data.relationships[binding].elements[0][binding];
             } else if (data?.relationships?.[binding]?.data?.id){
               value = data.relationships[binding].data.id;
             }
