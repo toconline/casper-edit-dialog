@@ -341,17 +341,17 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       text-overflow: ellipsis;
     }
 
-    .edit-dialog__page-title:nth-last-child(2) {
-      font-size: 0.875em;
-      font-weight: 400;
-      color: #808080;
-    }
-
-    .edit-dialog__page-title:last-child,
-    .edit-dialog__general-title {
+    .edit-dialog__general-title,
+    .edit-dialog__page-title:first-child {
       font-size: 1.125em;
       font-weight: 700;
       color: #000;
+    }
+
+    .edit-dialog__page-title:nth-child(2) {
+      font-size: 0.875em;
+      font-weight: 400;
+      color: #808080;
     }
 
     :host([mode="wizard"]) .edit-dialog__page-title,
@@ -577,12 +577,12 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
             <casper-icon-button tooltip="Fechar" class="edit-dialog__close" icon="fa-light:times-circle" @click=${this.close.bind(this)}></casper-icon-button>
 
             <hgroup class="edit-dialog__header-text">
-              ${(this._pages.length > 0 && this._pages[this._activeIndex].title)
-                ? html`<h2 class="edit-dialog__page-title">${this._pages[this._activeIndex].title}</h2>`
-                : ''
-              }
               ${(this._title)
                 ? html`<h1 class="edit-dialog__general-title">${this._title}</h1>`
+                : ''
+              }
+              ${(this._pages.length > 0 && this._pages[this._activeIndex].title)
+                ? html`<h2 class="edit-dialog__page-title">${this._pages[this._activeIndex].title}</h2>`
                 : ''
               }
             </hgroup>
