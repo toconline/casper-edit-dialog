@@ -642,17 +642,13 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       setTimeout(() => this.fixWizardOpacity(), 300);
     }
 
-    if (changedProperties.has('_activeIndex')) {
+    if (changedProperties.has('_activeIndex') && changedProperties.get('_activeIndex') !== undefined) {
       const index = this._activeIndex;
 
-      // This is the first time a page is created, so we don't have to wait for the transition to end
-      if (changedProperties.get('_activeIndex') === undefined) {
+      // Focus can only be added after the page's transition has finished
+      setTimeout(() => {
         this.focusPageFirstEditableField(index);
-      } else {
-        setTimeout(() => {
-          this.focusPageFirstEditableField(index);
-        }, 1000);
-      }
+      }, 1000);
     }
   }
 
@@ -703,6 +699,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     // Then we create only the first page
     await this.activatePage(0, true);
     this._dialogEl.showModal();
+    this.focusPageFirstEditableField(0);
   }
 
   close () {
