@@ -821,6 +821,11 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
     
     this._activeIndex = +newIndex;
+
+    // If the previous page was invalid, we check its validity again
+    if (this._invalidPagesIndexes.has(previousIndex) && previousPage.validate(this.data)) {
+      this._invalidPagesIndexes.delete(previousIndex);
+    }
   }
 
   focusPageFirstEditableField (pageIndex) {
