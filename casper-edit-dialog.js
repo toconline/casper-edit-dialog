@@ -1017,13 +1017,13 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._toastLitEl.open({'text': text, 'duration': duration, 'backgroundColor': color});
   }
 
-  validate () {
+  validateAllPages () {
     let valid = true;
 
     for (const page of this._pagesContainerEl.children) {
       const index = +page.getAttribute('name')?.split('-')[1];
 
-      if (page._validate()) {
+      if (page.validate()) {
         if (this._invalidPagesIndexes.has(index)) this._invalidPagesIndexes.delete(index);
       } else {
         this._invalidPagesIndexes.add(index);
@@ -1051,7 +1051,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   }
 
   async save (close = true) {
-    const isValid = this.validate();
+    const isValid = this.validateAllPages();
     if (!isValid) return;
 
     try {
