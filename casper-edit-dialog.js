@@ -741,11 +741,15 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     if (this._state === 'show-status' || !notification) return;
 
     this.disableAllActions();
+    if (this._nextClosesWizard) this.changeNextButtonToText('Sair');
+    
     if (!this._statusProgressPageEl) await this._createStatusProgressPage();
 
     this._statusProgressPageEl.showNotificationStatus(notification, status);
     this._state = 'show-status';
     this._statusProgressPageEl.hidden = false;
+
+    if (this._nextClosesWizard) this.enableNext();
   }
 
   async showFreeStatusPage (options) {
@@ -784,7 +788,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
   showFatalError (notification) {
     this._nextClosesWizard = true;
-    this.showStatusPage(notification);
+    this.showStatusPage(notification, 'error');
   }
 
   async activatePage (newIndex, beforeShowModal = false) {
@@ -983,9 +987,9 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this.socket.subscribeJob(jobId, this._subscribeJobResponse.bind(this), timeout);
   }
 
-  showCustomNotification (notification) {
-    this.showStatusPage(notification);
+  showCustomNotification (notification, status) {
     this._nextClosesWizard = true;
+    this.showStatusPage(notification, status);
   }
 
   jobCompleted (notification) {
@@ -993,7 +997,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   }
 
   /**
-   * Show toast at the bottom of the pages-container
+   * Shows toast at the bottom of the pages-container.
    *
    * @param {String} text the text to display.
    * @param {Boolean} type controls the style.
@@ -1157,8 +1161,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           this._id   = response.id;
         } catch (error) {
           console.error(error);
-  
-          await this.showStatusPage({ message: ['Erro! Ocorreu um problema ao tentar carregar os dados.'] });
+          await this.showStatusPage({ message: ['Ocorreu um problema ao tentar carregar os dados.'] }, 'error');
           return;
         }
       }
@@ -1241,7 +1244,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   }
 
   _gotoNextPage () {
-    if (this._nextClosesWizard === true) {
+    if (this._nextClosesWizard) {
       this.close();
       return;
     }
@@ -1426,7 +1429,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           if ( this.errorsAreFatal === true ) {
             this.showFatalError(notification);
           } else {
-            this.showStatusPage(notification);
+            this.showStatusPage(notification, 'error');
           }
         }
         this._clearJob();
