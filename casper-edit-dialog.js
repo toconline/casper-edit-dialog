@@ -625,7 +625,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       this._dialogEl.style.opacity = this.options.initial_opacity;
     }
 
-    this._dialogEl.addEventListener('click', this._dialogClickHandler.bind(this));
     this._dialogEl.addEventListener('cancel', this._dialogCancelHandler.bind(this));
     this.addEventListener('casper-overlay-opened', this._casperOverlayOpenedHandler);
 
@@ -1194,26 +1193,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     event.stopPropagation();
     this._contentWrapperEl.appendChild(event.detail.element);
-  }
-
-  _dialogClickHandler (event) {
-    if (!event) return;
-
-    // Trick needed to fix problems related to the casper-date-picker and the top-layer
-    const clickedOnDatePicker = event.composedPath().find(element => (element.nodeName?.toLowerCase() === 'casper-date-picker' || element.nodeName?.toLowerCase() === 'vaadin-date-picker-overlay'))
-      ? true
-      : false;
-
-    const datePickerOverlay = this._contentWrapperEl.querySelector('vaadin-date-picker-overlay');
-    if (!clickedOnDatePicker && datePickerOverlay?.opened) {
-      datePickerOverlay.correspondingPicker.close();
-      return;
-    }
-
-    // A click on the ::backdrop generates the 'dialog' nodeName
-    if (event.target?.nodeName === 'DIALOG') {
-      this.close();
-    }
   }
 
   // Fired when user presses the 'esc' key
