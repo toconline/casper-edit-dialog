@@ -352,11 +352,14 @@ export class CasperEditDialogPage extends LitElement {
         case 'paper-input':
         default:
           elemValue = elem.value || null;
+          if (elem.getAttribute('multi-selection') && elemValue) elemValue = elemValue.split(','); // casper-select multi-selection
           if (elemValue || initialValue) {
             hasNewValue = elemValue != initialValue;
           }
           break;
         }
+
+
       if (hasNewValue) return true;
     }
     return false;
@@ -547,6 +550,10 @@ export class CasperEditDialogPage extends LitElement {
         break;
       case 'casper-select-lit':
         elem.setValue(value);
+        break;
+      case 'casper-select':
+        if (typeof value !== 'string') value = String(value);
+        elem.value = value;
         break;
       case 'paper-input':
       default:

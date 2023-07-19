@@ -449,7 +449,7 @@ class CasperTabbedItems extends LitElement {
       }
     }
 
-    if (changedProperties.has('relationships')) { 
+    if (changedProperties.has('relationships')) {
       this._loadFromResource();
     }
 
@@ -1017,6 +1017,10 @@ class CasperTabbedItems extends LitElement {
         break;
       case 'casper-select-lit':
         elem.setValue(value);
+        break;
+      case 'casper-select':
+        if (typeof value !== 'string') value = String(value);
+        elem.value = value;
         break;
       case 'paper-input':
       default:
