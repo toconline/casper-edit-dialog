@@ -116,9 +116,21 @@ export class CasperEditDialogPage extends LitElement {
   //                              ~~~ Public methods  ~~~                                  //
   //***************************************************************************************//
 
-  _validate () {
-    console.warn('A _validate method should be defined for the page.');
-    return true;
+  validate () {
+    let isPageValid = true;
+
+    const requiredValidations = this.validateRequiredFields();
+    const otherValidations = this._validate();
+
+    if (!requiredValidations || !otherValidations) isPageValid = false;
+
+    const allTabbedItems = this.shadowRoot.querySelectorAll('casper-tabbed-items');
+    for (const tabbedItems of allTabbedItems) {
+      const isValid = tabbedItems.validate();
+      if (!isValid) isPageValid = false;
+    }
+
+    return isPageValid;
   }
 
   /* Validates fields which have the "required" attribute. */
@@ -558,20 +570,8 @@ export class CasperEditDialogPage extends LitElement {
     }
   }
 
-  validate () {
-    let isPageValid = true;
-
-    const requiredValidations = this.validateRequiredFields();
-    const otherValidations = this._validate();
-
-    if (!requiredValidations || !otherValidations) isPageValid = false;
-
-    const allTabbedItems = this.shadowRoot.querySelectorAll('casper-tabbed-items');
-    for (const tabbedItems of allTabbedItems) {
-      const isValid = tabbedItems.validate();
-      if (!isValid) isPageValid = false;
-    }
-
-    return isPageValid;
+  _validate () {
+    console.warn('A _validate method should be defined for the page.');
+    return true;
   }
 }
