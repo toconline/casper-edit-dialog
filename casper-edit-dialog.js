@@ -631,9 +631,11 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     if (this.mode === 'wizard') {
       this._previousButtonEl.addEventListener('click', () => this._gotoPreviousPage());
       this._nextButtonEl.addEventListener('click', () => this._gotoNextPage());
+      this._errorsAreFatal = true;
     } else {
       this._previousButtonEl.addEventListener('click', () => this.save(false));
       this._nextButtonEl.addEventListener('click', () => this.save());
+      this._errorsAreFatal = false;
     }
   }
 
@@ -943,7 +945,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
    * @returns the promise for the caller to await on
    */
   async execJob (job, timeout, ttr, showStatusPage = true) {
-    this._runJobInBackground = showStatusPage ? false : true;
+    this._runJobInBackground = !showStatusPage;
     this._jobPromise = new CasperSocketPromise();
 
     await this._submitJobWithStrictValidity(job, timeout, ttr, true);
@@ -1412,10 +1414,12 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         } else if (typeof this['errorOn' + this._getCurrentPage().id] === 'function') {
           this['errorOn' + this._getCurrentPage().id].apply(this, [notification]);
         } else {
-          if ( this.errorsAreFatal === true ) {
-            this.showFatalError(notification);
-          } else {
-            this.showStatusPage(notification, 'error');
+          if (!this._runJobInBackground) {
+            if (this._errorsAreFatal) {
+              this.showFatalError(notification);
+            } else {
+              this.showStatusPage(notification, 'error');
+            }
           }
         }
         this._clearJob();
