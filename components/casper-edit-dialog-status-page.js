@@ -323,8 +323,8 @@ export class CasperEditDialogStatusPage extends LitElement {
           this.title = this.editDialog.i18n.apply(this.editDialog, notification.title);
         }
     
-        if (notification.message || notification.response?.body?.message) {
-          this.description = this.editDialog.i18n.apply(this.editDialog, notification.message || [notification.response?.body?.message]);
+        if (notification.message || notification.response?.body?.message || notification.message?.[0]) {
+          this.description = this.editDialog.i18n.apply(this.editDialog, notification.message || [notification.response?.body?.message] || notification.message?.[0]);
         }
       }
     } else {
@@ -354,6 +354,8 @@ export class CasperEditDialogStatusPage extends LitElement {
       await this.updateComplete;
       this.selfClose(options.self_close_duration);
     }
+
+    if (Object.hasOwn(options, 'timeout')) this.timeout = options.timeout;
   }
 
   /**
@@ -361,37 +363,31 @@ export class CasperEditDialogStatusPage extends LitElement {
    * @param {Number} count
    * @param {Boolean} forced
    */
-  setProgressCount (count, forced = false) {
+  setProgressCount (count, forced = false, timeout) {
     if (count !== this.progress || forced) {
       this.state = 'connecting';
       this.progress = count;
+      if (timeout) this.timeout = timeout;
+
+      this._setStateDefaultValues();
     }
   }
 
   /**
    * Updates the progress display
    *
-   * @param {Number} index  not used here we only have one bar
+   * @param {Number} index  not used here, since we only have one bar. kept for backwards compatibility
    * @param {String} description smaller text to display
    * @param {Number} progress integer value between 0 and 100
    * @param {String} title bigger text to display
    */
-  updateProgress (index = null, description = '', progress, title = 'Em progresso...' ) {
+  updateProgress (index = null, description = '', progress, title = 'Em progresso...') {
     this.state = 'connected';
     this.progress = progress;
     this.title = title;
     this.description = description;
-  }
 
-  showResponse (response) {
-    this.state = 'success';
-
-    if (response.custom) {
-      this.setCustom(response.message[0]);
-    } else {
-      this.clearCustom();
-      this.title = response.message[0];
-    }
+    this._setStateDefaultValues();
   }
 
 
@@ -403,6 +399,12 @@ export class CasperEditDialogStatusPage extends LitElement {
   _setStateDefaultValues () {
     switch (this.state) {
       case 'connecting':
+        if (!this.title) this.title = 'Em fila de espera...';
+        if (!this.description) this.description = 'Por favor aguarde.';
+        this._hideButton = true;
+        break;
+
+      case 'connected':
         if (!this.title) this.title = 'Em progresso...';
         if (!this.description) this.description = 'A realizar ação, por favor aguarde.';
         this._hideButton = true;

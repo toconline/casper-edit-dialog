@@ -727,14 +727,19 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._confirmationDialogEl.open(options);
   }
 
-  async showProgressPage () {
+  async showProgressPage (timeout = 3000, count = 1) {
     if (this._state === 'show-progress') return;
 
+    this.disableAllActions();
     if (!this._statusProgressPageEl) await this._createStatusProgressPage();
 
-    this._statusProgressPageEl.setProgressCount(1, true);
+    this._statusProgressPageEl.setProgressCount(count, true, timeout);
     this._state = 'show-progress';
     this._statusProgressPageEl.hidden = false;
+  }
+
+  updateProgressPage (index = null, description, progress, title = 'Em progresso...') {
+    this._statusProgressPageEl.updateProgress(index, description, progress, title);
   }
 
   async showStatusPage (notification, status) {
@@ -941,18 +946,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._runJobInBackground = showStatusPage ? false : true;
     this._jobPromise = new CasperSocketPromise();
 
-    if (this._runJobInBackground) {
-      this.submitJobWithStrictValidity(job, timeout, ttr, true);
-    } else {
-      this.disableAllActions();
-      if (!this._statusProgressPageEl) await this._createStatusProgressPage();
-      this.submitJobWithStrictValidity(job, timeout, ttr, true);
-      this._statusProgressPageEl.timeout = timeout;
-      this._statusProgressPageEl.state = 'connecting';
-      this._statusProgressPageEl.progress = 0;
-      this._statusProgressPageEl.message = 'Em fila de espera. Por favor, aguarde';
-    }
-
+    await this._submitJobWithStrictValidity(job, timeout, ttr, true);
     return this._jobPromise;
   }
 
@@ -962,28 +956,23 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
    * @param {Integer} timeout
    * @param {Integer} ttr
    *
-   * @return the progress page
    */
-  submitJobWithStrictValidity (job, timeout, ttr, hideTimeout) {
+  async _submitJobWithStrictValidity (job, timeout, ttr, hideTimeout) {
     const ltimeout = parseInt(timeout);
-    const lttr     = parseInt(ttr);
+    const lttr = parseInt(ttr);
 
-    if ( isNaN(ltimeout) || isNaN(lttr) ) {
-      throw 'Strict timing requires valid ttr and timeout!!!';
-    }
+    if (isNaN(ltimeout) || isNaN(lttr) ) throw 'Strict timing requires valid ttr and timeout!!!';
+    
     job.validity = ltimeout - lttr - 2; // 2 seconds safety margin
-    if ( job.validity < 1 ) {
-      throw 'Strict timing requires a timeout greater than ttr + 3!!!")';
-    }
+    if (job.validity < 1) throw 'Strict timing requires a timeout greater than ttr + 3!!!")';
 
-    if (!this._runJobInBackground) this.showProgressPage();
+    if (!this._runJobInBackground) await this.showProgressPage(ltimeout, 0);
     this._setControlledSubmission();
     this.socket.submitJob(job, this._submitJobResponse.bind(this), { validity: job.validity, ttr: lttr, timeout: ltimeout, hideTimeout: !!hideTimeout });
-    
   }
 
   subscribeJob (jobId, timeout) {
-    if (!this._runJobInBackground) this.showProgressPage();
+    if (!this._runJobInBackground) this.showProgressPage(timeout);
     this.socket.subscribeJob(jobId, this._subscribeJobResponse.bind(this), timeout);
   }
 
@@ -1064,7 +1053,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     if (!isValid) return;
 
     try {
-      await this.showFreeStatusPage({state: 'connecting', description: 'A guardar as alterações efetuadas, por favor aguarde.'});
+      await this.showFreeStatusPage({state: 'connecting', title: 'Em progresso...', description: 'A guardar as alterações efetuadas, por favor aguarde.', timeout: 30000});
 
       const saveData = {
         patch: {}, // patch is the default operation
@@ -1361,12 +1350,9 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     switch (notification.status) {
       case 'in-progress':
         if (!this._runJobInBackground) {
-          this.showProgressPage();
-          if (notification.index + 1 > this._statusProgressPageEl.progressCount) {
-            this._statusProgressPageEl.setProgressCount(notification.index + 1);
-          }
-
-          this._statusProgressPageEl.updateProgress(notification.index, this.i18n.apply(this, notification.message), notification.progress);
+          const progressCount = (notification.index + 1 > this._statusProgressPageEl.progressCount) ? notification.index + 1 : 1;
+          await this.showProgressPage(progressCount);
+          this.updateProgressPage(notification.index, this.i18n.apply(this, notification.message), notification.progress);
         }
 
         if (typeof this['jobProgressOn' + this._getCurrentPage().id] === 'function') {
