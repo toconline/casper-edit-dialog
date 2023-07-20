@@ -194,19 +194,21 @@ export class CasperEditDialogStatusPage extends LitElement {
         left: 0;
         height: 100%;
         width: 0;
-        border-top-left-radius: calc(var(--radius-primary, 8px) - 3px);
-        border-bottom-left-radius: calc(var(--radius-primary, 8px) - 3px);
+        border-top-left-radius: calc(var(--radius-primary, 8px) - 2px);
+        border-bottom-left-radius: calc(var(--radius-primary, 8px) - 2px);
         background: transparent;
         border: solid 1px rgb(var(--state-color-rgb));
         border-right-color: rgba(var(--state-color-rgb), 0);
         box-sizing: border-box;
+        opacity: 0;
       }
 
-      :host([self-close]) .status-page__button::before {
+      :host([self-close="true"]) .status-page__button::before {
+        opacity: 1;
         width: 100%;
         border-right-color: rgba(var(--state-color-rgb), 1);
-        border-top-right-radius: calc(var(--radius-primary, 8px) - 3px);
-        border-bottom-right-radius: calc(var(--radius-primary, 8px) - 3px);
+        border-top-right-radius: calc(var(--radius-primary, 8px) - 2px);
+        border-bottom-right-radius: calc(var(--radius-primary, 8px) - 2px);
         transition: width var(--self-close-transition-duration), border-right-color 0.15s linear calc(var(--self-close-transition-duration) - 0.15s), border-radius 1s linear calc(var(--self-close-transition-duration) - 1s);
       }
 
@@ -214,15 +216,6 @@ export class CasperEditDialogStatusPage extends LitElement {
         /* Needed to fix the stacking context */
         position: relative;
       }
-
-      /* .bordered {
-        border: 2px gray solid;
-      } */
-
-      /* .spinner {
-        display: flex;
-        height: 4.375rem;
-      } */
     `
   ];
 
@@ -235,6 +228,7 @@ export class CasperEditDialogStatusPage extends LitElement {
     this.description  = '';
 
     this._hideButton = true;
+    this._selfClose = false;
   }
 
 
@@ -296,8 +290,9 @@ export class CasperEditDialogStatusPage extends LitElement {
   }
 
   resetValues () {
-    this.state    = undefined;
+    this.state = undefined;
     this.progress = undefined;
+    this._selfClose = false;
     this.clearText();
     this.clearCustom();
   }
@@ -309,6 +304,7 @@ export class CasperEditDialogStatusPage extends LitElement {
 
 
   showNotificationStatus (notification, state = '') {
+    this._selfClose = false;
     this.clearText();
     this.clearCustom();
     this.state = state;
@@ -340,6 +336,7 @@ export class CasperEditDialogStatusPage extends LitElement {
    * @param {Object} options Available options include: state, title, description, hide_button, self_close_duration
    */
   async showFreeStatus (options) {
+    this._selfClose = false;
     this.clearText();
     this.clearCustom();
     this.state = options.state;
