@@ -7,6 +7,7 @@ import { mediaQueriesBreakpoints } from './components/casper-edit-dialog-constan
 import { CasperEditDialogPage } from './components/casper-edit-dialog-page.js';
 import '@cloudware-casper/casper-icons/casper-icon.js';
 import '@cloudware-casper/casper-icons/casper-icon-button.js';
+import './components/casper-edit-dialog-status-page.js';
 import './components/casper-confirmation-dialog.js';
 import './components/casper-toast-lit.js';
 
@@ -519,6 +520,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
   `;
 
+  get statusProgressPageTag () {
+    return 'casper-edit-dialog-status-page';
+  }
+
   constructor () {
     super();
 
@@ -745,7 +750,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   }
 
   async showStatusPage (notification, status) {
-    if (this._state === 'show-status' || !notification) return;
+    if (!notification) return;
 
     this.disableAllActions();
     if (this._nextClosesWizard) this.changeNextButtonToText('Sair');
@@ -760,7 +765,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   }
 
   async showFreeStatusPage (options) {
-    if (this._state === 'show-status') return;
 
     this.disableAllActions();
     if (!this._statusProgressPageEl) await this._createStatusProgressPage();
@@ -1166,10 +1170,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   }
 
   async _createStatusProgressPage () {
-    const tagName = 'casper-edit-dialog-status-page';
-    await import(`./components/${tagName}.js`);
-
-    this._statusProgressPageEl = document.createElement(tagName);
+    this._statusProgressPageEl = document.createElement(this.statusProgressPageTag);
     this._statusProgressPageEl.editDialog = this;
     // For backwards compatibility
     this._statusProgressPageEl.wizard = this;
