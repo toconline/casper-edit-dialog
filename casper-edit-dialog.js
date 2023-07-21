@@ -631,6 +631,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
 
     this._dialogEl.addEventListener('cancel', this._dialogCancelHandler.bind(this));
+    this._pagesContainerEl.addEventListener('keydown', this._keydownHandler.bind(this));
     this.addEventListener('casper-overlay-opened', this._casperOverlayOpenedHandler);
 
     if (this.mode === 'wizard') {
@@ -1125,6 +1126,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   //***************************************************************************************//
 
   async _createPage (index) {
+    if (!this._pages[index]) return;
+
     const newPage = document.createElement(this._pages[index].tag_name);
     newPage.setAttribute('name', `page-${index}`);
     newPage.editDialog = this;
@@ -1182,6 +1185,44 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
   _isCasperEditDialogPage (pageEl) {
     return pageEl instanceof CasperEditDialogPage;
+  }
+
+  _keydownHandler (event) {
+    if (event.key === 'Tab') {
+      const field = event.composedPath().findLast((element) => element.focused === true);
+      if (!field) return;
+      
+      if (field.nextElementSibling) {
+        const isNextSiblingFocusable = (
+             !field.nextElementSibling.hasAttribute('disabled') 
+          && !field.nextElementSibling.hasAttribute('readonly') 
+          && !field.nextElementSibling.hasAttribute('hidden')
+        );
+
+        if (isNextSiblingFocusable) return;
+          
+        const childrenArr = Array.from(this._getCurrentPage().shadowRoot.children);
+        const fieldIndex = childrenArr.indexOf(field);
+
+        if (fieldIndex !== -1) {
+          const focusableSibling = this._getCurrentPage().shadowRoot.querySelector(`:nth-child(n+${fieldIndex + 2}):not([disabled]:not([readonly]):not([hidden]))`);
+
+          if (focusableSibling) {
+            focusableSibling.focus();
+
+          // There aren't any focusable siblings, so we go to the next page if it exists
+          } else {
+            const nextPageIndex = +this._activeIndex + 1;
+            if (this._pages[nextPageIndex]) this.activatePage(nextPageIndex);
+          }
+        }
+      
+      // There isn't a next sibling, so we go to the next page if it exists
+      } else {
+        const nextPageIndex = +this._activeIndex + 1;
+        if (this._pages[nextPageIndex]) this.activatePage(nextPageIndex);
+      }
+    }
   }
 
   // All components which use casper-overlay need to have their overlays moved to the stacking context of the top-layer, otherwise they wouldn't be visible
