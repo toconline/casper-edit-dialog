@@ -727,6 +727,23 @@ class CasperTabbedItems extends LitElement {
                   attributesPatch[binding] = elem.checked;
                 }
                 break;
+              case 'casper-address':
+                const address = elem.getAddressData();
+                for (const key in address) {
+                  const addrField = address[key];
+                  if (item[key]) {
+                    if (addrField != item[key]) {
+                      attributesPatch[key] = addrField;
+                    }
+                  } else if (item.relationships[key]) {
+                    if (addrField != item.relationships[key].data.id) {
+                      attributesPatch[key] = addrField;
+                    }
+                  } else {
+                    attributesPatch[key] = addrField;
+                  }
+                }
+                break;
               case 'paper-input':
               default:
                 if (item[binding]) {
@@ -794,6 +811,12 @@ class CasperTabbedItems extends LitElement {
               break;
             case 'paper-checkbox':
               attributesPost[binding] = elem.checked;
+              break;
+            case 'casper-address':
+              const address = elem.getAddressData();
+              for (const key in address) {
+                attributesPost[key] = address[key];
+              }
               break;
             case 'paper-input':
             default:
@@ -938,7 +961,9 @@ class CasperTabbedItems extends LitElement {
     data.forEach(page => {
       for (const elem of this.shadowRoot.querySelector(`[item-id="${page.id}"]`)?.querySelectorAll('[binding]')) {
         const binding = elem.getAttribute('binding');
-        if (page?.values[binding]) {
+        if (binding === '..') {
+          this._setValue(elem, page.values);
+        } else if (page?.values[binding]) {
           this._setValue(elem, page.values[binding]);
         } else if (page?.values?.relationships?.[binding]?.data?.id) {
           this._setValue(elem, page?.values?.relationships?.[binding]?.data?.id);
@@ -1021,6 +1046,9 @@ class CasperTabbedItems extends LitElement {
       case 'casper-select':
         if (typeof value !== 'string') value = String(value);
         elem.value = value;
+        break;
+      case 'casper-address':
+        elem.setValues(value);
         break;
       case 'paper-input':
       default:

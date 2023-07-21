@@ -270,7 +270,9 @@ export class CasperEditDialogPage extends LitElement {
       const relAttribute = elem.dataset.relationshipAttribute;
       let route, id, value, relationship;
 
-      if (data[binding]) {
+      if (binding === '..') {
+        value = data;
+      } else if (data[binding]) {
         // set attribute from binding key
         value = data[binding];
       } else if (data.relationships) {
@@ -347,6 +349,15 @@ export class CasperEditDialogPage extends LitElement {
       switch (elem.tagName.toLowerCase()) {
         case 'paper-checkbox':
           hasNewValue = elem.checked != (initialValue || false);
+          if (hasNewValue) console.log(elem)
+          break;
+        case 'casper-address':
+          const address = elem.getAddressData();
+          for (const key in address) {
+            if (!hasNewValue) {
+              hasNewValue = address[key] !== this._getValue(key, relAttribute, data);
+            }
+          }
           if (hasNewValue) console.log(elem)
           break;
         case 'paper-input':
@@ -554,6 +565,9 @@ export class CasperEditDialogPage extends LitElement {
       case 'casper-select':
         if (typeof value !== 'string') value = String(value);
         elem.value = value;
+        break;
+      case 'casper-address':
+        elem.setValues(value);
         break;
       case 'paper-input':
       default:
