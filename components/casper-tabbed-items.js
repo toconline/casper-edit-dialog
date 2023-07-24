@@ -959,7 +959,7 @@ class CasperTabbedItems extends LitElement {
 
   _setBindingData (data) {
     data.forEach(page => {
-      for (const elem of this.shadowRoot.querySelector(`[item-id="${page.id}"]`)?.querySelectorAll('[binding]')) {
+      for (const elem of (this.shadowRoot.querySelector(`[item-id="${page.id}"]`)?.querySelectorAll('[binding]') || [])) {
         const binding = elem.getAttribute('binding');
         if (binding === '..') {
           this._setValue(elem, page.values);
@@ -976,7 +976,9 @@ class CasperTabbedItems extends LitElement {
     const pages = this.shadowRoot.querySelectorAll('[item-id]');
     for (const elem of pages[pages.length-1]?.querySelectorAll('[binding]')) {
       const binding = elem.getAttribute('binding');
-      if (page?.values[binding]) {
+      if (binding === '..') {
+        this._setValue(elem, page.values);
+      } else if (page?.values[binding]) {
         this._setValue(elem, page.values[binding]);
       } else if (page?.values?.relationships?.[binding]?.data?.id) {
         this._setValue(elem, page?.values?.relationships?.[binding]?.data?.id);
