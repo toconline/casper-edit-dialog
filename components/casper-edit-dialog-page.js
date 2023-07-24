@@ -124,12 +124,6 @@ export class CasperEditDialogPage extends LitElement {
 
     if (!requiredValidations || !otherValidations) isPageValid = false;
 
-    const allTabbedItems = this.shadowRoot.querySelectorAll('casper-tabbed-items');
-    for (const tabbedItems of allTabbedItems) {
-      const isValid = tabbedItems.validate();
-      if (!isValid) isPageValid = false;
-    }
-
     return isPageValid;
   }
 
