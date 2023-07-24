@@ -951,7 +951,7 @@ class CasperTabbedItems extends LitElement {
     });
 
     this.items = items;
-
+    if (this._activeIndex > this.items.length - 1) this.activateItem(0);
     await this.updateComplete;
     
     this._setBindingData(data);
