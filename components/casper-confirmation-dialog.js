@@ -155,7 +155,7 @@ class CasperConfirmationDialog extends LitElement {
     
         <div class="confirmation-dialog__actions">
           <button class="edit-dialog__button" type="secondary" @click=${this.close.bind(this)}>${this._reject}</button>
-          <button class="edit-dialog__button" @click=${this.confirm.bind(this)}>${this._accept}</button>
+          <button class="edit-dialog__button" @click=${this.confirm.bind(this)} autofocus>${this._accept}</button>
         </div>
       </dialog>
     `;
