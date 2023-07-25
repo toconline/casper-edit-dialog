@@ -116,11 +116,11 @@ export class CasperEditDialogPage extends LitElement {
   //                              ~~~ Public methods  ~~~                                  //
   //***************************************************************************************//
 
-  validate () {
+  async validate () {
     let isPageValid = true;
 
     const requiredValidations = this.validateRequiredFields();
-    const otherValidations = this._validate();
+    const otherValidations = await this._validate();
 
     if (!requiredValidations || !otherValidations) isPageValid = false;
 
