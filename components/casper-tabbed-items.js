@@ -353,6 +353,7 @@ class CasperTabbedItems extends LitElement {
     this._invalidTabsIndexes = new Set();
     this._tabsWrapperClasses = { 'shadow-left': false, 'shadow-right': false };
     this.type = '';
+    this.nestedComponents = ['casper-address'];
   }
 
   connectedCallback() {
@@ -454,7 +455,7 @@ class CasperTabbedItems extends LitElement {
     }
 
     if (changedProperties.has('_activeIndex')) {
-      this.focusItemFirstEditableField(this._activeIndex);
+      if (this.items?.length > 0 ) this.focusItemFirstEditableField(this._activeIndex);
     }
   }
 
@@ -510,11 +511,26 @@ class CasperTabbedItems extends LitElement {
     }
   }
 
-  focusItemFirstEditableField (index) {
+  async focusItemFirstEditableField (index) {
     const itemEl = this._contentEl.children.namedItem(`item-${index}`);
+    if (!itemEl) return;
 
-    const bindingEl = itemEl?.querySelector('[binding]:not([disabled]):not([readonly])');
-    if (bindingEl) bindingEl.focus({preventScroll: true});
+    const childEl = Array.from(itemEl.children).find(element => {
+      return (element.focused !== undefined || this.nestedComponents.includes(element.nodeName.toLowerCase())) && (!element.hasAttribute('disabled') && !element.hasAttribute('readonly'));
+    });
+
+    if (!childEl) return;
+
+    if (this.nestedComponents.includes(childEl.nodeName.toLowerCase())) {
+      await childEl.updateComplete;
+
+      const childrenArr = Array.from(childEl.shadowRoot.children);
+      const focusableEl = childrenArr?.find(el => (el.focused !== undefined && !el.hasAttribute('disabled') && !el.hasAttribute('readonly')));
+      focusableEl?.focus({preventScroll: true});
+
+    } else {
+      childEl.focus({preventScroll: true});
+    }
   }
 
   validate () {
