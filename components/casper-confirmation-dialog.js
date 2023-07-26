@@ -138,11 +138,7 @@ class CasperConfirmationDialog extends LitElement {
 
     window.confirmationDialog = this;
 
-    this._type = 'regular';
-    this._title = '';
-    this._message = '';
-    this._accept = 'Sim';
-    this._reject = 'Cancelar';
+    this.setInitialValues();
   }
 
   render () {
@@ -165,6 +161,14 @@ class CasperConfirmationDialog extends LitElement {
     this._confirmationDialogEl = this.shadowRoot.getElementById('confirmationDialog');
   }
 
+  setInitialValues () {
+    this._type = 'regular';
+    this._title = '';
+    this._message = '';
+    this._accept = 'Sim';
+    this._reject = 'Cancelar';
+  }
+
   open (options) {
     this._options = options;
     if (this._options.type) this._type = this._options.type;
@@ -179,6 +183,9 @@ class CasperConfirmationDialog extends LitElement {
 
   close () {
     this._confirmationDialogEl.close();
+
+    this.style.removeProperty('--ccd-width');
+    this.setInitialValues();
   }
 
   confirm () {
