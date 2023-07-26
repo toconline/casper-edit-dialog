@@ -530,6 +530,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     window.ced = this;
 
     this.mode = 'dialog';
+    this.nestedComponents = ['casper-tabbed-items'];
+
     this._state = 'normal';
     this._title = '';
     this._pages = [];
@@ -844,31 +846,23 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
   }
 
+
+
+
   focusPageFirstEditableField (pageIndex) {
     const pageEl = this._pagesContainerEl.children.namedItem(`page-${pageIndex}`);
     if (!pageEl) return;
 
-    const bindingEl = pageEl.shadowRoot.querySelector('[binding]:not([disabled]):not([readonly])');
-    const tabbedItemsEl = pageEl.shadowRoot.querySelector('casper-tabbed-items:not([disabled]):not([readonly])');
+    const childEl = Array.from(pageEl.shadowRoot.children).find(element => {
+      return (typeof element.focused === 'boolean' || this.nestedComponents.includes(element.nodeName.toLowerCase())) && (!element.hasAttribute('disabled') && !element.hasAttribute('readonly'));
+    });
 
-    if (!bindingEl && !tabbedItemsEl) return;
+    if (!childEl) return;
 
-    const childrenArray = Array.from(pageEl.shadowRoot.children);
-    const bindingIndex = childrenArray.indexOf(bindingEl);
-    const tabbedItemsIndex = childrenArray.indexOf(tabbedItemsEl);
-
-    if (bindingIndex === -1 && tabbedItemsIndex !== -1) {
-      tabbedItemsEl.focusItemFirstEditableField(tabbedItemsEl.getActiveIndex());
-
-    } else if (tabbedItemsIndex === -1 && bindingIndex !== -1) {
-      bindingEl.focus({preventScroll: true});
-
+    if (this.nestedComponents.includes(childEl.nodeName.toLowerCase())) {
+      childEl.focusItemFirstEditableField();
     } else {
-      if (bindingIndex < tabbedItemsIndex) {
-        bindingEl.focus({preventScroll: true});
-      } else {
-        tabbedItemsEl.focusItemFirstEditableField(tabbedItemsEl.getActiveIndex());
-      }
+      childEl.focus({preventScroll: true});
     }
   }
 
@@ -1190,32 +1184,37 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
   _keydownHandler (event) {
     if (event.key === 'Tab') {
-      const field = event.composedPath().findLast((element) => element.focused === true);
-      if (!field) return;
+      const currentField = event.composedPath().findLast((element) => element.focused === true);
+      if (!currentField) return;
       
-      if (field.nextElementSibling) {
+      if (currentField.nextElementSibling) {
         const isNextSiblingFocusable = (
-             !field.nextElementSibling.hasAttribute('disabled') 
-          && !field.nextElementSibling.hasAttribute('readonly') 
-          && !field.nextElementSibling.hasAttribute('hidden')
+             !currentField.nextElementSibling.hasAttribute('disabled') 
+          && !currentField.nextElementSibling.hasAttribute('readonly') 
+          && !currentField.nextElementSibling.hasAttribute('hidden')
         );
 
         if (isNextSiblingFocusable) return;
-          
-        const childrenArr = Array.from(this._getCurrentPage().shadowRoot.children);
-        const fieldIndex = childrenArr.indexOf(field);
 
-        if (fieldIndex !== -1) {
-          const focusableSibling = this._getCurrentPage().shadowRoot.querySelector(`:nth-child(n+${fieldIndex + 2}):not([disabled]:not([readonly]):not([hidden]))`);
+        const siblingsArr = Array.from(this._getCurrentPage().shadowRoot.children);
+        const currentFieldIndex = siblingsArr.indexOf(field);
+        if (currentFieldIndex === -1) return;
 
-          if (focusableSibling) {
-            focusableSibling.focus();
+        const focusableSiblingEl = siblingsArr.find((element, index) => {
+          return (index > currentFieldIndex) && (typeof element.focused === 'boolean' || this.nestedComponents.includes(element.nodeName.toLowerCase())) && (!element.hasAttribute('disabled') && !element.hasAttribute('readonly'));
+        });
 
-          // There aren't any focusable siblings, so we go to the next page if it exists
+        if (focusableSiblingEl) {
+          if (this.nestedComponents.includes(focusableSiblingEl.nodeName.toLowerCase())) {
+            focusableSiblingEl.focusItemFirstEditableField();
           } else {
-            const nextPageIndex = +this._activeIndex + 1;
-            if (this._pages[nextPageIndex]) this.activatePage(nextPageIndex);
+            focusableSiblingEl.focused = true;
           }
+
+        // There aren't any focusable siblings, so we go to the next page if it exists
+        } else {
+          const nextPageIndex = +this._activeIndex + 1;
+          if (this._pages[nextPageIndex]) this.activatePage(nextPageIndex);
         }
       
       // There isn't a next sibling, so we go to the next page if it exists
