@@ -26,9 +26,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     _title: {
       type: String
     },
-    _type: {
-      type: String
-    },
     _pages: {
       type: Array
     },
@@ -1115,7 +1112,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     return this.options.urn.split('/').length > 1 ? 'edit' : 'create';
   }
 
-  rootObjectType () {
+  rootResource () {
     return this.options.urn.split('/')[0];
   }
 
@@ -1512,7 +1509,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
               if (Object.keys(entry.payload.data.attributes).length) {
                 const response = await window.app.broker[operation](entry.urn, entry.payload, 10000);
                 if (response?.data && operation === 'patch') {
-                  if (this.rootObjectType() === sUrn[0]) {
+                  if (this.rootResource() === sUrn[0]) {
                     // Updating root element
                     response.data.relationships = this.data.relationships;
                     this.data = response.data;
@@ -1522,11 +1519,11 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
                     const itemIndex = this.data.relationships[sUrn[0]].elements.indexOf(this.data.relationships[sUrn[0]].elements.find(e => e.id == sUrn[1]));
                     this.data.relationships[sUrn[0]].elements[itemIndex] = response.data;
                   }
-                } else if (response?.data && this.data?.relationships && operation === 'post' && this.rootObjectType() !== sUrn[0]) {
+                } else if (response?.data && this.data?.relationships && operation === 'post' && this.rootResource() !== sUrn[0]) {
                   // Creating new elements in relationships
                   this.data.relationships[sUrn[0]].data.push({type: response.type, id: response.id});
                   this.data.relationships[sUrn[0]].elements.push(response.data);
-                } else if (!this.data && operation === 'post' && this.rootObjectType() === sUrn[0]) {
+                } else if (!this.data && operation === 'post' && this.rootResource() === sUrn[0]) {
                   // Creating new root element
                   this.data = {id: response.id};
                 }

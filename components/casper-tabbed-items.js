@@ -11,7 +11,7 @@ class CasperTabbedItems extends LitElement {
     items: {
       type: Array
     },
-    relationships: {
+    resourceItems: {
       type: Array
     },
     showNewItemsAction: {
@@ -352,7 +352,7 @@ class CasperTabbedItems extends LitElement {
     this._activeIndex = 0;
     this._invalidTabsIndexes = new Set();
     this._tabsWrapperClasses = { 'shadow-left': false, 'shadow-right': false };
-    this.type = '';
+    this.resourceName = '';
     this.nestedComponents = ['casper-address'];
   }
 
@@ -450,7 +450,7 @@ class CasperTabbedItems extends LitElement {
       }
     }
 
-    if (changedProperties.has('relationships')) {
+    if (changedProperties.has('resourceItems')) {
       this._loadFromResource();
     }
 
@@ -690,35 +690,35 @@ class CasperTabbedItems extends LitElement {
     let saveData = {post:{},patch:{},delete:{}};
 
     ['patch', 'post', 'delete'].forEach((request) => {
-      if (!saveData[request][this.type]) {
-        saveData[request][this.type] = {
+      if (!saveData[request][this.resourceName]) {
+        saveData[request][this.resourceName] = {
           payloads: [{
-            relationship: this.type,
+            relationship: this.resourceName,
             urn: null
           }]
         }
       }
 
       if (request != 'delete') {
-        saveData[request][this.type]['payloads'][0]['payload'] = {
+        saveData[request][this.resourceName]['payloads'][0]['payload'] = {
           data: {
-            type: this.type,
+            type: this.resourceName,
             attributes: {}
           }
         }
       }
 
       if (request == 'patch') {
-        saveData[request][this.type]['payloads'][0]['payload']['data']['id'] = null;
+        saveData[request][this.resourceName]['payloads'][0]['payload']['data']['id'] = null;
       }
     });
 
 
-    if (this.relationships?.data?.length) {
+    if (this.resourceItems?.data?.length) {
       // if there's data, there are elements in the structure with the default values
       // loop elements and find their respective tab via data-id
       // if tab is missing, it must've been deleted and should be added to the 'delete' saveData
-      this.relationships.elements.forEach((item, index) => {
+      this.resourceItems.elements.forEach((item, index) => {
         const tab = this._contentEl.querySelector(`.content__item[item-id="${item.id}"]`);
 
         if (tab) {
@@ -779,26 +779,26 @@ class CasperTabbedItems extends LitElement {
           }
 
           if (Object.entries(attributesPatch)) {
-            if (!saveData.patch[this.type].payloads[index]) {
-              saveData.patch[this.type].payloads[index] = {
-                urn: `${this.type}/${this.relationships.data[index].id}`,
+            if (!saveData.patch[this.resourceName].payloads[index]) {
+              saveData.patch[this.resourceName].payloads[index] = {
+                urn: `${this.resourceName}/${this.resourceItems.data[index].id}`,
                 payload: {
                   data: {
-                    type: this.type,
-                    id: this.relationships.data[index].id,
+                    type: this.resourceName,
+                    id: this.resourceItems.data[index].id,
                     attributes: attributesPatch
                   }
                 }
               }
             } else {
-              saveData.patch[this.type].payloads[index].urn = `${this.type}/${this.relationships.data[index].id}`;
-              saveData.patch[this.type].payloads[index].payload.data.id = this.relationships.data[index].id;
-              saveData.patch[this.type].payloads[index].payload.data.attributes = attributesPatch;
+              saveData.patch[this.resourceName].payloads[index].urn = `${this.resourceName}/${this.resourceItems.data[index].id}`;
+              saveData.patch[this.resourceName].payloads[index].payload.data.id = this.resourceItems.data[index].id;
+              saveData.patch[this.resourceName].payloads[index].payload.data.attributes = attributesPatch;
             }
           }
         } else {
           // data missing, must've been deleted
-          saveData.delete[this.type].payloads[index] = { urn: `${this.type}/${this.relationships.data[index].id}` };
+          saveData.delete[this.resourceName].payloads[index] = { urn: `${this.resourceName}/${this.resourceItems.data[index].id}` };
         }
       });
 
@@ -842,24 +842,24 @@ class CasperTabbedItems extends LitElement {
         }
 
         if (Object.entries(attributesPost)) {
-          if (!saveData.post[this.type].payloads[index]) {
-            saveData.post[this.type].payloads[index] = {
-              urn: this.type,
+          if (!saveData.post[this.resourceName].payloads[index]) {
+            saveData.post[this.resourceName].payloads[index] = {
+              urn: this.resourceName,
               payload: {
                 data: {
-                  type: this.type,
+                  type: this.resourceName,
                   attributes: attributesPost
                 }
               }
             }
           } else {
-            saveData.post[this.type].payloads[index].urn = this.type;
-            saveData.post[this.type].payloads[index].payload.data.attributes = attributesPost;
+            saveData.post[this.resourceName].payloads[index].urn = this.resourceName;
+            saveData.post[this.resourceName].payloads[index].payload.data.attributes = attributesPost;
           }
         }
 
         if (foreignKey.id === 'delay') {
-          saveData.post[this.type].payloads[index].delayField = foreignKey.idField;
+          saveData.post[this.resourceName].payloads[index].delayField = foreignKey.idField;
         }
       });
     }
@@ -926,19 +926,19 @@ class CasperTabbedItems extends LitElement {
   async _loadFromResource () {
     let tabs = [];
     
-    if (this.relationships?.data?.length) {
+    if (this.resourceItems?.data?.length) {
       // Set relationship elements
-      if (!this.relationships.elements) {
-        this.relationships.elements = [];
+      if (!this.resourceItems.elements) {
+        this.resourceItems.elements = [];
       }      
 
       let items = [];
-      this.type = this.relationships?.data?.[0]?.type;
-      const idString = String(this.relationships.data.map(item => item.id));
+      this.resourceName = this.resourceItems?.data?.[0]?.type;
+      const idString = String(this.resourceItems.data.map(item => item.id));
 
-      if (idString && this.type) {
-        const response = await app.broker.get(`${this.type}?filter="id IN (${idString})"`, 10000);
-        this.relationships.elements = response.data;
+      if (idString && this.resourceName) {
+        const response = await app.broker.get(`${this.resourceName}?filter="id IN (${idString})"`, 10000);
+        this.resourceItems.elements = response.data;
         items = response.data.map((element,index) => {
           return {
             id: element.id,
@@ -981,8 +981,8 @@ class CasperTabbedItems extends LitElement {
           this._setValue(elem, page.values);
         } else if (page?.values[binding]) {
           this._setValue(elem, page.values[binding]);
-        } else if (page?.values?.relationships?.[binding]?.data?.id) {
-          this._setValue(elem, page?.values?.relationships?.[binding]?.data?.id);
+        } else if (page?.values?.resourceItems?.[binding]?.data?.id) {
+          this._setValue(elem, page?.values?.resourceItems?.[binding]?.data?.id);
         }
       }
     });
@@ -996,8 +996,8 @@ class CasperTabbedItems extends LitElement {
         this._setValue(elem, page.values);
       } else if (page?.values[binding]) {
         this._setValue(elem, page.values[binding]);
-      } else if (page?.values?.relationships?.[binding]?.data?.id) {
-        this._setValue(elem, page?.values?.relationships?.[binding]?.data?.id);
+      } else if (page?.values?.resourceItems?.[binding]?.data?.id) {
+        this._setValue(elem, page?.values?.resourceItems?.[binding]?.data?.id);
       }
     }
   }

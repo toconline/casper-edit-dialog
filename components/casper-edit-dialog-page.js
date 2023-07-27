@@ -255,15 +255,18 @@ export class CasperEditDialogPage extends LitElement {
   async load (data) {
     await this.beforeLoad(data);
 
-    if (!this.__type) this.__type = this.editDialog.rootObjectType();
+    // If resource is not defined then use main resource
+    if (!this._resourceName) this._resourceName = this.editDialog.rootResource();
+    // If relationship name is not defined then use resource name
+    if (!this._relationshipName) this._relationshipName = this._resourceName;
+
     if (this.isCreate()) return;
 
     for (const elem of this.shadowRoot.querySelectorAll('[binding]')) {
       const binding = elem.getAttribute('binding');
-      //  const relType = elem.dataset.relationshipType; might implement later
-      const relAttribute = elem.dataset.relationshipAttribute;
-      let route, id, value, relationship;
+      const relAttribute = elem.getAttribute('relationshipAttribute');
 
+      let value;
       if (binding === '..') {
         value = data;
       } else if (data[binding]) {
@@ -272,65 +275,57 @@ export class CasperEditDialogPage extends LitElement {
       } else if (data.relationships) {
         // check for attribute within relationships
         // check within previously loaded element
-        if (data.relationships[this.__type]?.elements?.[0]) {
+        if (data.relationships[this._relationshipName]?.elements?.[0]) {
           // using page type attribute
-          value = data.relationships[this.__type].elements[0][relAttribute] ?? data.relationships[this.__type].elements[0][binding];
+          value = data.relationships[this._relationshipName].elements[0][relAttribute] ?? data.relationships[this._relationshipName].elements[0][binding];
         } else if (data.relationships[binding]?.elements?.[0]) {
           // using element binding
           value = data.relationships[binding].elements[0][relAttribute] ?? data.relationships[binding].elements[0][binding];
         } else {
+          let resource, id, relationship;
           // data does not contain relationship data loaded into element
           // attempt to get relationship data via broker
-          // use page type attribute to get relationship route and id
-          if (this.__type && data.relationships[this.__type]?.data) {
-            if (Array.isArray(data.relationships[this.__type].data)) {
+          // use page type attribute to get relationship resource and id
+          if (data.relationships[this._relationshipName]?.data) {
+            if (Array.isArray(data.relationships[this._relationshipName].data)) {
               // only load first entry by default if array
-              route = data.relationships[this.__type].data[0].type;
-              id = data.relationships[this.__type].data[0].id;
+              resource = data.relationships[this._relationshipName].data[0].type;
+              id = data.relationships[this._relationshipName].data[0].id;
             } else {
-              route = data.relationships[this.__type].data.type;
-              id = data.relationships[this.__type].data.id;
+              resource = data.relationships[this._relationshipName].data.type;
+              id = data.relationships[this._relationshipName].data.id;
             }
-
-            relationship = this.__type;
+            this._resourceName = resource;
+            relationship = this._relationshipName;
           } else {
-            // cycle relationships looking for a match with binding in order to get route and id
-            Object.keys(data.relationships).forEach((key) => {
-              // if key matches binding, retrieve route and id from first entry
-              if (key == binding && data.relationships[key]?.data) {
-                if (Array.isArray(data.relationships[key].data)) {
-                  // only load first entry by default if array
-                  route = data.relationships[key].data[0].type;
-                  id = data.relationships[key].data[0].id;
-                } else {
-                  route = data.relationships[key].data.type;
-                  id = data.relationships[key].data.id;
-                }
-
-                relationship = binding;
+            // use binding to get id and type from relationships
+            if (data.relationships[binding]?.data) {
+              if (Array.isArray(data.relationships[binding].data)) {
+                // only load first entry by default if array
+                resource = data.relationships[binding].data[0].type;
+                id = data.relationships[binding].data[0].id;
+              } else {
+                resource = data.relationships[binding].data.type;
+                id = data.relationships[binding].data.id;
               }
-            });
+              relationship = binding;
+            }
           }
-
-          if (route && id) {
-            const response = await app.broker.get(`${route}/${id}`, 10000);
+          if (resource && id) {
+            const response = await app.broker.get(`${resource}/${id}`, 10000);
             data.relationships[relationship].elements = [{}];
-
             if (response.data) {
               data.relationships[relationship].elements[0] = response.data;
-
               value = relAttribute ? response.data[relAttribute] : response.data[binding];
             }
           }
         }
       }
-
       if (value) {
         value = this.onLoad(value, elem, data);
         this._setValue(elem, value);
       }
     }
-
     this.afterLoad(data);
   }
 
@@ -338,7 +333,7 @@ export class CasperEditDialogPage extends LitElement {
     for (const elem of bindedElements) {
       let hasNewValue, elemValue;
       const binding = elem.getAttribute('binding');
-      const relAttribute = elem.dataset.relationshipAttribute;
+      const relAttribute = elem.getAttribute('relationshipAttribute');
       const initialValue = this.isCreate() ? null : this._getValue(binding, relAttribute, data);
       switch (elem.tagName.toLowerCase()) {
         case 'paper-checkbox':
@@ -362,10 +357,14 @@ export class CasperEditDialogPage extends LitElement {
             hasNewValue = elemValue != initialValue;
           }
           break;
-        }
+      }
 
-
-      if (hasNewValue) return true;
+      if (hasNewValue) {
+        console.log(initialValue)
+        console.log(elemValue)
+        console.log(elem);
+        return true;
+      }
     }
     return false;
   }
@@ -376,13 +375,12 @@ export class CasperEditDialogPage extends LitElement {
     if (!unsavedChanges) {
       this.shadowRoot.querySelectorAll('casper-tabbed-items').forEach((cti) => {
         const tabs = cti._contentEl.querySelectorAll('.content__item');
-        if (tabs.length !== (this.editDialog.data?.relationships?.[cti.type]?.elements?.length || 0)) unsavedChanges = true;
+        if (tabs.length !== (this.editDialog.data?.relationships?.[cti.relationshipName]?.elements?.length || 0)) unsavedChanges = true;
         tabs.forEach((tab,idx) => {
-          if (!unsavedChanges) unsavedChanges = this.checkBindings(tab.querySelectorAll('[binding]'), this.editDialog.data?.relationships?.[cti.type]?.elements?.[idx]);
+          if (!unsavedChanges) unsavedChanges = this.checkBindings(tab.querySelectorAll('[binding]'), this.editDialog.data?.relationships?.[cti.relationshipName]?.elements?.[idx]);
         });
       });
     }
-
     return unsavedChanges;
   }
 
@@ -399,7 +397,7 @@ export class CasperEditDialogPage extends LitElement {
     for (const elem of this.shadowRoot.querySelectorAll('[binding]')) {
       let elemValue, newValue;
       const binding = elem.getAttribute('binding');
-      const relAttribute = elem.dataset.relationshipAttribute;
+      const relAttribute = elem.getAttribute('relationshipAttribute');
       const initialValue = this.isCreate() ? null : this._getValue(binding, relAttribute, data);
 
       switch (elem.tagName.toLowerCase()) {
@@ -414,30 +412,35 @@ export class CasperEditDialogPage extends LitElement {
       }
 
       if (newValue !== undefined && initialValue !== newValue) {
-        let type = data.relationships[binding]?.data?.type ?? (data.relationships[this.__type]?.data?.type ?? this.__type);
-        let id = data.relationships[binding]?.data?.id ?? (data.relationships[this.__type]?.data?.id ?? data.id);
+        let resource = data.relationships[binding]?.data?.type || this._resourceName;
+        let id = data.relationships[binding]?.data?.id ?? (data.relationships[this._relationshipName]?.data?.id ?? data.id);
         let attribute = relAttribute ?? binding;
 
-        if (!saveData[request][type]) {
-          saveData[request][type] = {
+        if (!saveData[request][resource]) {
+          saveData[request][resource] = {
             payloads: [{
-              relationship: this.__type,
-              urn: `${type}${!this.isCreate() ? '/' + id : ''}`,
+              relationship: this._relationshipName,
+              urn: `${resource}${this.isCreate() ? '' : `/${id}`}`,
               payload: {
                 data: {
-                  type: type,
+                  type: resource,
                   attributes: {}
                 }
               }
             }]
           }
 
-          if (request == 'patch') {
-            saveData[request][type]['payloads'][0]['payload']['data']['id'] = id;
+          if (this.isCreate && request === 'post' && this._relationshipForeignKey) {
+            saveData[request][resource].payloads[0].delayField = this._relationshipForeignKey;
+            saveData[request][resource].payloads[0].payload.data.attributes[this._relationshipForeignKey] = 'delay';
+          }
+
+          if (request === 'patch') {
+            saveData[request][resource].payloads[0].payload.data.id = id;
           }
         }
 
-        saveData[request][type].payloads[0].payload.data.attributes[attribute] = newValue;
+        saveData[request][resource].payloads[0].payload.data.attributes[attribute] = newValue;
       }
     }
 
@@ -528,20 +531,18 @@ export class CasperEditDialogPage extends LitElement {
       value = data[binding];
     } else if (data.relationships) {
       // only load first entry by default
-      if (this.__type && data.relationships[this.__type]) {
-        value = data.relationships[this.__type].elements?.[0][binding];
+      if (data.relationships[this._relationshipName]) {
+        value = data.relationships[this._relationshipName].elements?.[0][binding];
       } else {
-        Object.keys(data.relationships).forEach((key) => {
-          if (key == binding) {
-            if (relAttribute && data.relationships[binding]?.elements?.[0]?.[relAttribute]) {
-              value = data.relationships[binding].elements[0][relAttribute];
-            } else if (data.relationships[binding]?.elements?.[0]?.[binding]) {
-              value = data.relationships[binding].elements[0][binding];
-            } else if (data?.relationships?.[binding]?.data?.id){
-              value = data.relationships[binding].data.id;
-            }
+        if (data.relationships.hasOwnProperty(binding)) {
+          if (relAttribute && data.relationships[binding]?.elements?.[0]?.[relAttribute]) {
+            value = data.relationships[binding].elements[0][relAttribute];
+          } else if (data.relationships[binding]?.elements?.[0]?.[binding]) {
+            value = data.relationships[binding].elements[0][binding];
+          } else if (data?.relationships?.[binding]?.data?.id){
+            value = data.relationships[binding].data.id;
           }
-        });
+        }
       }
     }
 
