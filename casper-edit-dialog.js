@@ -1202,7 +1202,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         if (isNextSiblingFocusable) return;
 
         const siblingsArr = Array.from(this._getCurrentPage().shadowRoot.children);
-        const currentFieldIndex = siblingsArr.indexOf(field);
+        const currentFieldIndex = siblingsArr.indexOf(currentField);
         if (currentFieldIndex === -1) return;
 
         const focusableSiblingEl = siblingsArr.find((element, index) => {
