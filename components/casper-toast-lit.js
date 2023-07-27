@@ -118,6 +118,10 @@ class CasperToastLit extends LitElement {
       this._toastEl.close();
     }, this.transitionDuration);
   }
+
+  isOpen () {
+    return this._toastEl.open;
+  }
 }
 
 customElements.define('casper-toast-lit', CasperToastLit);
