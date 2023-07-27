@@ -613,7 +613,7 @@ class CasperTabbedItems extends LitElement {
           break;
       
         case 'paper-input':
-          if (element.value?.toString()?.trim() === '') {
+          if ((!element.value && element.value !== 0) || element.value?.toString()?.trim() === '') {
             element.invalid = true;
             element.errorMessage = message;
             isItemValid = false;

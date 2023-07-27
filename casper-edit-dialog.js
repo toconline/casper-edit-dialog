@@ -838,12 +838,14 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       newPage.hasAttribute('next') ? this.changeNextButtonToText(newPage.getAttribute('next')) : this.changeNextButtonToIcon();
     }
     
-    this._activeIndex = +newIndex;
 
     // If the previous page was invalid, we check its validity again
-    if (this._invalidPagesIndexes.has(previousIndex) && previousPage.validate(this.data)) {
-      this._invalidPagesIndexes.delete(previousIndex);
+    if (this._invalidPagesIndexes.has(previousIndex)) {
+      const isValid = await previousPage.validate(this.data);
+      if (isValid) this._invalidPagesIndexes.delete(previousIndex);
     }
+
+    this._activeIndex = +newIndex;
   }
 
 
