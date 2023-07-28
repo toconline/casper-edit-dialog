@@ -1211,12 +1211,20 @@ export class CasperEditDialog extends Casper.I18n(CasperUiHelperMixin(LitElement
 
         // There aren't any focusable siblings, so we go to the next page if it exists
         } else {
+          event.preventDefault();
+          event.stopPropagation();
+          event.stopImmediatePropagation();
+
           const nextPageIndex = +this._activeIndex + 1;
           if (this._pages[nextPageIndex]) this.activatePage(nextPageIndex);
         }
       
       // There isn't a next sibling, so we go to the next page if it exists
       } else {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+
         const nextPageIndex = +this._activeIndex + 1;
         if (this._pages[nextPageIndex]) this.activatePage(nextPageIndex);
       }
