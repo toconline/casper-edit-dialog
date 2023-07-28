@@ -512,7 +512,7 @@ class CasperTabbedItems extends CasperUiHelperMixin(LitElement) {
   }
 
   async focusFirstEditableField (index = this._activeIndex) {
-    const itemEl = this._contentEl.children.namedItem(`item-${index}`);
+    const itemEl = this._getItem(index);
     if (!itemEl) return;
     
     const childEl = this.findFocusableField(Array.from(itemEl.children));
@@ -900,7 +900,7 @@ class CasperTabbedItems extends CasperUiHelperMixin(LitElement) {
     this._setDefaultData(this.items[itemIndex]);
 
     if (this._classesToAddEMCListener) {
-      const newItem = this._contentEl.children.namedItem(`item-${itemIndex}`);
+      const newItem = this._getItem(itemIndex);
 
       for (const className of this._classesToAddEMCListener) {
         const elements = newItem.querySelectorAll(`.${className}`);
@@ -994,6 +994,10 @@ class CasperTabbedItems extends CasperUiHelperMixin(LitElement) {
         this._setValue(elem, page?.values?.resourceItems?.[binding]?.data?.id);
       }
     }
+  }
+
+  _getItem (index = this._activeIndex) {
+    return this._contentEl.children.namedItem(`item-${index}`);
   }
 
   /**
