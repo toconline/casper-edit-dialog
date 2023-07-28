@@ -351,7 +351,7 @@ export class CasperEditDialogPage extends LitElement {
           break;
         case 'paper-input':
         default:
-          elemValue = elem.value || null;
+          elemValue = elem.value ?? null;
           if (elem.getAttribute('multi-selection') && elemValue) elemValue = elemValue.split(','); // casper-select multi-selection
           if (elemValue || initialValue) {
             hasNewValue = elemValue != initialValue;
@@ -535,9 +535,9 @@ export class CasperEditDialogPage extends LitElement {
         value = data.relationships[this._relationshipName].elements?.[0][binding];
       } else {
         if (data.relationships.hasOwnProperty(binding)) {
-          if (relAttribute && data.relationships[binding]?.elements?.[0]?.[relAttribute]) {
+          if (relAttribute && (data.relationships[binding]?.elements?.[0]?.[relAttribute] != null)) {
             value = data.relationships[binding].elements[0][relAttribute];
-          } else if (data.relationships[binding]?.elements?.[0]?.[binding]) {
+          } else if (data.relationships[binding]?.elements?.[0]?.[binding] != null) {
             value = data.relationships[binding].elements[0][binding];
           } else if (data?.relationships?.[binding]?.data?.id){
             value = data.relationships[binding].data.id;
