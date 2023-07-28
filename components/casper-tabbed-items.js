@@ -693,7 +693,6 @@ class CasperTabbedItems extends LitElement {
       if (!saveData[request][this.resourceName]) {
         saveData[request][this.resourceName] = {
           payloads: [{
-            relationship: this.resourceName,
             urn: null
           }]
         }

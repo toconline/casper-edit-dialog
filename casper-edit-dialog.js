@@ -1544,27 +1544,35 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         this.options.urn = `${this.options.urn}/${rootObjectId}`;
         const createdRootObject = await window.app.broker.get(this.options.urn, 10000);
         this.data = createdRootObject.data;
-        for (const [operation, types] of Object.entries(saveData)) {
-          for (const [type, data] of Object.entries(types)) {
+        for (const [originalOp, types] of Object.entries(saveData)) {
+          for (const [relationshipName, data] of Object.entries(types)) {
             for (const entry of (data?.payloads|| [])) {
               if (!entry.delayField) continue;
               if (entry.urn && Object.keys(entry.payload.data.attributes).length) {
                 entry.payload.data.attributes[entry.delayField] = rootObjectId;
                 if (entry.payload.data.id) {
-                  entry.payload.data.id = createdRootObject.data.relationships[entry.payload.data.id].data.id
+                  entry.payload.data.id = createdRootObject.data.relationships[entry.payload.data.id].data.id;
+                }
+                let operation = originalOp;
+                if (this.data?.relationships?.[relationshipName]?.data?.id && originalOp === 'post') {
+                  // If item is created on root object post then change operation to patch
+                  operation = 'patch';
+                  entry.payload.data.id = this.data.relationships[relationshipName].data.id;
+                  entry.urn = `${entry.urn}/${entry.payload.data.id}`;
                 }
                 const response = await window.app.broker[operation](entry.urn, entry.payload, 10000);
                 if (response?.data) {
-                  if (this.data.relationships[type]?.elements?.length > -1) {
-                    this.data.relationships[type].elements.push(response.data);
+                  // Update dialog data with new values
+                  if (this.data.relationships[relationshipName]?.elements?.length > -1) {
+                    this.data.relationships[relationshipName].elements.push(response.data);
                   } else {
-                    this.data.relationships[type].elements = [response.data];
+                    this.data.relationships[relationshipName].elements = [response.data];
                   }
                   if (operation === 'post') {
-                    if (this.data.relationships[type].data?.length > -1) {
-                      this.data.relationships[type].data.push({type: response.type, id: response.id});
+                    if (this.data.relationships[relationshipName].data?.length > -1) {
+                      this.data.relationships[relationshipName].data.push({type: response.type, id: response.id});
                     } else {
-                      this.data.relationships[type].data = [{type: response.type, id: response.id}];
+                      this.data.relationships[relationshipName].data = [{type: response.type, id: response.id}];
                     } 
                   }
                 }

@@ -416,10 +416,9 @@ export class CasperEditDialogPage extends LitElement {
         let id = data.relationships[binding]?.data?.id ?? (data.relationships[this._relationshipName]?.data?.id ?? data.id);
         let attribute = relAttribute ?? binding;
 
-        if (!saveData[request][resource]) {
-          saveData[request][resource] = {
+        if (!saveData[request][this._relationshipName]) {
+          saveData[request][this._relationshipName] = {
             payloads: [{
-              relationship: this._relationshipName,
               urn: `${resource}${this.isCreate() ? '' : `/${id}`}`,
               payload: {
                 data: {
@@ -431,16 +430,16 @@ export class CasperEditDialogPage extends LitElement {
           }
 
           if (this.isCreate && request === 'post' && this._relationshipForeignKey) {
-            saveData[request][resource].payloads[0].delayField = this._relationshipForeignKey;
-            saveData[request][resource].payloads[0].payload.data.attributes[this._relationshipForeignKey] = 'delay';
+            saveData[request][this._relationshipName].payloads[0].delayField = this._relationshipForeignKey;
+            saveData[request][this._relationshipName].payloads[0].payload.data.attributes[this._relationshipForeignKey] = 'delay';
           }
 
           if (request === 'patch') {
-            saveData[request][resource].payloads[0].payload.data.id = id;
+            saveData[request][this._relationshipName].payloads[0].payload.data.id = id;
           }
         }
 
-        saveData[request][resource].payloads[0].payload.data.attributes[attribute] = newValue;
+        saveData[request][this._relationshipName].payloads[0].payload.data.attributes[attribute] = newValue;
       }
     }
 
