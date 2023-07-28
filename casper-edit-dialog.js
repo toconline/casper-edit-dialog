@@ -1500,7 +1500,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   async _processSaveData (saveData) {
     try {
       for (const [operation, types] of Object.entries(saveData)) {
-        for (const [type, data] of Object.entries(types)) {
+        for (const [relationshipName, data] of Object.entries(types)) {
           for (const entry of (data?.payloads|| [])) {
             if (!entry || !entry?.urn || entry.delayField) continue;
             const sUrn = entry.urn.split('/');
@@ -1515,14 +1515,14 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
                     this.data = response.data;
                   } else {
                     // Updating relationships
-                    response.data.relationships = this.data.relationships[sUrn[0]].elements.find(e => e.id == sUrn[1]).relationships;
-                    const itemIndex = this.data.relationships[sUrn[0]].elements.indexOf(this.data.relationships[sUrn[0]].elements.find(e => e.id == sUrn[1]));
-                    this.data.relationships[sUrn[0]].elements[itemIndex] = response.data;
+                    response.data.relationships = this.data.relationships[relationshipName].elements.find(e => e.id == sUrn[1]).relationships;
+                    const itemIndex = this.data.relationships[relationshipName].elements.indexOf(this.data.relationships[relationshipName].elements.find(e => e.id == sUrn[1]));
+                    this.data.relationships[relationshipName].elements[itemIndex] = response.data;
                   }
                 } else if (response?.data && this.data?.relationships && operation === 'post' && this.rootResource() !== sUrn[0]) {
                   // Creating new elements in relationships
-                  this.data.relationships[sUrn[0]].data.push({type: response.type, id: response.id});
-                  this.data.relationships[sUrn[0]].elements.push(response.data);
+                  this.data.relationships[relationshipName].data.push({type: response.type, id: response.id});
+                  this.data.relationships[relationshipName].elements.push(response.data);
                 } else if (!this.data && operation === 'post' && this.rootResource() === sUrn[0]) {
                   // Creating new root element
                   this.data = {id: response.id};
@@ -1530,9 +1530,9 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
               }
             } else {
               await window.app.broker.delete(entry.urn, 30000);
-              const itemIndex = this.data.relationships[sUrn[0]].elements.indexOf(this.data.relationships[sUrn[0]].elements.find(e => e.id == sUrn[1]));
-              this.data.relationships[sUrn[0]].data.splice(itemIndex, 1);
-              this.data.relationships[sUrn[0]].elements.splice(itemIndex, 1);
+              const itemIndex = this.data.relationships[relationshipName].elements.indexOf(this.data.relationships[relationshipName].elements.find(e => e.id == sUrn[1]));
+              this.data.relationships[relationshipName].data.splice(itemIndex, 1);
+              this.data.relationships[relationshipName].elements.splice(itemIndex, 1);
             }
           }
         }
