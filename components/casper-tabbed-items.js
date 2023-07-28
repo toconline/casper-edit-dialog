@@ -1,9 +1,10 @@
 import { LitElement, html, css } from 'lit';
 import {classMap} from 'lit-html/directives/class-map.js';
+import { CasperUiHelperMixin } from './casper-ui-helper-mixin.js';
 import '@cloudware-casper/casper-icons/casper-icon.js';
 
 
-class CasperTabbedItems extends LitElement {
+class CasperTabbedItems extends CasperUiHelperMixin(LitElement) {
   static properties = {
     renderItem: {
       type: Function
@@ -353,7 +354,6 @@ class CasperTabbedItems extends LitElement {
     this._invalidTabsIndexes = new Set();
     this._tabsWrapperClasses = { 'shadow-left': false, 'shadow-right': false };
     this.resourceName = '';
-    this.nestedComponents = ['casper-address'];
   }
 
   connectedCallback() {
@@ -455,7 +455,7 @@ class CasperTabbedItems extends LitElement {
     }
 
     if (changedProperties.has('_activeIndex')) {
-      if (this.items?.length > 0 ) this.focusItemFirstEditableField(this._activeIndex);
+      if (this.items?.length > 0 ) this.focusFirstEditableField(this._activeIndex);
     }
   }
 
@@ -511,25 +511,20 @@ class CasperTabbedItems extends LitElement {
     }
   }
 
-  async focusItemFirstEditableField (index) {
+  async focusFirstEditableField (index = this._activeIndex) {
     const itemEl = this._contentEl.children.namedItem(`item-${index}`);
     if (!itemEl) return;
-
-    const childEl = Array.from(itemEl.children).find(element => {
-      return (element.focused !== undefined || this.nestedComponents.includes(element.nodeName.toLowerCase())) && (!element.hasAttribute('disabled') && !element.hasAttribute('readonly'));
-    });
-
+    
+    const childEl = this.findFocusableField(Array.from(itemEl.children));
     if (!childEl) return;
 
     if (this.nestedComponents.includes(childEl.nodeName.toLowerCase())) {
       await childEl.updateComplete;
 
-      const childrenArr = Array.from(childEl.shadowRoot.children);
-      const focusableEl = childrenArr?.find(el => (el.focused !== undefined && !el.hasAttribute('disabled') && !el.hasAttribute('readonly')));
-      focusableEl?.focus({preventScroll: true});
-
+      const foundEl = this.findFocusableField(Array.from(childEl.shadowRoot.children));
+      if (foundEl && !this.nestedComponents.includes(foundEl.nodeName.toLowerCase())) this.focusField(foundEl);
     } else {
-      childEl.focus({preventScroll: true});
+      this.focusField(childEl);
     }
   }
 

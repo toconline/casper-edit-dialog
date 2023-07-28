@@ -5,13 +5,14 @@ import { CasperSocketPromise } from  '@cloudware-casper/casper-socket/casper-soc
 import { Casper } from '@cloudware-casper/casper-common-ui/casper-i18n-behavior.js';
 import { mediaQueriesBreakpoints } from './components/casper-edit-dialog-constants.js';
 import { CasperEditDialogPage } from './components/casper-edit-dialog-page.js';
+import { CasperUiHelperMixin } from './components/casper-ui-helper-mixin.js';
 import '@cloudware-casper/casper-icons/casper-icon.js';
 import '@cloudware-casper/casper-icons/casper-icon-button.js';
 import './components/casper-edit-dialog-status-page.js';
 import './components/casper-confirmation-dialog.js';
 import './components/casper-toast-lit.js';
 
-export class CasperEditDialog extends Casper.I18n(LitElement) {
+export class CasperEditDialog extends Casper.I18n(CasperUiHelperMixin(LitElement)) {
   static properties = {
     mode: {
       type: String,
@@ -527,8 +528,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     window.ced = this;
 
     this.mode = 'dialog';
-    this.nestedComponents = ['casper-tabbed-items'];
-
+    
     this._state = 'normal';
     this._title = '';
     this._pages = [];
@@ -852,16 +852,15 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     const pageEl = this._pagesContainerEl.children.namedItem(`page-${pageIndex}`);
     if (!pageEl) return;
 
-    const childEl = Array.from(pageEl.shadowRoot.children).find(element => {
-      return (typeof element.focused === 'boolean' || this.nestedComponents.includes(element.nodeName.toLowerCase())) && (!element.hasAttribute('disabled') && !element.hasAttribute('readonly'));
-    });
-
+    const childEl = this.findFocusableField(Array.from(pageEl.shadowRoot.children));
     if (!childEl) return;
 
-    if (this.nestedComponents.includes(childEl.nodeName.toLowerCase())) {
-      childEl.focusItemFirstEditableField();
+    const elNodeName = childEl.nodeName.toLowerCase();
+
+    if (this.nestedComponents.includes(elNodeName)) {
+      childEl.focusFirstEditableField();
     } else {
-      childEl.focus({preventScroll: true});
+      this.focusField(childEl);
     }
   }
 
@@ -1186,7 +1185,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
   _keydownHandler (event) {
     if (event.key === 'Tab') {
-      const currentField = event.composedPath().findLast((element) => element.focused === true);
+      const currentField = event.composedPath().findLast((element) => this.focusableFields.includes(element.nodeName?.toLowerCase()));
       if (!currentField) return;
       
       if (currentField.nextElementSibling) {
@@ -1196,21 +1195,18 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           && !currentField.nextElementSibling.hasAttribute('hidden')
         );
 
-        if (isNextSiblingFocusable) return;
+        if (isNextSiblingFocusable && this.focusableFields.includes(currentField.nextElementSibling.nodeName?.toLowerCase())) return;
 
         const siblingsArr = Array.from(this._getCurrentPage().shadowRoot.children);
-        const currentFieldIndex = siblingsArr.indexOf(currentField);
-        if (currentFieldIndex === -1) return;
-
-        const focusableSiblingEl = siblingsArr.find((element, index) => {
-          return (index > currentFieldIndex) && (typeof element.focused === 'boolean' || this.nestedComponents.includes(element.nodeName.toLowerCase())) && (!element.hasAttribute('disabled') && !element.hasAttribute('readonly'));
-        });
+        const focusableSiblingEl = this.findFocusableSiblingField(siblingsArr, currentField);
 
         if (focusableSiblingEl) {
-          if (this.nestedComponents.includes(focusableSiblingEl.nodeName.toLowerCase())) {
-            focusableSiblingEl.focusItemFirstEditableField();
+          const focusableSiblingNodeName = focusableSiblingEl.nodeName.toLowerCase();
+
+          if (this.nestedComponents.includes(focusableSiblingNodeName)) {
+            focusableSiblingEl.focusFirstEditableField();
           } else {
-            focusableSiblingEl.focused = true;
+            this.focusField(focusableSiblingEl);
           }
 
         // There aren't any focusable siblings, so we go to the next page if it exists
