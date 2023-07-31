@@ -12,7 +12,8 @@ export const CasperUiHelperMixin = (superClass) => class extends superClass {
           && (!element.hasAttribute('disabled') 
           && !element.hasAttribute('readonly') 
           && !element.hasAttribute('hidden')
-      );
+          && !element.hasAttribute('no-autofocus'))
+      ;
     });
 
     return field;
@@ -27,7 +28,9 @@ export const CasperUiHelperMixin = (superClass) => class extends superClass {
           && (this.focusableFields.includes(element.nodeName?.toLowerCase()) || this.nestedComponents.includes(element.nodeName.toLowerCase())) 
           && (!element.hasAttribute('disabled') 
           && !element.hasAttribute('readonly') 
-          && !element.hasAttribute('hidden'));
+          && !element.hasAttribute('hidden')
+          && !element.hasAttribute('no-autofocus'))
+      ;
     });
 
     return focusableSiblingEl;
