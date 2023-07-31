@@ -407,6 +407,8 @@ class CasperTabbedItems extends CasperUiHelperMixin(LitElement) {
   firstUpdated () {
     this._headerEl = this.shadowRoot.querySelector('.header');
     this._contentEl = this.shadowRoot.querySelector('.content');
+
+    this._contentEl.addEventListener('keydown', this._contentKeydownHandler.bind(this));
   }
 
   updated (changedProperties) {
@@ -1049,6 +1051,15 @@ class CasperTabbedItems extends CasperUiHelperMixin(LitElement) {
         this.requestUpdate();
       }
     });
+  }
+
+  _contentKeydownHandler (event) {
+    if (!event) return;
+
+    if (event.key === 'Tab') {
+      const itemChildren = Array.from(this._getItem(this._activeIndex).children);
+      const reachedLast = this.fieldTabHandler(event, itemChildren);
+    }
   }
 
   _setValue (elem, value) {

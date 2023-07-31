@@ -630,7 +630,7 @@ export class CasperEditDialog extends Casper.I18n(CasperUiHelperMixin(LitElement
     }
 
     this._dialogEl.addEventListener('cancel', this._dialogCancelHandler.bind(this));
-    this._pagesContainerEl.addEventListener('keydown', this._keydownHandler.bind(this));
+    this._pagesContainerEl.addEventListener('keydown', this._pagesContainerKeydownHandler.bind(this));
     this.addEventListener('casper-overlay-opened', this._casperOverlayOpenedHandler);
 
     if (this.mode === 'wizard') {
@@ -1183,48 +1183,18 @@ export class CasperEditDialog extends Casper.I18n(CasperUiHelperMixin(LitElement
     return pageEl instanceof CasperEditDialogPage;
   }
 
-  _keydownHandler (event) {
+
+
+
+  _pagesContainerKeydownHandler (event) {
+    if (!event) return;
+
     if (event.key === 'Tab') {
-      const currentField = event.composedPath().findLast((element) => this.focusableFields.includes(element.nodeName?.toLowerCase()));
-      if (!currentField) return;
-      
-      if (currentField.nextElementSibling) {
-        const isNextSiblingFocusable = (
-             !currentField.nextElementSibling.hasAttribute('disabled') 
-          && !currentField.nextElementSibling.hasAttribute('readonly') 
-          && !currentField.nextElementSibling.hasAttribute('hidden')
-        );
+      const pageChildren = Array.from(this._getCurrentPage().shadowRoot.children);
+      const reachedLast = this.fieldTabHandler(event, pageChildren);
 
-        if (isNextSiblingFocusable && this.focusableFields.includes(currentField.nextElementSibling.nodeName?.toLowerCase())) return;
-
-        const siblingsArr = Array.from(this._getCurrentPage().shadowRoot.children);
-        const focusableSiblingEl = this.findFocusableSiblingField(siblingsArr, currentField);
-
-        if (focusableSiblingEl) {
-          const focusableSiblingNodeName = focusableSiblingEl.nodeName.toLowerCase();
-
-          if (this.nestedComponents.includes(focusableSiblingNodeName)) {
-            focusableSiblingEl.focusFirstEditableField();
-          } else {
-            this.focusField(focusableSiblingEl);
-          }
-
-        // There aren't any focusable siblings, so we go to the next page if it exists
-        } else {
-          event.preventDefault();
-          event.stopPropagation();
-          event.stopImmediatePropagation();
-
-          const nextPageIndex = +this._activeIndex + 1;
-          if (this._pages[nextPageIndex]) this.activatePage(nextPageIndex);
-        }
-      
-      // There isn't a next sibling, so we go to the next page if it exists
-      } else {
-        event.preventDefault();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
-
+      if (reachedLast) {
+        // There aren't any focusable fields, so we go to the next page if it exists
         const nextPageIndex = +this._activeIndex + 1;
         if (this._pages[nextPageIndex]) this.activatePage(nextPageIndex);
       }
