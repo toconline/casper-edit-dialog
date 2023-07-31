@@ -631,6 +631,7 @@ export class CasperEditDialog extends Casper.I18n(CasperUiHelperMixin(LitElement
 
     this._dialogEl.addEventListener('cancel', this._dialogCancelHandler.bind(this));
     this._pagesContainerEl.addEventListener('keydown', this._pagesContainerKeydownHandler.bind(this));
+    this._pagesContainerEl.addEventListener('reached-last-focusable-field', this._reachedLastFocusableFieldHandler.bind(this));
     this.addEventListener('casper-overlay-opened', this._casperOverlayOpenedHandler);
 
     if (this.mode === 'wizard') {
@@ -1210,6 +1211,26 @@ export class CasperEditDialog extends Casper.I18n(CasperUiHelperMixin(LitElement
         const nextPageIndex = +this._activeIndex + 1;
         if (this._pages[nextPageIndex]) this.activatePage(nextPageIndex);
       }
+    }
+  }
+
+  _reachedLastFocusableFieldHandler (event) {
+    if (!event?.detail?.focusable_element) return;
+
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+
+    const currentFieldEl = event.detail.focusable_element;
+    const pageChildren = Array.from(this._getCurrentPage().shadowRoot.children);
+
+    const focusableSiblingEl = this.findFocusableSiblingField(pageChildren, currentFieldEl);
+
+    if (focusableSiblingEl) {
+      this.focusField(focusableSiblingEl);
+    } else {
+      // There aren't any focusable fields, so we go to the next page if it exists
+      const nextPageIndex = +this._activeIndex + 1;
+      if (this._pages[nextPageIndex]) this.activatePage(nextPageIndex);
     }
   }
 

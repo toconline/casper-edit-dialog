@@ -40,16 +40,8 @@ export const CasperUiHelperMixin = (superClass) => class extends superClass {
     const elNodeName = element?.nodeName?.toLowerCase();
     if (!this.focusableFields.includes(elNodeName)) return;
 
-    if (elNodeName === 'casper-select-lit') {
+    if (elNodeName === 'casper-select-lit' || elNodeName === 'casper-select') {
       element.searchInput.focus({preventScroll: true});
-    } else if (elNodeName === 'casper-select') {
-      if (element.hasAttribute('multi-selection')) {
-        const paperInputContainer = element.shadowRoot.querySelector('paper-input-container');
-        if (paperInputContainer) paperInputContainer.focus({preventScroll: true});
-      } else {
-        element.searchInput.focus({preventScroll: true});
-      }
-      
     } else if (elNodeName === 'casper-date-picker') {
       element.__datePickerInput.focus({preventScroll: true});
     } else {
