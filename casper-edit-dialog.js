@@ -1361,6 +1361,11 @@ export class CasperEditDialog extends Casper.I18n(CasperUiHelperMixin(LitElement
     this._controlledSubmission = isControlled;
     this._controlledSubmissionTTR = ttr;
   }
+
+  _getPage (index = this._activeIndex) {
+    return this._pagesContainerEl.children.namedItem(`page-${index}`);
+  }
+
   _getCurrentPage () {
     return this._pagesContainerEl.children.namedItem(`page-${this._activeIndex}`);
   }
