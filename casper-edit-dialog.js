@@ -692,7 +692,8 @@ export class CasperEditDialog extends Casper.I18n(CasperUiHelperMixin(LitElement
         this._pages.push({
           label: module.label ? module.label : '',
           title: module.title ? module.title : module.label,
-          tag_name: module.tag_name ? module.tag_name : page.slice(idx)
+          tag_name: module.tag_name ? module.tag_name : page.slice(idx),
+          has_required_fields: !!module.hasRequiredFields
         });
       }
 
@@ -810,7 +811,7 @@ export class CasperEditDialog extends Casper.I18n(CasperUiHelperMixin(LitElement
     if (previousPage) previousPage.removeAttribute('active');
 
     let newPage = this._pagesContainerEl.children.namedItem(`page-${newIndex}`);
-    if (!newPage) newPage = await this._createPage(newIndex);
+    if (!newPage) newPage = await this.createPage(newIndex);
 
     if (beforeShowModal) {
       newPage.setAttribute('active', '');
@@ -1020,6 +1021,12 @@ export class CasperEditDialog extends Casper.I18n(CasperUiHelperMixin(LitElement
   async validateAllPages () {
     let valid = true;
 
+    // Load pages that have required fields
+    for (let index = 0; index < this._pages.length; index++) {
+      if (!this._pages[index].has_required_fields) continue;
+      if (!this.getPage(index)) await this.createPage(index);
+    }
+
     for (const page of this._pagesContainerEl.children) {
       const index = +page.getAttribute('name')?.split('-')[1];
 
@@ -1115,13 +1122,11 @@ export class CasperEditDialog extends Casper.I18n(CasperUiHelperMixin(LitElement
     return this.options.urn.split('/')[0];
   }
 
+  getPage (index = this._activeIndex) {
+    return this._pagesContainerEl.children.namedItem(`page-${index}`);
+  }
 
-
-  //***************************************************************************************//
-  //                              ~~~ Private methods  ~~~                                 //
-  //***************************************************************************************//
-
-  async _createPage (index) {
+  async createPage (index) {
     if (!this._pages[index]) return;
 
     const newPage = document.createElement(this._pages[index].tag_name);
@@ -1167,6 +1172,13 @@ export class CasperEditDialog extends Casper.I18n(CasperUiHelperMixin(LitElement
 
     return newPage;
   }
+
+
+
+  //***************************************************************************************//
+  //                              ~~~ Private methods  ~~~                                 //
+  //***************************************************************************************//
+
 
   async _createStatusProgressPage () {
     this._statusProgressPageEl = document.createElement(this.statusProgressPageTag);
@@ -1362,14 +1374,9 @@ export class CasperEditDialog extends Casper.I18n(CasperUiHelperMixin(LitElement
     this._controlledSubmissionTTR = ttr;
   }
 
-  _getPage (index = this._activeIndex) {
-    return this._pagesContainerEl.children.namedItem(`page-${index}`);
-  }
-
   _getCurrentPage () {
-    return this._pagesContainerEl.children.namedItem(`page-${this._activeIndex}`);
+    return this.getPage();
   }
-
 
   async _updateUI (notification) {
     switch (notification.status) {
