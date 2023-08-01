@@ -414,8 +414,8 @@ export class CasperEditDialogPage extends LitElement {
       }
 
       if (newValue !== undefined && initialValue !== newValue) {
-        let resource = data.relationships[binding]?.data?.type || this._resourceName;
-        let id = data.relationships[binding]?.data?.id ?? (data.relationships[this._relationshipName]?.data?.id ?? data.id);
+        let resource = data.relationships?.[binding]?.data?.type || this._resourceName;
+        let id = data.relationships?.[binding]?.data?.id ?? (data.relationships?.[this._relationshipName]?.data?.id ?? data.id);
         let attribute = relAttribute ?? binding;
 
         if (!saveData[request][this._relationshipName]) {
