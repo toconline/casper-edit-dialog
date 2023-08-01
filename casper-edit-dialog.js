@@ -1279,31 +1279,58 @@ export class CasperEditDialog extends Casper.I18n(CasperUiHelperMixin(LitElement
   }
 
   _gotoPreviousPage () {
-    if (typeof this._getCurrentPage().previous === 'function') {
-      this._getCurrentPage().previous();
-    } else if (typeof this['previousOn' + this._getCurrentPage().id] === 'function') {
-      this['previousOn' + this._getCurrentPage().id].apply(this);
-    } else {
-      if (this._activeIndex >= 1) this.activatePage(this._activeIndex - 1);
+    const currentPageEl = this._getCurrentPage();
+
+    const goToPrevious = () => {
+      if (this._pages[this._activeIndex - 1]) this.activatePage(this._activeIndex - 1);
+    };
+
+    if (this.mode === 'wizard') {
+      if (typeof currentPageEl.previous === 'function') {
+        currentPageEl.previous();
+      } else if (typeof this['previousOn' + currentPageEl.id] === 'function') {
+        this['previousOn' + currentPageEl.id].apply(this);
+      } else {
+        goToPrevious(); 
+      }
+
+    } else if (this.mode === 'dialog') {
+      goToPrevious();
     }
   }
 
   _gotoNextPage () {
-    if (this._nextClosesWizard) {
-      this.close();
-      return;
-    }
+    const currentPageEl = this._getCurrentPage();
 
-    if (typeof this._getCurrentPage().next === 'function') {
-      this._getCurrentPage().next();
-    } else if (typeof this['nextOn' + this._getCurrentPage().id] === 'function') {
-      this['nextOn' + this._getCurrentPage().id].apply(this);
-    } else {
-      if (this._activeIndex < this._pagesContainerEl.children.length - 1) {
+    const goToNext = () => {
+      if (this._pages[this._activeIndex + 1]) {
         this.activatePage(this._activeIndex + 1);
       } else {
-        this.close();
+        if (this._isCasperEditDialogPage(currentPageEl)) {
+          this.save();
+        // If the current page isn't an editDialogPage, then we simply close
+        } else {
+          this.close();
+        }
       }
+    };
+
+    if (this.mode === 'wizard') {
+      if (this._nextClosesWizard) {
+        this.close();
+        return;
+      }
+
+      if (typeof currentPageEl.next === 'function') {
+        currentPageEl.next();
+      } else if (typeof this['nextOn' + currentPageEl.id] === 'function') {
+        this['nextOn' + currentPageEl.id].apply(this);
+      } else {
+        goToNext();
+      }
+
+    } else if (this.mode === 'dialog') {
+      goToNext();
     }
   }
 
