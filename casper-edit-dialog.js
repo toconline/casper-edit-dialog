@@ -534,6 +534,7 @@ export class CasperEditDialog extends Casper.I18n(CasperUiHelperMixin(LitElement
     this._pages = [];
     this._activeIndex = 0;
     this._invalidPagesIndexes = new Set();
+    this._userHasSavedData = false;
 
     this._disableLabels = false;
     this._disablePrevious = false;
@@ -715,7 +716,7 @@ export class CasperEditDialog extends Casper.I18n(CasperUiHelperMixin(LitElement
     const allowClose = !this.hasUnsavedChanges();
 
     if (allowClose) {
-      if (this.options.promise) this.options.promise.resolve();
+      if (this.options.promise) this.options.promise.resolve(this._userHasSavedData ? 'user-saved-data' : '');
       this.parentNode.removeChild(this);
     } else {
       const options = {
@@ -1077,6 +1078,8 @@ export class CasperEditDialog extends Casper.I18n(CasperUiHelperMixin(LitElement
       }
 
       await this._processSaveData(saveData);
+      this.openToast('As alterações foram gravadas com sucesso.', 'success', 3000, false);
+      this._userHasSavedData = true;
 
       for (let i = 0; i < this._pagesContainerEl.children.length; i++) {
         this._pagesContainerEl.children[i].afterSave(saveData, this.data);
@@ -1505,95 +1508,87 @@ export class CasperEditDialog extends Casper.I18n(CasperUiHelperMixin(LitElement
   }
 
   async _processSaveData (saveData) {
-    try {
-      for (const [operation, types] of Object.entries(saveData)) {
-        for (const [relationshipName, data] of Object.entries(types)) {
-          for (const entry of (data?.payloads|| [])) {
-            if (!entry || !entry?.urn || entry.delayField) continue;
-            const sUrn = entry.urn.split('/');
-            if (entry.relationship) sUrn[0] = entry.relationship;
-            if (operation !== 'delete') {
-              if (Object.keys(entry.payload.data.attributes).length) {
-                const response = await window.app.broker[operation](entry.urn, entry.payload, 10000);
-                if (response?.data && operation === 'patch') {
-                  if (this.rootResource() === sUrn[0]) {
-                    // Updating root element
-                    response.data.relationships = this.data.relationships;
-                    this.data = response.data;
-                  } else {
-                    // Updating relationships
-                    response.data.relationships = this.data.relationships[relationshipName].elements.find(e => e.id == sUrn[1]).relationships;
-                    const itemIndex = this.data.relationships[relationshipName].elements.indexOf(this.data.relationships[relationshipName].elements.find(e => e.id == sUrn[1]));
-                    this.data.relationships[relationshipName].elements[itemIndex] = response.data;
-                  }
-                } else if (response?.data && this.data?.relationships && operation === 'post' && this.rootResource() !== sUrn[0]) {
-                  // Creating new elements in relationships
-                  this.data.relationships[relationshipName].data.push({type: response.type, id: response.id});
-                  this.data.relationships[relationshipName].elements.push(response.data);
-                } else if (!this.data && operation === 'post' && this.rootResource() === sUrn[0]) {
-                  // Creating new root element
-                  this.data = {id: response.id};
+    for (const [operation, types] of Object.entries(saveData)) {
+      for (const [relationshipName, data] of Object.entries(types)) {
+        for (const entry of (data?.payloads|| [])) {
+          if (!entry || !entry?.urn || entry.delayField) continue;
+          const sUrn = entry.urn.split('/');
+          if (entry.relationship) sUrn[0] = entry.relationship;
+          if (operation !== 'delete') {
+            if (Object.keys(entry.payload.data.attributes).length) {
+              const response = await window.app.broker[operation](entry.urn, entry.payload, 10000);
+              if (response?.data && operation === 'patch') {
+                if (this.rootResource() === sUrn[0]) {
+                  // Updating root element
+                  response.data.relationships = this.data.relationships;
+                  this.data = response.data;
+                } else {
+                  // Updating relationships
+                  response.data.relationships = this.data.relationships[relationshipName].elements.find(e => e.id == sUrn[1]).relationships;
+                  const itemIndex = this.data.relationships[relationshipName].elements.indexOf(this.data.relationships[relationshipName].elements.find(e => e.id == sUrn[1]));
+                  this.data.relationships[relationshipName].elements[itemIndex] = response.data;
                 }
+              } else if (response?.data && this.data?.relationships && operation === 'post' && this.rootResource() !== sUrn[0]) {
+                // Creating new elements in relationships
+                this.data.relationships[relationshipName].data.push({type: response.type, id: response.id});
+                this.data.relationships[relationshipName].elements.push(response.data);
+              } else if (!this.data && operation === 'post' && this.rootResource() === sUrn[0]) {
+                // Creating new root element
+                this.data = {id: response.id};
               }
-            } else {
-              await window.app.broker.delete(entry.urn, 30000);
-              const itemIndex = this.data.relationships[relationshipName].elements.indexOf(this.data.relationships[relationshipName].elements.find(e => e.id == sUrn[1]));
-              this.data.relationships[relationshipName].data.splice(itemIndex, 1);
-              this.data.relationships[relationshipName].elements.splice(itemIndex, 1);
             }
+          } else {
+            await window.app.broker.delete(entry.urn, 30000);
+            const itemIndex = this.data.relationships[relationshipName].elements.indexOf(this.data.relationships[relationshipName].elements.find(e => e.id == sUrn[1]));
+            this.data.relationships[relationshipName].data.splice(itemIndex, 1);
+            this.data.relationships[relationshipName].elements.splice(itemIndex, 1);
           }
         }
       }
+    }
 
-      if (this.getDialogAction() === 'create' && this.data?.id) {
-        // Proccess delayed requests
-        const rootObjectId = this.data?.id;
-        this.options.urn = `${this.options.urn}/${rootObjectId}`;
-        const createdRootObject = await window.app.broker.get(this.options.urn, 10000);
-        this.data = createdRootObject.data;
-        for (const [originalOp, types] of Object.entries(saveData)) {
-          for (const [relationshipName, data] of Object.entries(types)) {
-            for (const entry of (data?.payloads|| [])) {
-              if (!entry.delayField) continue;
-              if (entry.urn && Object.keys(entry.payload.data.attributes).length) {
-                entry.payload.data.attributes[entry.delayField] = rootObjectId;
-                if (entry.payload.data.id) {
-                  entry.payload.data.id = createdRootObject.data.relationships[entry.payload.data.id].data.id;
+    if (this.getDialogAction() === 'create' && this.data?.id) {
+      // Proccess delayed requests
+      const rootObjectId = this.data?.id;
+      this.options.urn = `${this.options.urn}/${rootObjectId}`;
+      const createdRootObject = await window.app.broker.get(this.options.urn, 10000);
+      this.data = createdRootObject.data;
+      for (const [originalOp, types] of Object.entries(saveData)) {
+        for (const [relationshipName, data] of Object.entries(types)) {
+          for (const entry of (data?.payloads|| [])) {
+            if (!entry.delayField) continue;
+            if (entry.urn && Object.keys(entry.payload.data.attributes).length) {
+              entry.payload.data.attributes[entry.delayField] = rootObjectId;
+              if (entry.payload.data.id) {
+                entry.payload.data.id = createdRootObject.data.relationships[entry.payload.data.id].data.id;
+              }
+              let operation = originalOp;
+              if (this.data?.relationships?.[relationshipName]?.data?.id && originalOp === 'post') {
+                // If item is created on root object post then change operation to patch
+                operation = 'patch';
+                entry.payload.data.id = this.data.relationships[relationshipName].data.id;
+                entry.urn = `${entry.urn}/${entry.payload.data.id}`;
+              }
+              const response = await window.app.broker[operation](entry.urn, entry.payload, 10000);
+              if (response?.data) {
+                // Update dialog data with new values
+                if (this.data.relationships[relationshipName]?.elements?.length > -1) {
+                  this.data.relationships[relationshipName].elements.push(response.data);
+                } else {
+                  this.data.relationships[relationshipName].elements = [response.data];
                 }
-                let operation = originalOp;
-                if (this.data?.relationships?.[relationshipName]?.data?.id && originalOp === 'post') {
-                  // If item is created on root object post then change operation to patch
-                  operation = 'patch';
-                  entry.payload.data.id = this.data.relationships[relationshipName].data.id;
-                  entry.urn = `${entry.urn}/${entry.payload.data.id}`;
-                }
-                const response = await window.app.broker[operation](entry.urn, entry.payload, 10000);
-                if (response?.data) {
-                  // Update dialog data with new values
-                  if (this.data.relationships[relationshipName]?.elements?.length > -1) {
-                    this.data.relationships[relationshipName].elements.push(response.data);
+                if (operation === 'post') {
+                  if (this.data.relationships[relationshipName].data?.length > -1) {
+                    this.data.relationships[relationshipName].data.push({type: response.type, id: response.id});
                   } else {
-                    this.data.relationships[relationshipName].elements = [response.data];
-                  }
-                  if (operation === 'post') {
-                    if (this.data.relationships[relationshipName].data?.length > -1) {
-                      this.data.relationships[relationshipName].data.push({type: response.type, id: response.id});
-                    } else {
-                      this.data.relationships[relationshipName].data = [{type: response.type, id: response.id}];
-                    } 
-                  }
+                    this.data.relationships[relationshipName].data = [{type: response.type, id: response.id}];
+                  } 
                 }
               }
             }
           }
-        }  
-      }
-
-      this.openToast('As alterações foram gravadas com sucesso.', 'success', 3000, false);
-    } catch (error) {
-      console.error(error);
-      this.openToast(error?.errors?.[0]?.detail ? error.errors[0].detail : 'Erro! Não foi possível gravar as alterações.', 'error', 3000, false);
-      return;
+        }
+      }  
     }
   }
 }
