@@ -523,6 +523,7 @@ export class CasperEditDialogPage extends LitElement {
   //***************************************************************************************//
 
   _getValue (binding, relAttribute, data) {
+    if (data === undefined) return;
     let value = null;
 
     if (data[binding]) {
