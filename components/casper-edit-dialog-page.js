@@ -344,7 +344,7 @@ export class CasperEditDialogPage extends LitElement {
           const address = elem.getAddressData();
           for (const key in address) {
             if (!hasNewValue) {
-              hasNewValue = address[key] !== this._getValue(key, relAttribute, data);
+              hasNewValue = address[key] != this._getValue(key, relAttribute, data);
             }
           }
           if (hasNewValue) console.log(elem)
