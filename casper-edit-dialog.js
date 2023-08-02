@@ -634,6 +634,7 @@ export class CasperEditDialog extends Casper.I18n(CasperUiHelperMixin(LitElement
     this._pagesContainerEl.addEventListener('keydown', this._pagesContainerKeydownHandler.bind(this));
     this._pagesContainerEl.addEventListener('reached-last-focusable-field', this._reachedLastFocusableFieldHandler.bind(this));
     this.addEventListener('casper-overlay-opened', this._casperOverlayOpenedHandler);
+    this.addEventListener('keydown', this._generalKeydownHandler.bind(this));
 
     if (this.mode === 'wizard') {
       this._previousButtonEl.addEventListener('click', () => this._gotoPreviousPage());
@@ -1199,8 +1200,16 @@ export class CasperEditDialog extends Casper.I18n(CasperUiHelperMixin(LitElement
     return pageEl instanceof CasperEditDialogPage;
   }
 
+  _generalKeydownHandler (event) {
+    if (!event) return;
 
-
+    // alt for Windows, and option for Mac
+    if (event.key === 'ArrowDown' && event.altKey) {
+      this._gotoNextPage();
+    } else if (event.key === 'ArrowUp' && event.altKey) {
+      this._gotoPreviousPage();
+    }
+  }
 
   _pagesContainerKeydownHandler (event) {
     if (!event) return;
