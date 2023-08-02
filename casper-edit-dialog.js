@@ -1558,11 +1558,17 @@ export class CasperEditDialog extends Casper.I18n(CasperUiHelperMixin(LitElement
                   // Updating root element
                   response.data.relationships = this.data.relationships;
                   this.data = response.data;
-                } else {
+                } else if (this.data.relationships[relationshipName]?.elements) {
                   // Updating relationships
                   response.data.relationships = this.data.relationships[relationshipName].elements.find(e => e.id == sUrn[1]).relationships;
                   const itemIndex = this.data.relationships[relationshipName].elements.indexOf(this.data.relationships[relationshipName].elements.find(e => e.id == sUrn[1]));
                   this.data.relationships[relationshipName].elements[itemIndex] = response.data;
+                } else if (this.data.relationships[response.type]?.elements) {
+                  response.data.relationships = this.data.relationships[response.type].elements.find(e => e.id == response.id).relationships;
+                  const itemIndex = this.data.relationships[response.type].elements.indexOf(this.data.relationships[response.type].elements.find(e => e.id == response.id));
+                  this.data.relationships[response.type].elements[itemIndex] = response.data;
+                } else if (this.data.relationships[response.type]) {
+                  this.data.relationships[response.type].elements = [response.data];
                 }
               } else if (response?.data && this.data?.relationships && operation === 'post' && this.rootResource() !== sUrn[0]) {
                 // Creating new elements in relationships

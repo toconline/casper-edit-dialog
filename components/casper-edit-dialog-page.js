@@ -417,31 +417,29 @@ export class CasperEditDialogPage extends LitElement {
         let resource = data.relationships?.[binding]?.data?.type || this._resourceName;
         let id = data.relationships?.[binding]?.data?.id ?? (data.relationships?.[this._relationshipName]?.data?.id ?? data.id);
         let attribute = relAttribute ?? binding;
-
-        if (!saveData[request][this._relationshipName]) {
-          saveData[request][this._relationshipName] = {
-            payloads: [{
-              urn: `${resource}${this.isCreate() ? '' : `/${id}`}`,
-              payload: {
-                data: {
-                  type: resource,
-                  attributes: {}
-                }
+        
+        if (!saveData[request][this._relationshipName]) saveData[request][this._relationshipName] = {payloads: []};
+        let resourceIndex = saveData[request][this._relationshipName].payloads.findIndex(e => e.urn.includes(resource));
+        if (resourceIndex === -1) {
+          resourceIndex = (saveData[request][this._relationshipName].payloads.push({
+            urn: `${resource}${this.isCreate() ? '' : `/${id}`}`,
+            payload: {
+              data: {
+                type: resource,
+                attributes: {}
               }
-            }]
-          }
-
+            }
+          }))-1;
           if (this.isCreate && request === 'post' && this._relationshipForeignKey) {
-            saveData[request][this._relationshipName].payloads[0].delayField = this._relationshipForeignKey;
-            saveData[request][this._relationshipName].payloads[0].payload.data.attributes[this._relationshipForeignKey] = 'delay';
+            saveData[request][this._relationshipName].payloads[resourceIndex].delayField = this._relationshipForeignKey;
+            saveData[request][this._relationshipName].payloads[resourceIndex].payload.data.attributes[this._relationshipForeignKey] = 'delay';
           }
-
           if (request === 'patch') {
-            saveData[request][this._relationshipName].payloads[0].payload.data.id = id;
+            saveData[request][this._relationshipName].payloads[resourceIndex].payload.data.id = id;
           }
         }
 
-        saveData[request][this._relationshipName].payloads[0].payload.data.attributes[attribute] = newValue;
+        saveData[request][this._relationshipName].payloads[resourceIndex].payload.data.attributes[attribute] = newValue;
       }
     }
 
