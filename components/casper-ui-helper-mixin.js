@@ -1,4 +1,4 @@
-export class CasperUiHelperMixin {
+export class CasperUiHelper {
   constructor() {
 
     this.nestedComponents = ['casper-tabbed-items', 'casper-address'];

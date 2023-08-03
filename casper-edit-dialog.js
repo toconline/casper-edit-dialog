@@ -5,7 +5,7 @@ import { CasperSocketPromise } from  '@cloudware-casper/casper-socket/casper-soc
 import { Casper } from '@cloudware-casper/casper-common-ui/casper-i18n-behavior.js';
 import { mediaQueriesBreakpoints } from './components/casper-edit-dialog-constants.js';
 import { CasperEditDialogPage } from './components/casper-edit-dialog-page.js';
-import { CasperUiHelperMixin } from './components/casper-ui-helper-mixin.js';
+import { CasperUiHelper } from './components/casper-ui-helper-mixin.js';
 import '@cloudware-casper/casper-icons/casper-icon.js';
 import '@cloudware-casper/casper-icons/casper-icon-button.js';
 import './components/casper-edit-dialog-status-page.js';
@@ -526,7 +526,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     super();
 
     window.ced = this;
-    this._uiHelper = new CasperUiHelperMixin();
+    this._uiHelper = new CasperUiHelper();
 
     this.mode = 'dialog';
     

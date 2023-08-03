@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import {classMap} from 'lit-html/directives/class-map.js';
-import { CasperUiHelperMixin } from './casper-ui-helper-mixin.js';
+import { CasperUiHelper } from './casper-ui-helper-mixin.js';
 import '@cloudware-casper/casper-icons/casper-icon.js';
 
 
@@ -346,7 +346,7 @@ class CasperTabbedItems extends LitElement {
   constructor () {
     super();
 
-    this._uiHelper = new CasperUiHelperMixin();
+    this._uiHelper = new CasperUiHelper();
 
     this.items = [];
     this.showNewItemsAction = true;

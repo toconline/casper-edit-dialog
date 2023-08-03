@@ -1,6 +1,6 @@
 import { LitElement, css } from 'lit';
 import { mediaQueriesBreakpoints } from './casper-edit-dialog-constants.js';
-import { CasperUiHelperMixin } from './casper-ui-helper-mixin.js';
+import { CasperUiHelper } from './casper-ui-helper-mixin.js';
 
 
 export class CasperEditDialogPage extends LitElement {
@@ -108,7 +108,7 @@ export class CasperEditDialogPage extends LitElement {
   constructor () {
     super();
 
-    this._uiHelper = new CasperUiHelperMixin();
+    this._uiHelper = new CasperUiHelper();
 
     this.layout = 'grid';
   }
