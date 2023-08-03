@@ -1,6 +1,5 @@
 export class CasperUiHelper {
   constructor() {
-
     this.nestedComponents = ['casper-tabbed-items', 'casper-address'];
     this.focusableFields = ['paper-input', 'paper-checkbox', 'casper-select-lit', 'casper-select', 'casper-date-picker'];
   }
@@ -78,9 +77,11 @@ export class CasperUiHelper {
         } else {
           this.focusField(focusableSiblingEl);
         }
+
       } else {
         reachedLast = true;
       }
+  
     } else {
       reachedLast = true;
     }

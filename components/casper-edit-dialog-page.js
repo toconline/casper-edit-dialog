@@ -1,6 +1,6 @@
 import { LitElement, css } from 'lit';
 import { mediaQueriesBreakpoints } from './casper-edit-dialog-constants.js';
-import { CasperUiHelper } from './casper-ui-helper-mixin.js';
+import { CasperUiHelper } from './casper-ui-helper.js';
 
 
 export class CasperEditDialogPage extends LitElement {
