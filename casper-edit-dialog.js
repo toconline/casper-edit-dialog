@@ -1206,7 +1206,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     // alt for Windows, and option for Mac
     if (event.key === 'ArrowDown' && event.altKey) {
-      this._gotoNextPage();
+      // This prevents the dialog from being accidentally saved
+      if (this._activeIndex < this._pages.length - 1) this._gotoNextPage();
     } else if (event.key === 'ArrowUp' && event.altKey) {
       this._gotoPreviousPage();
     }
