@@ -5,14 +5,14 @@ import { CasperSocketPromise } from  '@cloudware-casper/casper-socket/casper-soc
 import { Casper } from '@cloudware-casper/casper-common-ui/casper-i18n-behavior.js';
 import { mediaQueriesBreakpoints } from './components/casper-edit-dialog-constants.js';
 import { CasperEditDialogPage } from './components/casper-edit-dialog-page.js';
-import { CasperUiHelperMixin } from './components/casper-ui-helper-mixin.js';
+import { CasperUiHelper } from './components/casper-ui-helper-mixin.js';
 import '@cloudware-casper/casper-icons/casper-icon.js';
 import '@cloudware-casper/casper-icons/casper-icon-button.js';
 import './components/casper-edit-dialog-status-page.js';
 import './components/casper-confirmation-dialog.js';
 import './components/casper-toast-lit.js';
 
-export class CasperEditDialog extends Casper.I18n(CasperUiHelperMixin(LitElement)) {
+export class CasperEditDialog extends Casper.I18n(LitElement) {
   static properties = {
     mode: {
       type: String,
@@ -526,6 +526,7 @@ export class CasperEditDialog extends Casper.I18n(CasperUiHelperMixin(LitElement
     super();
 
     window.ced = this;
+    this._uiHelper = new CasperUiHelper();
 
     this.mode = 'dialog';
     
@@ -856,15 +857,15 @@ export class CasperEditDialog extends Casper.I18n(CasperUiHelperMixin(LitElement
     const pageEl = this._pagesContainerEl.children.namedItem(`page-${pageIndex}`);
     if (!pageEl) return;
 
-    const childEl = this.findFocusableField(Array.from(pageEl.shadowRoot.children));
+    const childEl = this._uiHelper.findFocusableField(Array.from(pageEl.shadowRoot.children));
     if (!childEl) return;
 
     const elNodeName = childEl.nodeName.toLowerCase();
 
-    if (this.nestedComponents.includes(elNodeName)) {
+    if (this._uiHelper.nestedComponents.includes(elNodeName)) {
       childEl.focusFirstEditableField();
     } else {
-      this.focusField(childEl);
+      this._uiHelper.focusField(childEl);
     }
   }
 
@@ -1216,7 +1217,7 @@ export class CasperEditDialog extends Casper.I18n(CasperUiHelperMixin(LitElement
 
     if (event.key === 'Tab') {
       const pageChildren = Array.from(this._getCurrentPage().shadowRoot.children);
-      const reachedLast = this.fieldTabHandler(event, pageChildren);
+      const reachedLast = this._uiHelper.fieldTabHandler(event, pageChildren);
 
       if (reachedLast) {
         // There aren't any focusable fields, so we go to the next page if it exists
@@ -1235,10 +1236,10 @@ export class CasperEditDialog extends Casper.I18n(CasperUiHelperMixin(LitElement
     const currentFieldEl = event.detail.focusable_element;
     const pageChildren = Array.from(this._getCurrentPage().shadowRoot.children);
 
-    const focusableSiblingEl = this.findFocusableSiblingField(pageChildren, currentFieldEl);
+    const focusableSiblingEl = this._uiHelper.findFocusableSiblingField(pageChildren, currentFieldEl);
 
     if (focusableSiblingEl) {
-      this.focusField(focusableSiblingEl);
+      this._uiHelper.focusField(focusableSiblingEl);
     } else {
       // There aren't any focusable fields, so we go to the next page if it exists
       const nextPageIndex = +this._activeIndex + 1;

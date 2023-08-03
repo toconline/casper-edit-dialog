@@ -1,10 +1,10 @@
 import { LitElement, html, css } from 'lit';
 import {classMap} from 'lit-html/directives/class-map.js';
-import { CasperUiHelperMixin } from './casper-ui-helper-mixin.js';
+import { CasperUiHelper } from './casper-ui-helper-mixin.js';
 import '@cloudware-casper/casper-icons/casper-icon.js';
 
 
-class CasperTabbedItems extends CasperUiHelperMixin(LitElement) {
+class CasperTabbedItems extends LitElement {
   static properties = {
     renderItem: {
       type: Function
@@ -346,6 +346,8 @@ class CasperTabbedItems extends CasperUiHelperMixin(LitElement) {
   constructor () {
     super();
 
+    this._uiHelper = new CasperUiHelper();
+
     this.items = [];
     this.showNewItemsAction = true;
     this.allowNewItems = true;
@@ -458,7 +460,7 @@ class CasperTabbedItems extends CasperUiHelperMixin(LitElement) {
     }
 
     if (changedProperties.has('_activeIndex')) {
-      if (this.items?.length > 0 ) this.focusFirstEditableField(this._activeIndex);
+      if (this.items?.length > 0) this.focusFirstEditableField(this._activeIndex);
     }
   }
 
@@ -518,16 +520,16 @@ class CasperTabbedItems extends CasperUiHelperMixin(LitElement) {
     const itemEl = this._getItem(index);
     if (!itemEl) return;
     
-    const childEl = this.findFocusableField(Array.from(itemEl.children));
+    const childEl = this._uiHelper.findFocusableField(Array.from(itemEl.children));
     if (!childEl) return;
 
-    if (this.nestedComponents.includes(childEl.nodeName.toLowerCase())) {
+    if (this._uiHelper.nestedComponents.includes(childEl.nodeName.toLowerCase())) {
       await childEl.updateComplete;
 
-      const foundEl = this.findFocusableField(Array.from(childEl.shadowRoot.children));
-      if (foundEl && !this.nestedComponents.includes(foundEl.nodeName.toLowerCase())) this.focusField(foundEl);
+      const foundEl = this._uiHelper.findFocusableField(Array.from(childEl.shadowRoot.children));
+      if (foundEl && !this._uiHelper.nestedComponents.includes(foundEl.nodeName.toLowerCase())) this._uiHelper.focusField(foundEl);
     } else {
-      this.focusField(childEl);
+      this._uiHelper.focusField(childEl);
     }
   }
 
@@ -538,7 +540,7 @@ class CasperTabbedItems extends CasperUiHelperMixin(LitElement) {
     for (const item of contentItems) {
       const index = +item.getAttribute('name')?.split('-')[1];
 
-      const requiredValidations = this.validateRequiredFields(item);
+      const requiredValidations = this._uiHelper.validateRequiredFields(item);
       const otherValidations = this.validateItem(item);
 
       if (requiredValidations && otherValidations) {
@@ -557,124 +559,11 @@ class CasperTabbedItems extends CasperUiHelperMixin(LitElement) {
     return isValid;
   }
 
-  /* Validates fields which have the "required" attribute. */
-  validateRequiredFields (item) {
-    let isItemValid = true;
-    const requiredFields = item.querySelectorAll('[required]');
 
-    for (const element of requiredFields) {
-      if (!element.hasAttribute('has-keydown-listener')) {
-        element.addEventListener('keydown', (event) => this.clearFieldErrorMessage(event?.currentTarget));
-        element.setAttribute('has-keydown-listener', '');
-      }
 
-      const nodeName = element.nodeName.toLowerCase();
-      const message = 'Campo obrigatório.';
 
-      switch (nodeName) {
-        case 'casper-select-lit':
-          if (element.value === undefined) {
-            element.searchInput.invalid = true;
-            element.error = message;
-            isItemValid = false;
-          }
-          break;
 
-        case 'casper-select':
-          if (!element.value) {
-            if (element.multiSelection) {
-              const paperInputContainer = element.shadowRoot.querySelector('paper-input-container');
-              if (paperInputContainer) paperInputContainer.invalid = true;
-            } else {
-              element.searchInput.invalid = true;
-              element.searchInput.errorMessage = message;
-            }
-            
-            isItemValid = false;
-          }
-          break;
 
-        case 'casper-date-picker':
-          if (!element.value) {
-            element.invalid = true;
-            element.requiredErrorMessage = message;
-            element.__errorMessage = message;
-            isItemValid = false;
-          }
-          break;
-
-        case 'paper-checkbox':
-          if (!element.checked) {
-            element.invalid = true;
-            isItemValid = false;
-          }
-          break;
-      
-        case 'paper-input':
-          if ((!element.value && element.value !== 0) || element.value?.toString()?.trim() === '') {
-            element.invalid = true;
-            element.errorMessage = message;
-            isItemValid = false;
-          }
-          break;
-
-        default:
-          break;
-      }
-    }
-
-    return isItemValid;
-  }
-
-  /* Event listener which is fired when the user interacts with an invalid field. This will clear the error message. */
-  clearFieldErrorMessage (element) {
-    if (!element) return;
-    const nodeName = element.nodeName.toLowerCase();
-
-    switch (nodeName) {
-      case 'casper-select-lit':
-        if (element.searchInput?.invalid) {
-          element.searchInput.invalid = false;
-          element.error = ''; 
-        }
-        break;
-
-      case 'casper-select':
-        if (element.multiSelection) {
-          const paperInputContainer = element.shadowRoot.querySelector('paper-input-container');
-          if (paperInputContainer?.invalid) paperInputContainer.invalid = false;
-        } else {
-          if (element.searchInput?.invalid) {
-            element.searchInput.invalid = false;
-            element.searchInput.errorMessage = '';
-          }
-        }
-        break;
-
-      case 'casper-date-picker':
-        if (element.invalid) {
-          element.invalid = false;
-          element.__errorMessage = '';
-        }
-        break;
-
-      case 'paper-checkbox':
-        if (element.invalid) {
-          element.invalid = false;
-        }
-        break;
-
-      case 'paper-input':
-        if (element.invalid) {
-          element.invalid = false;
-          element.errorMessage = ''; 
-        }
-        break;
-
-      default:
-        break;
-    }
-  }
 
   /** This receives an array of strings with elements' classNames, whose error messages will be cleared by the tabbedItems. 
     * By default, elements with the "required" attribute are already taken care of.
@@ -683,6 +572,14 @@ class CasperTabbedItems extends CasperUiHelperMixin(LitElement) {
   handleFieldsErrorMessageClear (classesArr) {
     this._classesToAddEMCListener = classesArr;
   }
+
+
+
+
+
+
+
+
 
   getSaveData (foreignKey) {
     let saveData = {post:{},patch:{},delete:{}};
@@ -907,13 +804,13 @@ class CasperTabbedItems extends CasperUiHelperMixin(LitElement) {
 
       for (const className of this._classesToAddEMCListener) {
         const elements = newItem.querySelectorAll(`.${className}`);
-        for (const el of elements) { this._addErrorMessageClearListener(el); }
+        for (const el of elements) { this._uiHelper.addErrorMessageClearListener(el); }
       }
     }
   }
 
   async _deleteItem () {
-    this.items.splice(this._activeIndex, 1)
+    this.items.splice(this._activeIndex, 1);
     if (this._activeIndex > 0) this.activateItem(this._activeIndex - 1);
     this.requestUpdate();
     await this.updateComplete;
@@ -1059,7 +956,7 @@ class CasperTabbedItems extends CasperUiHelperMixin(LitElement) {
 
     if (event.key === 'Tab') {
       const itemChildren = Array.from(this._getItem(this._activeIndex).children);
-      const reachedLast = this.fieldTabHandler(event, itemChildren);
+      const reachedLast = this._uiHelper.fieldTabHandler(event, itemChildren);
 
       if (reachedLast) {
         // Necessary for CasperEditDialog and other components, so that the next field is focused when the user presses tab
@@ -1074,13 +971,13 @@ class CasperTabbedItems extends CasperUiHelperMixin(LitElement) {
     const currentFieldEl = event.detail.focusable_element;
     const itemChildren = Array.from(this._getItem(this._activeIndex).children);
 
-    const focusableSiblingEl = this.findFocusableSiblingField(itemChildren, currentFieldEl);
+    const focusableSiblingEl = this._uiHelper.findFocusableSiblingField(itemChildren, currentFieldEl);
 
     if (focusableSiblingEl) {
       event.stopPropagation();
       event.stopImmediatePropagation();
 
-      this.focusField(focusableSiblingEl);
+      this._uiHelper.focusField(focusableSiblingEl);
     } else {
       event.detail.focusable_element = this;
     }
@@ -1107,21 +1004,8 @@ class CasperTabbedItems extends CasperUiHelperMixin(LitElement) {
         break;
     }
   }
-
-  /* Adds the necessary event listeners to clear a field's error message. */
-  _addErrorMessageClearListener (element) {
-    if (!element) return;
-
-    if (!element.hasAttribute('has-clear-listener')) {
-      let eventType = 'value-changed';
-      const nodeName = element.nodeName.toLowerCase();
-
-      if (nodeName === 'paper-checkbox' || nodeName === 'paper-radio-button') eventType = 'checked-changed';
-
-      element.addEventListener(eventType, (event) => this.clearFieldErrorMessage(event?.currentTarget));
-      element.setAttribute('has-clear-listener', '');
-    }
-  }
 }
+
+
 
 customElements.define('casper-tabbed-items', CasperTabbedItems);
