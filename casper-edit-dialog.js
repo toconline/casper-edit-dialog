@@ -5,7 +5,7 @@ import { CasperSocketPromise } from  '@cloudware-casper/casper-socket/casper-soc
 import { Casper } from '@cloudware-casper/casper-common-ui/casper-i18n-behavior.js';
 import { mediaQueriesBreakpoints } from './components/casper-edit-dialog-constants.js';
 import { CasperEditDialogPage } from './components/casper-edit-dialog-page.js';
-import { CasperUiHelper } from './components/casper-ui-helper-mixin.js';
+import { CasperUiHelper } from './components/casper-ui-helper.js';
 import '@cloudware-casper/casper-icons/casper-icon.js';
 import '@cloudware-casper/casper-icons/casper-icon-button.js';
 import './components/casper-edit-dialog-status-page.js';
