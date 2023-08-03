@@ -1573,7 +1573,11 @@ export class CasperEditDialog extends Casper.I18n(CasperUiHelperMixin(LitElement
               } else if (response?.data && this.data?.relationships && operation === 'post' && this.rootResource() !== sUrn[0]) {
                 // Creating new elements in relationships
                 this.data.relationships[relationshipName].data.push({type: response.type, id: response.id});
-                this.data.relationships[relationshipName].elements.push(response.data);
+                if (this.data.relationships[relationshipName].elements) {
+                  this.data.relationships[relationshipName].elements.push(response.data);
+                } else {
+                  this.data.relationships[relationshipName].elements = [response.data];
+                }
               } else if (!this.data && operation === 'post' && this.rootResource() === sUrn[0]) {
                 // Creating new root element
                 this.data = {id: response.id};
