@@ -1,5 +1,6 @@
 import { LitElement, css } from 'lit';
 import { mediaQueriesBreakpoints } from './casper-edit-dialog-constants.js';
+import { CasperUiHelperMixin } from './casper-ui-helper-mixin.js';
 
 
 export class CasperEditDialogPage extends LitElement {
@@ -107,6 +108,8 @@ export class CasperEditDialogPage extends LitElement {
   constructor () {
     super();
 
+    this._uiHelper = new CasperUiHelperMixin();
+
     this.layout = 'grid';
   }
 
@@ -119,7 +122,7 @@ export class CasperEditDialogPage extends LitElement {
   async validate () {
     let isPageValid = true;
 
-    const requiredValidations = this.validateRequiredFields();
+    const requiredValidations = this._uiHelper.validateRequiredFields(this.shadowRoot);
     const otherValidations = await this._validate();
 
     if (!requiredValidations || !otherValidations) isPageValid = false;
@@ -127,128 +130,12 @@ export class CasperEditDialogPage extends LitElement {
     return isPageValid;
   }
 
-  /* Validates fields which have the "required" attribute. */
-  validateRequiredFields () {
-    let isPageValid = true;
-    const requiredFields = this.shadowRoot.querySelectorAll('[required]');
-
-    for (const element of requiredFields) {
-      this._addErrorMessageClearListener(element);
-
-      const nodeName = element.nodeName.toLowerCase();
-      const message = 'Campo obrigatório.';
-
-      switch (nodeName) {
-        case 'casper-select-lit':
-          if (element.value === undefined) {
-            element.searchInput.invalid = true;
-            element.error = message;
-            isPageValid = false;
-          }
-          break;
-
-        case 'casper-select':
-          if (!element.value) {
-            if (element.multiSelection) {
-              const paperInputContainer = element.shadowRoot.querySelector('paper-input-container');
-              if (paperInputContainer) paperInputContainer.invalid = true;
-            } else {
-              element.searchInput.invalid = true;
-              element.searchInput.errorMessage = message;
-            }
-            
-            isPageValid = false;
-          }
-          break;
-
-        case 'casper-date-picker':
-          if (!element.value) {
-            element.invalid = true;
-            element.requiredErrorMessage = message;
-            element.__errorMessage = message;
-            isPageValid = false;
-          }
-          break;
-
-        case 'paper-checkbox':
-          if (!element.checked) {
-            element.invalid = true;
-            isPageValid = false;
-          }
-          break;
-      
-        case 'paper-input':
-          if ((!element.value && element.value !== 0) || element.value?.toString()?.trim() === '') {
-            element.invalid = true;
-            element.errorMessage = message;
-            isPageValid = false;
-          }
-          break;
-
-        default:
-          break;
-      }
-    }
-
-    return isPageValid;
-  }
-
-  /* Event listener which is fired when the user interacts with an invalid field. This will clear the error message. */
-  clearFieldErrorMessage (element) {
-    if (!element) return;
-    const nodeName = element.nodeName.toLowerCase();
-
-    switch (nodeName) {
-      case 'casper-select-lit':
-        if (element.searchInput?.invalid) {
-          element.searchInput.invalid = false;
-          element.error = ''; 
-        }
-        break;
-
-      case 'casper-select':
-        if (element.multiSelection) {
-          const paperInputContainer = element.shadowRoot.querySelector('paper-input-container');
-          if (paperInputContainer?.invalid) paperInputContainer.invalid = false;
-        } else {
-          if (element.searchInput?.invalid) {
-            element.searchInput.invalid = false;
-            element.searchInput.errorMessage = '';
-          }
-        }
-        break;
-
-      case 'casper-date-picker':
-        if (element.invalid) {
-          element.invalid = false;
-          element.__errorMessage = '';
-        }
-        break;
-
-      case 'paper-checkbox':
-        if (element.invalid) {
-          element.invalid = false;
-        }
-        break;
-
-      case 'paper-input':
-        if (element.invalid) {
-          element.invalid = false;
-          element.errorMessage = ''; 
-        }
-        break;
-
-      default:
-        break;
-    }
-  }
-
   /** This receives an array of elements, whose error messages will be cleared by the editDialog. 
     * By default, elements with the "required" attribute are already taken care of.
     */
   handleFieldsErrorMessageClear (elementsArr) {
     for (const element of elementsArr) {
-      this._addErrorMessageClearListener(element);
+      this._uiHelper.addErrorMessageClearListener(element);
     }
   }
 
@@ -568,21 +455,6 @@ export class CasperEditDialogPage extends LitElement {
       default:
         elem.value = value;
         break;
-    }
-  }
-
-  /* Adds the necessary event listeners to clear a field's error message. */
-  _addErrorMessageClearListener (element) {
-    if (!element) return;
-
-    if (!element.hasAttribute('has-clear-listener')) {
-      let eventType = 'value-changed';
-      const nodeName = element.nodeName.toLowerCase();
-
-      if (nodeName === 'paper-checkbox' || nodeName === 'paper-radio-button') eventType = 'checked-changed';
-
-      element.addEventListener(eventType, (event) => this.clearFieldErrorMessage(event?.currentTarget));
-      element.setAttribute('has-clear-listener', '');
     }
   }
 
