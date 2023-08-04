@@ -304,6 +304,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       flex-shrink: 0;
       width: var(--ced-close-button-width);
       height: var(--ced-close-button-width);
+      outline: none;
       transition: all 1s;
     }
 
@@ -580,6 +581,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           </ol>
 
           <div class="edit-dialog__header">
+            <!-- Tabindex="-1" should never be removed, since this is used in a trick which prevents focus + page's transition problems. This button can also never be disabled or hidden. -->
             <casper-icon-button tabindex="-1" tooltip="Fechar" class="edit-dialog__close" icon="fa-light:times-circle" @click=${this.close.bind(this)}></casper-icon-button>
 
             <hgroup class="edit-dialog__header-text">
@@ -1215,6 +1217,15 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
   }
 
+  _reachedLast () {
+    // Before going to another page, we use the trick of moving the focus to the close-button. 
+    // This prevents transition problems that would break the layout (mainly caused by the casper-select, since it manipulates the focus).
+    this._closeButtonEl.focus({preventScroll: true});
+
+    // There aren't any focusable fields, so we go to the next page if it exists
+    if (this._pages[+this._activeIndex + 1]) this._gotoNextPage();
+  }
+
   _pagesContainerKeydownHandler (event) {
     if (!event) return;
 
@@ -1223,14 +1234,15 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       const reachedLast = this._uiHelper.fieldTabHandler(event, pageChildren);
 
       if (reachedLast) {
-        this._closeButtonEl.focus({preventScroll: true});
-        // There aren't any focusable fields, so we go to the next page if it exists
-        const nextPageIndex = +this._activeIndex + 1;
-        if (this._pages[nextPageIndex]) this.activatePage(nextPageIndex);
+        this._reachedLast();
       }
     }
   }
 
+  /** Event listener which is fired by the casper-select when the user presses the 'tab' key. 
+   * We have a special event for this, because the casper-select prevents the propagation of the keydown event.
+   * @param {Event} event
+   */
   _csTabWasPressedHandler (event) {
     if (!event) return;
 
@@ -1238,11 +1250,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     const reachedLast = this._uiHelper.casperSelectTabHandler(event, pageChildren);
 
     if (reachedLast) {
-      this._closeButtonEl.focus({preventScroll: true});
-
-      // There aren't any focusable fields, so we go to the next page if it exists
-      const nextPageIndex = +this._activeIndex + 1;
-      if (this._pages[nextPageIndex]) this._gotoNextPage();
+      this._reachedLast();
     }
   }
 
@@ -1260,10 +1268,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     if (focusableSiblingEl) {
       this._uiHelper.focusField(focusableSiblingEl);
     } else {
-      this._closeButtonEl.focus({preventScroll: true});
-      // There aren't any focusable fields, so we go to the next page if it exists
-      const nextPageIndex = +this._activeIndex + 1;
-      if (this._pages[nextPageIndex]) this.activatePage(nextPageIndex);
+      this._reachedLast();
     }
   }
 
