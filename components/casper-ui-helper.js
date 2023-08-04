@@ -17,19 +17,34 @@ export class CasperUiHelper {
     return field;
   }
 
-  findFocusableSiblingField (siblingsArray, currentFieldEl) {
+  findFocusableSiblingField (siblingsArray, currentFieldEl, direction = 'next') {
     const currentFieldIndex = siblingsArray.indexOf(currentFieldEl);
     if (currentFieldIndex === -1) return;
 
-    const focusableSiblingEl = siblingsArray.find((element, index) => {
-      return (index > currentFieldIndex) 
-          && (this.focusableFields.includes(element.nodeName?.toLowerCase()) || this.nestedComponents.includes(element.nodeName.toLowerCase())) 
-          && (!element.hasAttribute('disabled') 
-          && !element.hasAttribute('readonly') 
-          && !element.hasAttribute('hidden')
-          && !element.hasAttribute('no-autofocus'))
-      ;
-    });
+    let focusableSiblingEl;
+
+    if (direction === 'previous') {
+      focusableSiblingEl = siblingsArray.findLast((element, index) => {
+        return (index < currentFieldIndex) 
+            && (this.focusableFields.includes(element.nodeName?.toLowerCase()) || this.nestedComponents.includes(element.nodeName.toLowerCase())) 
+            && (!element.hasAttribute('disabled') 
+            && !element.hasAttribute('readonly') 
+            && !element.hasAttribute('hidden')
+            && !element.hasAttribute('no-autofocus'))
+        ;
+      });
+
+    } else if (direction === 'next') {
+      focusableSiblingEl = siblingsArray.find((element, index) => {
+        return (index > currentFieldIndex) 
+            && (this.focusableFields.includes(element.nodeName?.toLowerCase()) || this.nestedComponents.includes(element.nodeName.toLowerCase())) 
+            && (!element.hasAttribute('disabled') 
+            && !element.hasAttribute('readonly') 
+            && !element.hasAttribute('hidden')
+            && !element.hasAttribute('no-autofocus'))
+        ;
+      });
+    }
 
     return focusableSiblingEl;
   }
@@ -67,7 +82,7 @@ export class CasperUiHelper {
     }
     
     if (currentField.nextElementSibling) {
-      const focusableSiblingEl = this.findFocusableSiblingField(siblingsArray, currentField);
+      const focusableSiblingEl = this.findFocusableSiblingField(siblingsArray, currentField, 'next');
 
       if (focusableSiblingEl) {
         const focusableSiblingNodeName = focusableSiblingEl.nodeName.toLowerCase();
@@ -100,7 +115,7 @@ export class CasperUiHelper {
     element.closeDropdown();
 
     if (element.nextElementSibling) {
-      const focusableSiblingEl = this.findFocusableSiblingField(siblingsArray, element);
+      const focusableSiblingEl = this.findFocusableSiblingField(siblingsArray, element, 'next');
 
       if (focusableSiblingEl) {
         if (focusableSiblingEl === element.nextElementSibling) return;

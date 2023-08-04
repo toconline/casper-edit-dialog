@@ -1244,10 +1244,13 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
    * @param {Event} event
    */
   _csTabWasPressedHandler (event) {
-    if (!event) return;
+    if (!event?.detail?.element) return;
 
-    const pageChildren = Array.from(this._getCurrentPage().shadowRoot.children);
-    const reachedLast = this._uiHelper.casperSelectTabHandler(event, pageChildren);
+    const currentField = event.detail.element;
+    const pageChildrenArr = Array.from(this._getCurrentPage().shadowRoot.children);
+    if (!pageChildrenArr.includes(currentField)) return;
+
+    const reachedLast = this._uiHelper.casperSelectTabHandler(event, pageChildrenArr);
 
     if (reachedLast) {
       this._reachedLast();
@@ -1263,7 +1266,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     const currentFieldEl = event.detail.focusable_element;
     const pageChildren = Array.from(this._getCurrentPage().shadowRoot.children);
 
-    const focusableSiblingEl = this._uiHelper.findFocusableSiblingField(pageChildren, currentFieldEl);
+    const focusableSiblingEl = this._uiHelper.findFocusableSiblingField(pageChildren, currentFieldEl, 'next');
 
     if (focusableSiblingEl) {
       this._uiHelper.focusField(focusableSiblingEl);

@@ -966,11 +966,18 @@ class CasperTabbedItems extends LitElement {
     }
   }
 
+  /** Event listener which is fired by the casper-select when the user presses the 'tab' key. 
+   * We have a special event for this, because the casper-select prevents the propagation of the keydown event.
+   * @param {Event} event
+   */
   _csTabWasPressedHandler (event) {
-    if (!event) return;
+    if (!event?.detail?.element) return;
 
-    const itemChildren = Array.from(this._getItem(this._activeIndex).children);
-    const reachedLast = this._uiHelper.casperSelectTabHandler(event, itemChildren);
+    const currentField = event.detail.element;
+    const itemChildrenArr = Array.from(this._getItem(this._activeIndex).children);
+    if (!itemChildrenArr.includes(currentField)) return;
+
+    const reachedLast = this._uiHelper.casperSelectTabHandler(event, itemChildrenArr);
 
     if (reachedLast) {
       // Necessary for CasperEditDialog and other components, so that the next field is focused when the user presses tab
@@ -984,7 +991,7 @@ class CasperTabbedItems extends LitElement {
     const currentFieldEl = event.detail.focusable_element;
     const itemChildren = Array.from(this._getItem(this._activeIndex).children);
 
-    const focusableSiblingEl = this._uiHelper.findFocusableSiblingField(itemChildren, currentFieldEl);
+    const focusableSiblingEl = this._uiHelper.findFocusableSiblingField(itemChildren, currentFieldEl, 'next');
 
     if (focusableSiblingEl) {
       event.stopPropagation();
