@@ -412,7 +412,7 @@ class CasperTabbedItems extends LitElement {
 
     this._contentEl.addEventListener('keydown', this._contentKeydownHandler.bind(this));
     this._contentEl.addEventListener('casper-select-tab-was-pressed', this._csTabWasPressedHandler.bind(this));
-    this._contentEl.addEventListener('reached-last-focusable-field', this._reachedLastFocusableFieldHandler.bind(this));
+    this._contentEl.addEventListener('reached-extreme-focusable-field', this._reachedExtremeFocusableFieldHandler.bind(this));
   }
 
   updated (changedProperties) {
@@ -461,7 +461,7 @@ class CasperTabbedItems extends LitElement {
     }
 
     if (changedProperties.has('_activeIndex')) {
-      if (this.items?.length > 0) this.focusFirstEditableField(this._activeIndex);
+      if (this.items?.length > 0) this.focusFirstOrLastEditableField('first', this._activeIndex);
     }
   }
 
@@ -517,17 +517,17 @@ class CasperTabbedItems extends LitElement {
     }
   }
 
-  async focusFirstEditableField (index = this._activeIndex) {
+  async focusFirstOrLastEditableField (position = 'first', index = this._activeIndex) {
     const itemEl = this._getItem(index);
     if (!itemEl) return;
     
-    const childEl = this._uiHelper.findFocusableField(Array.from(itemEl.children));
+    const childEl = this._uiHelper.findFocusableField(Array.from(itemEl.children), position);
     if (!childEl) return;
 
     if (this._uiHelper.nestedComponents.includes(childEl.nodeName.toLowerCase())) {
       await childEl.updateComplete;
 
-      const foundEl = this._uiHelper.findFocusableField(Array.from(childEl.shadowRoot.children));
+      const foundEl = this._uiHelper.findFocusableField(Array.from(childEl.shadowRoot.children), position);
       if (foundEl && !this._uiHelper.nestedComponents.includes(foundEl.nodeName.toLowerCase())) this._uiHelper.focusField(foundEl);
     } else {
       this._uiHelper.focusField(childEl);
@@ -956,12 +956,13 @@ class CasperTabbedItems extends LitElement {
     if (!event) return;
 
     if (event.key === 'Tab') {
-      const itemChildren = Array.from(this._getItem(this._activeIndex).children);
-      const reachedLast = this._uiHelper.fieldTabHandler(event, itemChildren);
+      let reachedExtreme = false;
+        const itemChildren = Array.from(this._getItem(this._activeIndex).children);
+        reachedExtreme = this._uiHelper.fieldTabHandler(event, itemChildren);
 
-      if (reachedLast) {
-        // Necessary for CasperEditDialog and other components, so that the next field is focused when the user presses tab
-        this.dispatchEvent(new CustomEvent('reached-last-focusable-field', { bubbles: true, composed: true, cancelable: true, detail: { focusable_element: this } }));
+      if (reachedExtreme) {
+        // Necessary for CasperEditDialog and other components, so that the previous / next field is focused when the user presses shift+tab / tab
+        this.dispatchEvent(new CustomEvent('reached-extreme-focusable-field', { bubbles: true, composed: true, cancelable: true, detail: { focusable_element: this, position: event.shiftKey ? 'first' : 'last' } }));
       }
     }
   }
@@ -971,27 +972,28 @@ class CasperTabbedItems extends LitElement {
    * @param {Event} event
    */
   _csTabWasPressedHandler (event) {
-    if (!event?.detail?.element) return;
+    if (!event?.detail?.element || !Object.hasOwn(event?.detail, 'pressed_shift_key')) return;
 
     const currentField = event.detail.element;
     const itemChildrenArr = Array.from(this._getItem(this._activeIndex).children);
     if (!itemChildrenArr.includes(currentField)) return;
 
-    const reachedLast = this._uiHelper.casperSelectTabHandler(event, itemChildrenArr);
+    const reachedExtreme = this._uiHelper.casperSelectTabHandler(event, itemChildrenArr);
 
-    if (reachedLast) {
-      // Necessary for CasperEditDialog and other components, so that the next field is focused when the user presses tab
-      this.dispatchEvent(new CustomEvent('reached-last-focusable-field', { bubbles: true, composed: true, cancelable: true, detail: { focusable_element: this } }));
+    if (reachedExtreme) {
+      // Necessary for CasperEditDialog and other components, so that the previous / next field is focused when the user presses shift+tab / tab
+      this.dispatchEvent(new CustomEvent('reached-extreme-focusable-field', { bubbles: true, composed: true, cancelable: true, detail: { focusable_element: this, position: event.detail.pressed_shift_key ? 'first' : 'last' } }));
     }
   }
 
-  _reachedLastFocusableFieldHandler (event) {
-    if (!event?.detail?.focusable_element) return;
+  _reachedExtremeFocusableFieldHandler (event) {
+    if (!event?.detail?.focusable_element || !event?.detail?.position) return;
 
+    const direction = event.detail.position === 'first' ? 'previous' : 'next';
     const currentFieldEl = event.detail.focusable_element;
     const itemChildren = Array.from(this._getItem(this._activeIndex).children);
 
-    const focusableSiblingEl = this._uiHelper.findFocusableSiblingField(itemChildren, currentFieldEl, 'next');
+    const focusableSiblingEl = this._uiHelper.findFocusableSiblingField(itemChildren, currentFieldEl, direction);
 
     if (focusableSiblingEl) {
       event.stopPropagation();

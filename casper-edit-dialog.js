@@ -637,7 +637,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._dialogEl.addEventListener('cancel', this._dialogCancelHandler.bind(this));
     this._pagesContainerEl.addEventListener('keydown', this._pagesContainerKeydownHandler.bind(this));
     this._pagesContainerEl.addEventListener('casper-select-tab-was-pressed', this._csTabWasPressedHandler.bind(this));
-    this._pagesContainerEl.addEventListener('reached-last-focusable-field', this._reachedLastFocusableFieldHandler.bind(this));
+    this._pagesContainerEl.addEventListener('reached-extreme-focusable-field', this._reachedExtremeFocusableFieldHandler.bind(this));
     this.addEventListener('casper-overlay-opened', this._casperOverlayOpenedHandler);
     this.addEventListener('keydown', this._generalKeydownHandler.bind(this));
 
@@ -662,7 +662,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
       // Focus can only be added after the page's transition has finished
       setTimeout(() => {
-        this.focusPageFirstEditableField(index);
+        this.focusPageFirstOrLastEditableField(index, 'first');
       }, 1000);
     }
   }
@@ -715,7 +715,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     // Then we create only the first page
     await this.activatePage(0, true);
     this._dialogEl.showModal();
-    this.focusPageFirstEditableField(0);
+    this.focusPageFirstOrLastEditableField(0, 'first');
   }
 
   close () {
@@ -857,17 +857,17 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
 
 
-  focusPageFirstEditableField (pageIndex) {
+  focusPageFirstOrLastEditableField (pageIndex, position = 'first') {
     const pageEl = this._pagesContainerEl.children.namedItem(`page-${pageIndex}`);
     if (!pageEl) return;
 
-    const childEl = this._uiHelper.findFocusableField(Array.from(pageEl.shadowRoot.children));
+    const childEl = this._uiHelper.findFocusableField(Array.from(pageEl.shadowRoot.children), position);
     if (!childEl) return;
 
     const elNodeName = childEl.nodeName.toLowerCase();
 
     if (this._uiHelper.nestedComponents.includes(elNodeName)) {
-      childEl.focusFirstEditableField();
+      childEl.focusFirstOrLastEditableField(position);
     } else {
       this._uiHelper.focusField(childEl);
     }
@@ -1217,13 +1217,16 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
   }
 
-  _reachedLast () {
+  _reachedFieldAtTheExtreme (position = 'last') {
     // Before going to another page, we use the trick of moving the focus to the close-button. 
     // This prevents transition problems that would break the layout (mainly caused by the casper-select, since it manipulates the focus).
     this._closeButtonEl.focus({preventScroll: true});
 
-    // There aren't any focusable fields, so we go to the next page if it exists
-    if (this._pages[+this._activeIndex + 1]) this._gotoNextPage();
+    if (position === 'first') {
+      if (this._pages[+this._activeIndex - 1]) this._gotoPreviousPage();
+    } else if (position === 'last') {
+      if (this._pages[+this._activeIndex + 1]) this._gotoNextPage();
+    }
   }
 
   _pagesContainerKeydownHandler (event) {
@@ -1231,10 +1234,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     if (event.key === 'Tab') {
       const pageChildren = Array.from(this._getCurrentPage().shadowRoot.children);
-      const reachedLast = this._uiHelper.fieldTabHandler(event, pageChildren);
 
-      if (reachedLast) {
-        this._reachedLast();
+      const reachedExtreme = this._uiHelper.fieldTabHandler(event, pageChildren);
+      if (reachedExtreme) {
+        this._reachedFieldAtTheExtreme(event.shiftKey ? 'first' : 'last');
       }
     }
   }
@@ -1244,34 +1247,35 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
    * @param {Event} event
    */
   _csTabWasPressedHandler (event) {
-    if (!event?.detail?.element) return;
+    if (!event?.detail?.element || !Object.hasOwn(event?.detail, 'pressed_shift_key')) return;
 
     const currentField = event.detail.element;
     const pageChildrenArr = Array.from(this._getCurrentPage().shadowRoot.children);
     if (!pageChildrenArr.includes(currentField)) return;
 
-    const reachedLast = this._uiHelper.casperSelectTabHandler(event, pageChildrenArr);
+    const reachedExtreme = this._uiHelper.casperSelectTabHandler(event, pageChildrenArr);
 
-    if (reachedLast) {
-      this._reachedLast();
+    if (reachedExtreme) {
+      this._reachedFieldAtTheExtreme(event.detail.pressed_shift_key ? 'first' : 'last');
     }
   }
 
-  _reachedLastFocusableFieldHandler (event) {
-    if (!event?.detail?.focusable_element) return;
+  _reachedExtremeFocusableFieldHandler (event) {
+    if (!event?.detail?.focusable_element || !event?.detail?.position) return;
 
     event.stopPropagation();
     event.stopImmediatePropagation();
 
+    const direction = event.detail.position === 'first' ? 'previous' : 'next';
     const currentFieldEl = event.detail.focusable_element;
     const pageChildren = Array.from(this._getCurrentPage().shadowRoot.children);
 
-    const focusableSiblingEl = this._uiHelper.findFocusableSiblingField(pageChildren, currentFieldEl, 'next');
+    const focusableSiblingEl = this._uiHelper.findFocusableSiblingField(pageChildren, currentFieldEl, direction);
 
     if (focusableSiblingEl) {
       this._uiHelper.focusField(focusableSiblingEl);
     } else {
-      this._reachedLast();
+      this._reachedFieldAtTheExtreme(event.detail.position);
     }
   }
 

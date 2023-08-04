@@ -4,15 +4,29 @@ export class CasperUiHelper {
     this.focusableFields = ['paper-input', 'paper-checkbox', 'casper-select-lit', 'casper-select', 'casper-date-picker'];
   }
 
-  findFocusableField (array) {
-    const field = array.find(element => {
-      return (this.focusableFields.includes(element.nodeName?.toLowerCase()) || this.nestedComponents.includes(element.nodeName?.toLowerCase())) 
-          && (!element.hasAttribute('disabled') 
-          && !element.hasAttribute('readonly') 
-          && !element.hasAttribute('hidden')
-          && !element.hasAttribute('no-autofocus'))
-      ;
-    });
+  findFocusableField (array, position = 'first') {
+    let field;
+
+    if (position === 'first') {
+      field = array.find(element => {
+        return (this.focusableFields.includes(element.nodeName?.toLowerCase()) || this.nestedComponents.includes(element.nodeName?.toLowerCase())) 
+            && (!element.hasAttribute('disabled') 
+            && !element.hasAttribute('readonly') 
+            && !element.hasAttribute('hidden')
+            && !element.hasAttribute('no-autofocus'))
+        ;
+      });
+
+    } else if (position === 'last') {
+      field = array.findLast(element => {
+        return (this.focusableFields.includes(element.nodeName?.toLowerCase()) || this.nestedComponents.includes(element.nodeName?.toLowerCase())) 
+            && (!element.hasAttribute('disabled') 
+            && !element.hasAttribute('readonly') 
+            && !element.hasAttribute('hidden')
+            && !element.hasAttribute('no-autofocus'))
+        ;
+      });
+    }
 
     return field;
   }
@@ -75,67 +89,70 @@ export class CasperUiHelper {
     event.stopImmediatePropagation();
 
     if (!siblingsArray) siblingsArray = currentField.parentNode.children;
-    let reachedLast = false;
+    if (currentField.nodeName?.toLowerCase() === 'casper-select-lit') currentField.hidePopover();
 
-    if (currentField.nodeName?.toLowerCase() === 'casper-select-lit') {
-      currentField.hidePopover();
-    }
-    
-    if (currentField.nextElementSibling) {
-      const focusableSiblingEl = this.findFocusableSiblingField(siblingsArray, currentField, 'next');
+    const direction = event.shiftKey ? 'previous' : 'next';
+    const position = event.shiftKey ? 'last' : 'first';
+    let reachedExtreme = false;
+
+    if (currentField[direction + 'ElementSibling']) {
+      const focusableSiblingEl = this.findFocusableSiblingField(siblingsArray, currentField, direction);
 
       if (focusableSiblingEl) {
         const focusableSiblingNodeName = focusableSiblingEl.nodeName.toLowerCase();
 
         if (this.nestedComponents.includes(focusableSiblingNodeName)) {
-          focusableSiblingEl.focusFirstEditableField();
+          focusableSiblingEl.focusFirstOrLastEditableField(position);
         } else {
           this.focusField(focusableSiblingEl);
         }
 
       } else {
-        reachedLast = true;
+        reachedExtreme = true;
       }
     } else {
-      reachedLast = true;
+      reachedExtreme = true;
     }
 
-    return reachedLast;
+    return reachedExtreme;
   }
 
   casperSelectTabHandler (event, siblingsArray) {
-    if (!event?.detail?.element) return;
+    if (!event?.detail?.element || !Object.hasOwn(event?.detail, 'pressed_shift_key')) return;
 
     event.stopPropagation();
     event.stopImmediatePropagation();
 
     const element = event.detail.element;
-    let reachedLast = false;
+    const direction = event.detail.pressed_shift_key ? 'previous' : 'next';
+    const position = event.detail.pressed_shift_key ? 'last' : 'first';
+    let reachedExtreme = false;
 
     element.closeDropdown();
 
-    if (element.nextElementSibling) {
-      const focusableSiblingEl = this.findFocusableSiblingField(siblingsArray, element, 'next');
+
+    if (element[`${direction}ElementSibling`]) {
+      const focusableSiblingEl = this.findFocusableSiblingField(siblingsArray, element, direction);
 
       if (focusableSiblingEl) {
-        if (focusableSiblingEl === element.nextElementSibling) return;
+        if (focusableSiblingEl === element[`${direction}ElementSibling`]) return;
       
         const focusableSiblingNodeName = focusableSiblingEl.nodeName.toLowerCase();
 
         if (this.nestedComponents.includes(focusableSiblingNodeName)) {
-          focusableSiblingEl.focusFirstEditableField();
+          focusableSiblingEl.focusFirstOrLastEditableField(position);
         } else {
           this.focusField(focusableSiblingEl);
         }
       } else {
-        reachedLast = true;
+        reachedExtreme = true;
       }
   
     } else {
-      reachedLast = true;
+      reachedExtreme = true;
     }
 
-    return reachedLast;
+    return reachedExtreme;
   }
 
   /** Validates fields which have the "required" attribute and shows an error message when appropriate.
