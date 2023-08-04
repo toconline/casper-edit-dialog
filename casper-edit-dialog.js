@@ -580,7 +580,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           </ol>
 
           <div class="edit-dialog__header">
-            <casper-icon-button tooltip="Fechar" class="edit-dialog__close" icon="fa-light:times-circle" @click=${this.close.bind(this)}></casper-icon-button>
+            <casper-icon-button tabindex="-1" tooltip="Fechar" class="edit-dialog__close" icon="fa-light:times-circle" @click=${this.close.bind(this)}></casper-icon-button>
 
             <hgroup class="edit-dialog__header-text">
               ${(this._title)
@@ -618,6 +618,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
   firstUpdated () {
     this._dialogEl = this.shadowRoot.getElementById('editDialog');
+    this._closeButtonEl = this.shadowRoot.querySelector('.edit-dialog__close');
     this._labelsList = this.shadowRoot.querySelector('.edit-dialog__labels-list');
     this._contentWrapperEl = this.shadowRoot.querySelector('.edit-dialog__content-wrapper');
     this._pagesContainerEl = this.shadowRoot.querySelector('.edit-dialog__pages-container');
@@ -1221,6 +1222,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       const reachedLast = this._uiHelper.fieldTabHandler(event, pageChildren);
 
       if (reachedLast) {
+        this._closeButtonEl.focus({preventScroll: true});
         // There aren't any focusable fields, so we go to the next page if it exists
         const nextPageIndex = +this._activeIndex + 1;
         if (this._pages[nextPageIndex]) this.activatePage(nextPageIndex);
@@ -1242,6 +1244,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     if (focusableSiblingEl) {
       this._uiHelper.focusField(focusableSiblingEl);
     } else {
+      this._closeButtonEl.focus({preventScroll: true});
       // There aren't any focusable fields, so we go to the next page if it exists
       const nextPageIndex = +this._activeIndex + 1;
       if (this._pages[nextPageIndex]) this.activatePage(nextPageIndex);
