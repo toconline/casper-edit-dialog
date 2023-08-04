@@ -634,6 +634,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     this._dialogEl.addEventListener('cancel', this._dialogCancelHandler.bind(this));
     this._pagesContainerEl.addEventListener('keydown', this._pagesContainerKeydownHandler.bind(this));
+    this._pagesContainerEl.addEventListener('casper-select-tab-was-pressed', this._csTabWasPressedHandler.bind(this));
     this._pagesContainerEl.addEventListener('reached-last-focusable-field', this._reachedLastFocusableFieldHandler.bind(this));
     this.addEventListener('casper-overlay-opened', this._casperOverlayOpenedHandler);
     this.addEventListener('keydown', this._generalKeydownHandler.bind(this));
@@ -1227,6 +1228,21 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         const nextPageIndex = +this._activeIndex + 1;
         if (this._pages[nextPageIndex]) this.activatePage(nextPageIndex);
       }
+    }
+  }
+
+  _csTabWasPressedHandler (event) {
+    if (!event) return;
+
+    const pageChildren = Array.from(this._getCurrentPage().shadowRoot.children);
+    const reachedLast = this._uiHelper.casperSelectTabHandler(event, pageChildren);
+
+    if (reachedLast) {
+      this._closeButtonEl.focus({preventScroll: true});
+
+      // There aren't any focusable fields, so we go to the next page if it exists
+      const nextPageIndex = +this._activeIndex + 1;
+      if (this._pages[nextPageIndex]) this._gotoNextPage();
     }
   }
 

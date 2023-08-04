@@ -81,6 +81,40 @@ export class CasperUiHelper {
       } else {
         reachedLast = true;
       }
+    } else {
+      reachedLast = true;
+    }
+
+    return reachedLast;
+  }
+
+  casperSelectTabHandler (event, siblingsArray) {
+    if (!event?.detail?.element) return;
+
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+
+    const element = event.detail.element;
+    let reachedLast = false;
+
+    element.closeDropdown();
+
+    if (element.nextElementSibling) {
+      const focusableSiblingEl = this.findFocusableSiblingField(siblingsArray, element);
+
+      if (focusableSiblingEl) {
+        if (focusableSiblingEl === element.nextElementSibling) return;
+      
+        const focusableSiblingNodeName = focusableSiblingEl.nodeName.toLowerCase();
+
+        if (this.nestedComponents.includes(focusableSiblingNodeName)) {
+          focusableSiblingEl.focusFirstEditableField();
+        } else {
+          this.focusField(focusableSiblingEl);
+        }
+      } else {
+        reachedLast = true;
+      }
   
     } else {
       reachedLast = true;

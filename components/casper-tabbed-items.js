@@ -411,6 +411,7 @@ class CasperTabbedItems extends LitElement {
     this._contentEl = this.shadowRoot.querySelector('.content');
 
     this._contentEl.addEventListener('keydown', this._contentKeydownHandler.bind(this));
+    this._contentEl.addEventListener('casper-select-tab-was-pressed', this._csTabWasPressedHandler.bind(this));
     this._contentEl.addEventListener('reached-last-focusable-field', this._reachedLastFocusableFieldHandler.bind(this));
   }
 
@@ -962,6 +963,18 @@ class CasperTabbedItems extends LitElement {
         // Necessary for CasperEditDialog and other components, so that the next field is focused when the user presses tab
         this.dispatchEvent(new CustomEvent('reached-last-focusable-field', { bubbles: true, composed: true, cancelable: true, detail: { focusable_element: this } }));
       }
+    }
+  }
+
+  _csTabWasPressedHandler (event) {
+    if (!event) return;
+
+    const itemChildren = Array.from(this._getItem(this._activeIndex).children);
+    const reachedLast = this._uiHelper.casperSelectTabHandler(event, itemChildren);
+
+    if (reachedLast) {
+      // Necessary for CasperEditDialog and other components, so that the next field is focused when the user presses tab
+      this.dispatchEvent(new CustomEvent('reached-last-focusable-field', { bubbles: true, composed: true, cancelable: true, detail: { focusable_element: this } }));
     }
   }
 
