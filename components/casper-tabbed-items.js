@@ -847,7 +847,7 @@ class CasperTabbedItems extends LitElement {
       tabs.push(...items);
     }
 
-    this._setTabbedItems(tabs);
+    await this._setTabbedItems(tabs);
   }
 
   async _setTabbedItems (data) {

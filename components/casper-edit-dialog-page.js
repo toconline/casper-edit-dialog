@@ -401,7 +401,7 @@ export class CasperEditDialogPage extends LitElement {
     return;
   }
 
-  afterSave (saveData, data) {
+  async afterSave (saveData, data) {
     return;
   }
 

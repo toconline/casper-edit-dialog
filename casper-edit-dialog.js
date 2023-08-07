@@ -1088,7 +1088,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       this._userHasSavedData = true;
 
       for (let i = 0; i < this._pagesContainerEl.children.length; i++) {
-        this._pagesContainerEl.children[i].afterSave(saveData, this.data);
+        await this._pagesContainerEl.children[i].afterSave(saveData, this.data);
       }
 
       if (close) this.close();
