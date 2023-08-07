@@ -1,11 +1,16 @@
 import { LitElement, html, css } from 'lit';
 import {classMap} from 'lit-html/directives/class-map.js';
 import { CasperUiHelper } from './casper-ui-helper.js';
+import { mediaQueriesBreakpoints } from '@cloudware-casper/casper-edit-dialog/components/casper-edit-dialog-constants.js';
 import '@cloudware-casper/casper-icons/casper-icon.js';
 
 
 class CasperTabbedItems extends LitElement {
   static properties = {
+    layout: {
+      type: String,
+      reflect: true
+    },
     renderItem: {
       type: Function
     },
@@ -31,7 +36,7 @@ class CasperTabbedItems extends LitElement {
 
   static styles = css`
     :host {
-      --grid-item-min-width: 14.4rem;
+      --item-min-width: 14.4rem;
       --cti-grey: rgb(179, 179, 179);
       --cti-dark-grey: rgb(149, 149, 149);
       --tab-vertical-padding: 0.25rem;
@@ -310,20 +315,38 @@ class CasperTabbedItems extends LitElement {
     }
 
     .content__item {
-      display: none;
-      grid-row-gap: 0.625rem;
-      grid-column-gap: 1.25rem;
-      grid-template-columns: repeat(auto-fit, minmax(var(--grid-item-min-width), 1fr));
-      grid-auto-rows: minmax(min-content, max-content);
-      align-content: start;
+      --column-gap: 1.25rem;
+
+      row-gap: 0.625rem;
+      column-gap: var(--column-gap);
       padding: var(--item-padding);
       /* Space needed so that an input's error message fits */
       padding-bottom: 3rem;
       border-bottom: 1px solid rgb(217, 217, 217);
     }
 
-    .content__item[active] {
+    :host([layout="grid"]) .content__item {
+      display: none;
+      grid-template-columns: repeat(auto-fit, minmax(var(--item-min-width), 1fr));
+      grid-auto-rows: minmax(min-content, max-content);
+      align-content: start;
+    }
+
+    :host([layout="grid"]) .content__item[active] {
       display: grid;
+    }
+
+    :host([layout="grid"]) .content__item paper-checkbox {
+      justify-self: flex-start;
+    }
+
+    :host([layout="grid"]) .content__item .cti__span-all,
+    :host([layout="grid"]) .content__item casper-address {
+      grid-column: 1 / -1;
+    }
+
+    :host([layout="grid"]) .content__item .cti__span-2 {
+      grid-column: span 2;
     }
 
     .content__delete {
@@ -341,6 +364,16 @@ class CasperTabbedItems extends LitElement {
     .content__delete:hover {
       color: var(--error-color);
     }
+
+    @media (max-width: ${mediaQueriesBreakpoints.tablet}) {
+      :host([layout="grid"]) .content__item > *:not(.cti__span-all, .cti__span-2, casper-address) {
+        grid-column: auto !important;
+      }
+
+      :host([layout="grid"]) .content__item .cti__span-2 {
+        grid-column: 1 / -1 !important;
+      }
+    }
   `;
 
   constructor () {
@@ -348,6 +381,8 @@ class CasperTabbedItems extends LitElement {
 
     this._uiHelper = new CasperUiHelper();
 
+    this.layout = 'grid';
+    
     this.items = [];
     this.showNewItemsAction = true;
     this.allowNewItems = true;
