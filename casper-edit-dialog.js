@@ -662,7 +662,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
       // Focus can only be added after the page's transition has finished
       setTimeout(() => {
-        this.focusPageFirstOrLastEditableField(index, 'first');
+        this.focusPageFirstOrLastEditableField('first', index);
       }, 1000);
     }
   }
@@ -715,7 +715,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     // Then we create only the first page
     await this.activatePage(0, true);
     this._dialogEl.showModal();
-    this.focusPageFirstOrLastEditableField(0, 'first');
+    this.focusPageFirstOrLastEditableField('first', 0);
   }
 
   close () {
@@ -815,10 +815,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     if (+newIndex === +this._activeIndex && !beforeShowModal) return;
 
     const previousIndex = this._activeIndex;
-    const previousPage = this._pagesContainerEl.children.namedItem(`page-${previousIndex}`);
+    const previousPage = this.getPage(previousIndex);
     if (previousPage) previousPage.removeAttribute('active');
 
-    let newPage = this._pagesContainerEl.children.namedItem(`page-${newIndex}`);
+    let newPage = this.getPage(newIndex);
     if (!newPage) newPage = await this.createPage(newIndex);
 
     if (beforeShowModal) {
@@ -857,8 +857,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
 
 
-  focusPageFirstOrLastEditableField (pageIndex, position = 'first') {
-    const pageEl = this._pagesContainerEl.children.namedItem(`page-${pageIndex}`);
+  focusPageFirstOrLastEditableField (position = 'first', pageIndex = this._activeIndex) {
+    const pageEl = this.getPage(pageIndex);
     if (!pageEl) return;
 
     const childEl = this._uiHelper.findFocusableField(Array.from(pageEl.shadowRoot.children), position);
@@ -1147,7 +1147,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     let closestPreviousSibling;
     for (let i = +index - 1; i >= 0; i--) {
-      closestPreviousSibling = this._pagesContainerEl.children.namedItem(`page-${i}`);
+      closestPreviousSibling = this.getPage(i);
       if (closestPreviousSibling) break;
     }
 
@@ -1313,7 +1313,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   }
 
   _updateButtons () {
-    const nextIcon = (this._activeIndex === this._pagesContainerEl.children.length - 1 && !this._getCurrentPage().hasAttribute('next')) 
+    const nextIcon = (this._activeIndex === this._pages.length - 1 && !this._getCurrentPage().hasAttribute('next')) 
       ? 'fa-light:check' 
       : 'fa-light:arrow-right';
 
@@ -1510,7 +1510,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
             } else {
               if (!this._runJobInBackground) this.showStatusPage(notification, 'success');
               if (this.mode === 'wizard') {
-                if (this._activeIndex === this._pagesContainerEl.children.length - 1) {
+                if (this._activeIndex === this._pages.length - 1) {
                   this.close();
                 } else {
                   this.activatePage(this._activeIndex + 1);
