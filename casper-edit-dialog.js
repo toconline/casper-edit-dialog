@@ -126,17 +126,19 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     .edit-dialog__labels-list {
       --ced-label-number-color-rgb: 255, 255, 255;
+      --ced-labels-list-padding-right: calc(var(--ced-border-radius) + var(--ced-horizontal-padding));
 
       grid-area: labels;
       list-style-type: none;
       margin: 0;
       padding: 5rem var(--ced-horizontal-padding);
       /* Trick to add shadow beneath the left rounded corners */
-      padding-right: calc(var(--ced-border-radius) + var(--ced-horizontal-padding));
+      padding-right: var(--ced-labels-list-padding-right);
       margin-right: calc(var(--ced-border-radius) * -1);
       box-shadow: rgba(0, 0, 0, 6%) calc(-15px - var(--ced-border-radius)) -7px 10px inset;
       color: rgb(var(--ced-label-number-color-rgb));
       background-color: var(--ced-labels-background-color);
+      position: relative;
       transition: all var(--ced-labels-buttons-transition-duration);
     }
 
@@ -149,26 +151,42 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       padding: 0;
     }
 
+    .edit-dialog__label,
+    .edit-dialog__info {
+      font-size: 1rem;
+      cursor: pointer;
+      opacity: 0.6;
+      transition: opacity var(--ced-labels-buttons-transition-duration);
+    }
+
+    .edit-dialog__info {
+      position: absolute;
+      left: var(--ced-horizontal-padding);
+      bottom: var(--ced-horizontal-padding);
+      width: calc(100% - var(--ced-horizontal-padding) - var(--ced-labels-list-padding-right));
+    }
+
+    .edit-dialog__info casper-icon {
+      padding: 0.375em;
+    }
+
     .edit-dialog__label {
       position: relative;
-      font-size: 1rem;
       margin-bottom: 1.375em;
       display: flex;
       align-items: center;
       gap: 0.625em;
-      cursor: pointer;
-      opacity: 0.6;
-      transition: opacity var(--ced-labels-buttons-transition-duration);
 
       --ced-label-bold: 500;
     }
 
-    .edit-dialog__label:hover {
+    .edit-dialog__label:hover,
+    .edit-dialog__label[active],
+    .edit-dialog__info:hover {
       opacity: 1;
     }
 
     .edit-dialog__label[active] {
-      opacity: 1;
       font-weight: var(--ced-label-bold);
       pointer-events: none;
     }
@@ -181,17 +199,21 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     .edit-dialog__label-number {
       position: relative;
       flex-shrink: 0;
-      width: 1.875em;
-      height: 1.875em;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      border-radius: 50%;
       /* Removes top white-space, centering the number */
       line-height: 0;
-      background: transparent;
-      border: solid 1px rgba(var(--ced-label-number-color-rgb), 56%);
       transition: all var(--ced-labels-buttons-transition-duration);
+    }
+
+    .edit-dialog__label-number,
+    .edit-dialog__info casper-icon {
+      background-color: transparent;
+      width: 1.875em;
+      height: 1.875em;
+      border-radius: 50%;
+      border: solid 1px rgba(var(--ced-label-number-color-rgb), 56%);
     }
 
     .edit-dialog__label[active] .edit-dialog__label-number {
@@ -268,7 +290,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       opacity: 1;
     }
 
-
     .edit-dialog__inner > *:not(.edit-dialog__labels-list) {
       background-color: var(--ced-background-color);
     }
@@ -282,6 +303,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       flex-direction: column;
       border-top-left-radius: var(--ced-border-radius);
       padding: var(--ced-vertical-padding) var(--ced-horizontal-padding) 0 var(--ced-horizontal-padding);
+      /* Needed to stay above the labels-list */
+      z-index: 0;
 
       --ced-close-button-width: 1.5625rem;
     }
@@ -578,6 +601,9 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
                 </li>
               `)
               : ''}
+            <li class="edit-dialog__info" @click=${this.showKeyboardShortcuts.bind(this)} tooltip="Atalhos de teclado">
+              <casper-icon icon="fa-solid/info"></casper-icon>
+            </li>
           </ol>
 
           <div class="edit-dialog__header">
@@ -854,8 +880,90 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._activeIndex = +newIndex;
   }
 
+  showKeyboardShortcuts () {
+    const options = {
+      reject: '',
+      accept: 'Fechar',
+      custom: `
+        <style>
+          .confirmation-dialog__title {
+            margin-bottom: 1.5rem !important;
+          }
 
+          .shortcuts-list {
+            --list-gap: 1em;
 
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            font-size: 0.875rem;
+            display: flex;
+            flex-direction: column;
+            gap: var(--list-gap);
+            color: #808080;
+          }
+
+          .shortcuts-list__item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1em;
+          }
+
+          .shortcuts-list__item.divider:not(:first-child) {
+            padding-top: var(--list-gap);
+            border-top: solid 1px rgb(217, 217, 217);
+          }
+
+          .shortcuts-list__category {
+            margin: 0;
+            font-size: inherit;
+          }
+
+          .shortcut__key {
+            display: inline-flex;
+            background-color: #f3f3f3;
+            padding: 0.28em 0.57em;
+            border-radius: 0.21em;
+          }
+        </style>
+
+        <h1 class="confirmation-dialog__title">Atalhos</h1>
+        <ul class="shortcuts-list">
+          <li class="shortcuts-list__item divider">
+            <h2 class="shortcuts-list__category">Campos</h2>
+          </li>
+          <li class="shortcuts-list__item">
+            <span class="shortcut__key">Tab</span>
+            <span class="shortcut__description">Saltar para o campo seguinte.</span>
+          </li>
+          <li class="shortcuts-list__item">
+            <div class="shortcut__keys-wrapper">
+              <span class="shortcut__key">Shift</span> + <span class="shortcut__key">Tab</span>
+            </div>
+            <span class="shortcut__description">Saltar para o campo anterior.</span>
+          </li>
+          <li class="shortcuts-list__item divider">
+            <h2 class="shortcuts-list__category">Páginas</h2>
+          </li>
+          <li class="shortcuts-list__item">
+            <div class="shortcut__keys-wrapper">
+              <span class="shortcut__key">Option</span> + <span class="shortcut__key">&#8593;</span>
+            </div>
+            <span class="shortcut__description">Saltar para a página anterior.</span>
+          </li>
+          <li class="shortcuts-list__item">
+            <div class="shortcut__keys-wrapper">
+              <span class="shortcut__key">Option</span> + <span class="shortcut__key">&#8595;</span>
+            </div>
+            <span class="shortcut__description">Saltar para a página seguinte.</span>
+          </li>
+        </ul>
+      `
+    };
+
+    this.openConfirmationDialog(options);
+  }
 
   focusPageFirstOrLastEditableField (position = 'first', pageIndex = this._activeIndex) {
     const pageEl = this.getPage(pageIndex);

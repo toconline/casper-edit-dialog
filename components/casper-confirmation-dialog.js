@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 
 
 class CasperConfirmationDialog extends LitElement {
@@ -18,6 +19,9 @@ class CasperConfirmationDialog extends LitElement {
     _reject: {
       type: String
     },
+    _custom: {
+      type: String
+    }
   };
 
   static styles = css`
@@ -48,12 +52,11 @@ class CasperConfirmationDialog extends LitElement {
       padding: 1.875rem var(--ccd-horizontal-padding);
       display: flex;
       flex-direction: column;
-      gap: 1rem;
     }
 
     .confirmation-dialog__title {
       font-size: 1.125rem;
-      margin: 0;
+      margin: 0 0 1rem 0;
       color: #000;
     }
 
@@ -145,12 +148,17 @@ class CasperConfirmationDialog extends LitElement {
     return html`
       <dialog id="confirmationDialog" class="confirmation-dialog" type=${this._type}>
         <div class="confirmation-dialog__text">
-          <h1 class="confirmation-dialog__title">${this._title}</h1>
-          <p class="confirmation-dialog__message">${this._message}</p>
+          ${this._custom 
+            ? unsafeHTML(this._custom) 
+            : html`
+              <h1 class="confirmation-dialog__title">${this._title}</h1>
+              <p class="confirmation-dialog__message">${this._message}</p>
+            `
+          }
         </div>
     
         <div class="confirmation-dialog__actions">
-          <button class="edit-dialog__button" type="secondary" @click=${this.close.bind(this)}>${this._reject}</button>
+          ${this._reject ? html`<button class="edit-dialog__button" type="secondary" @click=${this.close.bind(this)}>${this._reject}</button>` : ''}
           <button class="edit-dialog__button" @click=${this.confirm.bind(this)} autofocus>${this._accept}</button>
         </div>
       </dialog>
@@ -167,6 +175,7 @@ class CasperConfirmationDialog extends LitElement {
     this._message = '';
     this._accept = 'Sim';
     this._reject = 'Cancelar';
+    this._custom = undefined;
   }
 
   open (options) {
@@ -175,7 +184,8 @@ class CasperConfirmationDialog extends LitElement {
     if (this._options.title) this._title = this._options.title;
     if (this._options.message) this._message = this._options.message;
     if (this._options.accept) this._accept = this._options.accept;
-    if (this._options.reject) this._reject = this._options.reject;
+    if (Object.hasOwn(this._options, 'reject')) this._reject = this._options.reject;
+    if (this._options.custom) this._custom = this._options.custom;
     if (this._options.width) this.style.setProperty('--ccd-width', this._options.width);
 
     this._confirmationDialogEl.showModal();
