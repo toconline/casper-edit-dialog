@@ -152,18 +152,24 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
 
     .edit-dialog__label,
-    .edit-dialog__info {
+    :host([mode="dialog"]) .edit-dialog__info {
       font-size: 1rem;
       cursor: pointer;
       opacity: 0.6;
       transition: opacity var(--ced-labels-buttons-transition-duration);
     }
 
-    .edit-dialog__info {
+    :host([mode="dialog"]) .edit-dialog__info {
       position: absolute;
       left: var(--ced-horizontal-padding);
       bottom: var(--ced-horizontal-padding);
       width: calc(100% - var(--ced-horizontal-padding) - var(--ced-labels-list-padding-right));
+    }
+
+    :host([mode="wizard"]) .edit-dialog__info {
+      font-size: 1rem;
+      cursor: pointer;
+      color: var(--primary-color);
     }
 
     .edit-dialog__info casper-icon {
@@ -182,7 +188,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     .edit-dialog__label:hover,
     .edit-dialog__label[active],
-    .edit-dialog__info:hover {
+    :host([mode="dialog"]) .edit-dialog__info:hover {
       opacity: 1;
     }
 
@@ -213,7 +219,20 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       width: 1.875em;
       height: 1.875em;
       border-radius: 50%;
+    }
+
+    .edit-dialog__label-number,
+    :host([mode="dialog"]) .edit-dialog__info casper-icon {
       border: solid 1px rgba(var(--ced-label-number-color-rgb), 56%);
+    }
+
+    :host([mode="wizard"]) .edit-dialog__info casper-icon {
+      border: solid 2px var(--primary-color);
+      transition: background-color var(--ced-labels-buttons-transition-duration);
+    }
+
+    :host([mode="wizard"]) .edit-dialog__info:hover casper-icon {
+      background-color: var(--light-primary-color);
     }
 
     .edit-dialog__label[active] .edit-dialog__label-number {
@@ -472,7 +491,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       grid-area: footer;
       display: flex;
       align-items: center;
-      justify-content: flex-end;
       gap: 0.5rem;
       padding: var(--ced-vertical-padding) var(--ced-horizontal-padding);
       box-shadow: rgba(0, 0, 0, 0.05) 0px -4px 12px;
@@ -480,6 +498,19 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       /* Needed so that the shadow displays above the previous sibling */
       z-index: 1;
       border-bottom-left-radius: var(--ced-border-radius);
+    }
+
+    :host([mode="dialog"]) .edit-dialog__footer {
+      justify-content: flex-end;
+    }
+
+    :host([mode="wizard"]) .edit-dialog__footer {
+      justify-content: space-between;
+    }
+
+    .edit-dialog__buttons-wrapper {
+      display: flex;
+      gap: 0.5rem;
     }
 
     .edit-dialog__button {
@@ -601,9 +632,12 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
                 </li>
               `)
               : ''}
-            <li class="edit-dialog__info" @click=${this.showKeyboardShortcuts.bind(this)} tooltip="Atalhos de teclado">
-              <casper-icon icon="fa-solid/info"></casper-icon>
-            </li>
+
+            ${this.mode === 'dialog' ? html`
+              <li class="edit-dialog__info" @click=${this.showKeyboardShortcuts.bind(this)} tooltip="Atalhos de teclado">
+                <casper-icon icon="fa-solid/info"></casper-icon>
+              </li>
+            ` : ''}
           </ol>
 
           <div class="edit-dialog__header">
@@ -628,14 +662,22 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           </div>
 
           <div class="edit-dialog__footer">
-            <button class="edit-dialog__button secondary previous ${classMap(previousClasses)}" ?disabled=${this._disablePrevious} ?hidden=${this._hidePrevious}>
-              ${this._previousIcon ? html`<casper-icon icon=${this._previousIcon}></casper-icon>` : ''}
-              ${this._previousText ? html`<span>${this._previousText}</span>` : ''}
-            </button>
-            <button class="edit-dialog__button next ${classMap(nextClasses)}" ?disabled=${this._disableNext} ?hidden=${this._hideNext}>
-              ${this._nextIcon ? html`<casper-icon icon=${this._nextIcon}></casper-icon>` : ''}
-              ${this._nextText ? html`<span>${this._nextText}</span>` : ''}
-            </button>
+            ${this.mode === 'wizard' ? html`
+              <div class="edit-dialog__info" @click=${this.showKeyboardShortcuts.bind(this)} tooltip="Atalhos de teclado">
+                <casper-icon icon="fa-solid/info"></casper-icon>
+              </div>
+            ` : ''}
+
+            <div class="edit-dialog__buttons-wrapper">
+              <button class="edit-dialog__button secondary previous ${classMap(previousClasses)}" ?disabled=${this._disablePrevious} ?hidden=${this._hidePrevious}>
+                ${this._previousIcon ? html`<casper-icon icon=${this._previousIcon}></casper-icon>` : ''}
+                ${this._previousText ? html`<span>${this._previousText}</span>` : ''}
+              </button>
+              <button class="edit-dialog__button next ${classMap(nextClasses)}" ?disabled=${this._disableNext} ?hidden=${this._hideNext}>
+                ${this._nextIcon ? html`<casper-icon icon=${this._nextIcon}></casper-icon>` : ''}
+                ${this._nextText ? html`<span>${this._nextText}</span>` : ''}
+              </button>
+            </div>
           </div>
         </div>
       </dialog>
