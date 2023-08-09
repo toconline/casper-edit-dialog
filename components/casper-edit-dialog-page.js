@@ -413,7 +413,7 @@ export class CasperEditDialogPage extends LitElement {
     if (data === undefined) return;
     let value = null;
 
-    if (data[binding]) {
+    if (data[binding] != null) {
       // set attribute from key
       value = data[binding];
     } else if (data.relationships) {
