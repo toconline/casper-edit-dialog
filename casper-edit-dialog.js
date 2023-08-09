@@ -582,6 +582,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     window.ced = this;
     this._uiHelper = new CasperUiHelper();
+    this._isMacOs = window.navigator.userAgent.indexOf("Mac OS") !== -1;
 
     this.mode = 'dialog';
     
@@ -923,6 +924,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   }
 
   showKeyboardShortcuts () {
+    const altKey = this._isMacOs ? 'Option' : 'Alt';
+
     const options = {
       reject: '',
       accept: 'Fechar',
@@ -990,13 +993,13 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           </li>
           <li class="shortcuts-list__item">
             <div class="shortcut__keys-wrapper">
-              <span class="shortcut__key">Option</span> + <span class="shortcut__key">&#8593;</span>
+              <span class="shortcut__key">${altKey}</span> + <span class="shortcut__key">&#8593;</span>
             </div>
             <span class="shortcut__description">Saltar para a página anterior.</span>
           </li>
           <li class="shortcuts-list__item">
             <div class="shortcut__keys-wrapper">
-              <span class="shortcut__key">Option</span> + <span class="shortcut__key">&#8595;</span>
+              <span class="shortcut__key">${altKey}</span> + <span class="shortcut__key">&#8595;</span>
             </div>
             <span class="shortcut__description">Saltar para a página seguinte.</span>
           </li>
