@@ -585,6 +585,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._isMacOs = window.navigator.userAgent.indexOf("Mac OS") !== -1;
 
     this.mode = 'dialog';
+    this.noCancelOnEscKey = false;
     
     this._state = 'normal';
     this._title = '';
@@ -924,7 +925,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   }
 
   showKeyboardShortcuts () {
-    const altKey = this._isMacOs ? 'Option' : 'Alt';
+    const altKey = this._isMacOs ? 'option' : 'Alt';
 
     const options = {
       reject: '',
@@ -1446,7 +1447,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     // Needed otherwise it would call the dialog's native close method
     event.preventDefault();
-    this.close();
+    if (!this.noCancelOnEscKey) this.close();
   }
 
   async _labelClickHandler (event) {
