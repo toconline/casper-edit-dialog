@@ -538,6 +538,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
 
     .edit-dialog__button.icon:not(.text) {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 1rem;
       padding: 0;
       border-radius: 50%;
