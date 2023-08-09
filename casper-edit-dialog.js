@@ -938,6 +938,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
   showKeyboardShortcuts () {
     const altKey = this._isMacOs ? 'option' : 'Alt';
+    const previousKey = this.mode === 'dialog' ? '&#8593;' : '&#8592;';
+    const nextKey = this.mode === 'dialog' ? '&#8595;' : '&#8594;';
 
     const options = {
       reject: '',
@@ -1006,13 +1008,13 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           </li>
           <li class="shortcuts-list__item">
             <div class="shortcut__keys-wrapper">
-              <span class="shortcut__key">${altKey}</span> + <span class="shortcut__key">&#8593;</span>
+              <span class="shortcut__key">${altKey}</span> + <span class="shortcut__key">${previousKey}</span>
             </div>
             <span class="shortcut__description">Saltar para a página anterior.</span>
           </li>
           <li class="shortcuts-list__item">
             <div class="shortcut__keys-wrapper">
-              <span class="shortcut__key">${altKey}</span> + <span class="shortcut__key">&#8595;</span>
+              <span class="shortcut__key">${altKey}</span> + <span class="shortcut__key">${nextKey}</span>
             </div>
             <span class="shortcut__description">Saltar para a página seguinte.</span>
           </li>
@@ -1374,12 +1376,13 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   _generalKeydownHandler (event) {
     if (!event) return;
 
-    // alt for Windows, and option for Mac
-    if (event.key === 'ArrowDown' && event.altKey) {
-      // This prevents the dialog from being accidentally saved
-      if (this._activeIndex < this._pages.length - 1) this._gotoNextPage();
-    } else if (event.key === 'ArrowUp' && event.altKey) {
-      this._gotoPreviousPage();
+    const previousKey = this.mode === 'dialog' ? 'ArrowUp' : 'ArrowLeft';
+    const nextKey = this.mode === 'dialog' ? 'ArrowDown' : 'ArrowRight';
+
+    if (event.key === nextKey && event.altKey) {
+      if (+this._activeIndex < this._pages.length - 1) this._gotoNextPage();
+    } else if (event.key === previousKey && event.altKey) {
+      if (this._pages[+this._activeIndex - 1]) this._gotoPreviousPage();
     }
   }
 
