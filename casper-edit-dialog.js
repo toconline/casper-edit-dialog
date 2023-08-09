@@ -48,6 +48,9 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     _hideNext: {
       type: Boolean
     },
+    _hideInfoIcon: {
+      type: Boolean
+    },
     _pagesContainerStyles: {
       type: Object
     },
@@ -511,6 +514,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     .edit-dialog__buttons-wrapper {
       display: flex;
       gap: 0.5rem;
+      flex-grow: 1;
+      justify-content: flex-end;
     }
 
     .edit-dialog__button {
@@ -599,6 +604,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._disableNext = false;
     this._hidePrevious = false;
     this._hideNext = false;
+    this._hideInfoIcon = false;
   }
 
   connectedCallback() {
@@ -636,7 +642,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
               : ''}
 
             ${this.mode === 'dialog' ? html`
-              <li class="edit-dialog__info" @click=${this.showKeyboardShortcuts.bind(this)} tooltip="Atalhos de teclado">
+              <li class="edit-dialog__info" @click=${this.showKeyboardShortcuts.bind(this)} tooltip="Atalhos de teclado" ?hidden=${this._hideInfoIcon}>
                 <casper-icon icon="fa-solid/info"></casper-icon>
               </li>
             ` : ''}
@@ -665,7 +671,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
           <div class="edit-dialog__footer">
             ${this.mode === 'wizard' ? html`
-              <div class="edit-dialog__info" @click=${this.showKeyboardShortcuts.bind(this)} tooltip="Atalhos de teclado">
+              <div class="edit-dialog__info" @click=${this.showKeyboardShortcuts.bind(this)} tooltip="Atalhos de teclado" ?hidden=${this._hideInfoIcon}>
                 <casper-icon icon="fa-solid/info"></casper-icon>
               </div>
             ` : ''}
@@ -899,6 +905,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         if (newPage.style.transform) newPage.style.removeProperty('transform');
       }, 0);
     }
+
+    this._hideInfoIcon = !this._isCasperEditDialogPage(newPage);
     
     if (this.mode === 'wizard') newIndex === 0 ? this.disablePrevious() : this.enablePrevious();
 
