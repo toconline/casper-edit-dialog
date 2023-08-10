@@ -242,9 +242,16 @@ class CasperTabbedItems extends LitElement {
       border-radius: 50%;
       transition: background-color 0.5s ease;
       margin: var(--header-vertical-padding) 0;
+      opacity: 0;
+      pointer-events: none;
     }
 
-    .header__add:hover {
+    .header__add.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .header__add.visible:hover {
       background-color: rgba(var(--dark-primary-color-rgb), 0.2);
     }
 
@@ -399,6 +406,7 @@ class CasperTabbedItems extends LitElement {
     this._activeIndex = 0;
     this._invalidTabsIndexes = new Set();
     this._tabsWrapperClasses = { 'shadow-left': false, 'shadow-right': false };
+    this._headerAddClasses = { 'visible': false };
     this.resourceName = '';
   }
 
@@ -425,7 +433,7 @@ class CasperTabbedItems extends LitElement {
 
         ${this.showNewItemsAction
           ? html`
-            <button class="header__add tabbed-items__action" @click=${event => this._addNewItem()} ?disabled=${!this.allowNewItems}>
+            <button class="header__add tabbed-items__action ${classMap(this._headerAddClasses)}" @click=${event => this._addNewItem()} ?disabled=${!this.allowNewItems}>
               <casper-icon icon="fa-regular/plus"></casper-icon>
             </button>`
           : ''
@@ -448,6 +456,10 @@ class CasperTabbedItems extends LitElement {
         }
       </div>
     `;
+  }
+
+  willUpdate (changedProperties) {
+    this._headerAddClasses['visible'] = this.items?.length > 0 ? true : false;
   }
 
   firstUpdated () {
@@ -1014,8 +1026,14 @@ class CasperTabbedItems extends LitElement {
 
     if (event.key === 'Tab') {
       let reachedExtreme = false;
+      
+      // There are no items, so there are no focusable fields
+      if (event.target?.classList?.contains('content__placeholder-button')) {
+        reachedExtreme = true;
+      } else {
         const itemChildren = Array.from(this._getItem(this._activeIndex).children);
         reachedExtreme = this._uiHelper.fieldTabHandler(event, itemChildren);
+      }
 
       if (reachedExtreme) {
         // Necessary for CasperEditDialog and other components, so that the previous / next field is focused when the user presses shift+tab / tab
