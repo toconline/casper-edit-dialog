@@ -425,7 +425,7 @@ class CasperTabbedItems extends LitElement {
 
         ${this.showNewItemsAction
           ? html`
-            <button class="header__add tabbed-items__action" @click=${this._addNewItem} ?disabled=${!this.allowNewItems}>
+            <button class="header__add tabbed-items__action" @click=${event => this._addNewItem()} ?disabled=${!this.allowNewItems}>
               <casper-icon icon="fa-regular/plus"></casper-icon>
             </button>`
           : ''
@@ -825,7 +825,7 @@ class CasperTabbedItems extends LitElement {
         <h3 class="content__placeholder-title">Não existe nada aqui!</h3>
         ${this.showNewItemsAction ? html`
           <p class="content__placeholder-description">Carregue no botão para começar a adicionar novos itens.</p>
-          <button class="content__placeholder-button" @click=${this._addNewItem} ?disabled=${!this.allowNewItems}>
+          <button class="content__placeholder-button" @click=${event => this._addNewItem(true)} ?disabled=${!this.allowNewItems}>
             <casper-icon icon="fa-regular/plus"></casper-icon>
             Criar novo item
           </button>
@@ -842,11 +842,10 @@ class CasperTabbedItems extends LitElement {
     `;
   }
 
-  async _addNewItem () {
+  async _addNewItem (manualFocus = false) {
     this.items = [...this.items, this.addNewItem()];
 
     const itemIndex = this.items.length - 1;
-    this.activateItem(itemIndex);
     this.requestUpdate();
     await this.updateComplete;
     this._setDefaultData(this.items[itemIndex]);
@@ -858,6 +857,13 @@ class CasperTabbedItems extends LitElement {
         const elements = newItem.querySelectorAll(`.${className}`);
         for (const el of elements) { this._uiHelper.addErrorMessageClearListener(el); }
       }
+    }
+
+    this.activateItem(itemIndex);
+
+    // A click on the placeholder button won't trigger an update for the activeIndex, so we have to call the focus method ourselves
+    if (manualFocus) {
+      this.focusFirstOrLastEditableField('first', this._activeIndex);
     }
   }
 
@@ -913,10 +919,10 @@ class CasperTabbedItems extends LitElement {
     });
 
     this.items = items;
-    if (this._activeIndex > this.items.length - 1) this.activateItem(0);
     await this.updateComplete;
     
     this._setBindingData(data);
+    if (this._activeIndex > this.items.length - 1) this.activateItem(0);
   }
 
   _setBindingData (data) {
