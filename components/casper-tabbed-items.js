@@ -295,12 +295,22 @@ class CasperTabbedItems extends LitElement {
       font-size: 0.875rem;
       margin-top: 2.28em;
       gap: 0.357em;
-      padding: 0 0 0.25em 0;
-      border-bottom: solid 1px var(--primary-color);
+      padding: 0.14em 0.57em;
+      border: solid 1px transparent;
+      border-bottom-color: var(--primary-color);
       color: var(--primary-color);
       opacity: 0.9;
       transform: none;
-      transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+      outline: solid 2px transparent;
+      border-radius: 0px;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .content__placeholder-button:focus,
+    .content__placeholder-button:focus-visible {
+      outline-color: rgba(var(--primary-color-rgb), 0.5);
+      border: solid 1px var(--primary-color);
+      border-radius: 0.21em;
     }
 
     .content__placeholder-button:hover {
@@ -309,7 +319,6 @@ class CasperTabbedItems extends LitElement {
     }
 
     .content__placeholder-button casper-icon {
-      border-radius: 50%;
       width: 1em;
       height: 1em;
     }
