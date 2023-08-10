@@ -1029,6 +1029,10 @@ class CasperTabbedItems extends LitElement {
       
       // There are no items, so there are no focusable fields
       if (event.target?.classList?.contains('content__placeholder-button')) {
+        // These prevent the browser from ruining transitions
+        event.preventDefault();
+        event.stopPropagation();
+
         reachedExtreme = true;
       } else {
         const itemChildren = Array.from(this._getItem(this._activeIndex).children);
