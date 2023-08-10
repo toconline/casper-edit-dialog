@@ -563,7 +563,14 @@ class CasperTabbedItems extends LitElement {
 
   async focusFirstOrLastEditableField (position = 'first', index = this._activeIndex) {
     const itemEl = this._getItem(index);
-    if (!itemEl) return;
+    if (!itemEl) {
+      if (!this.items.length > 0 && !this.resourceItems) {
+        const placeholderButton = this.shadowRoot.querySelector('.content__placeholder-button');
+        if (placeholderButton) placeholderButton.focus({preventScroll: true});
+      }
+      
+      return;
+    }
     
     const childEl = this._uiHelper.findFocusableField(Array.from(itemEl.children), position);
     if (!childEl) return;
@@ -863,7 +870,7 @@ class CasperTabbedItems extends LitElement {
   }
 
   async _loadFromResource () {
-    let tabs = [];
+    const tempArr = [];
     
     if (this.resourceItems?.data?.length) {
       // Set relationship elements
@@ -888,10 +895,10 @@ class CasperTabbedItems extends LitElement {
         });
       }
 
-      tabs.push(...items);
+      tempArr.push(...items);
     }
 
-    await this._setTabbedItems(tabs);
+    await this._setTabbedItems(tempArr);
   }
 
   async _setTabbedItems (data) {
