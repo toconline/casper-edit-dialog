@@ -167,6 +167,7 @@ class CasperConfirmationDialog extends LitElement {
 
   firstUpdated () {
     this._confirmationDialogEl = this.shadowRoot.getElementById('confirmationDialog');
+    this._confirmationDialogEl.addEventListener('cancel', this._dialogCancelHandler.bind(this));
   }
 
   setInitialValues () {
@@ -175,6 +176,7 @@ class CasperConfirmationDialog extends LitElement {
     this._message = '';
     this._accept = 'Sim';
     this._reject = 'Cancelar';
+    this._noCancelOnEscKey = false;
     this._custom = undefined;
   }
 
@@ -185,6 +187,7 @@ class CasperConfirmationDialog extends LitElement {
     if (this._options.message) this._message = this._options.message;
     if (this._options.accept) this._accept = this._options.accept;
     if (Object.hasOwn(this._options, 'reject')) this._reject = this._options.reject;
+    if (Object.hasOwn(this._options, 'no_cancel_on_esc_key')) this._noCancelOnEscKey = this._options.no_cancel_on_esc_key;
     if (this._options.custom) this._custom = this._options.custom;
     if (this._options.width) this.style.setProperty('--ccd-width', this._options.width);
 
@@ -202,6 +205,15 @@ class CasperConfirmationDialog extends LitElement {
     this.close();
 
     if (this._options.hasOwnProperty('accept_callback')) this._options.accept_callback();
+  }
+
+  // Fired when user presses the 'esc' key
+  _dialogCancelHandler (event) {
+    if (!event) return;
+
+    // Needed otherwise it would call the dialog's native close method
+    event.preventDefault();
+    if (!this._noCancelOnEscKey) this.close();
   }
 }
 
