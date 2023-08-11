@@ -863,7 +863,7 @@ class CasperTabbedItems extends LitElement {
       }      
 
       let items = [];
-      this.resourceName = this.resourceItems?.data?.[0]?.type;
+      this.resourceName = this.resourceName || this.resourceItems?.data?.[0]?.type;
       const idString = String(this.resourceItems.data.map(item => item.id));
 
       if (idString && this.resourceName) {
