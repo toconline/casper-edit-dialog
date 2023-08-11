@@ -798,8 +798,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this.focusPageFirstOrLastEditableField('first', 0);
   }
 
-  close () {
-    const allowClose = !this.hasUnsavedChanges();
+  async close () {
+    const allowClose = !(await this.hasUnsavedChanges());
 
     if (allowClose) {
       if (this.options.promise) this.options.promise.resolve(this._userHasSavedData ? 'user-saved-data' : '');
@@ -1224,11 +1224,11 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     return valid;
   }
 
-  hasUnsavedChanges () {
+  async hasUnsavedChanges () {
     for (let i = 0; i < this._pagesContainerEl.children.length; i++) {
       const page = this._pagesContainerEl.children[i];
       if (!this._isCasperEditDialogPage(page)) continue;
-      if (page.hasUnsavedChanges()) return true;
+      if (await page.hasUnsavedChanges()) return true;
     }
 
     return false;
@@ -1248,7 +1248,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       }
 
       for (let i = 0; i < this._pagesContainerEl.children.length; i++) {
-        this._pagesContainerEl.children[i].save(saveData, this.data);
+        await this._pagesContainerEl.children[i].save(saveData, this.data);
       }
 
       await this._processSaveData(saveData);
@@ -1766,9 +1766,15 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
                   const itemIndex = this.data.relationships[relationshipName].elements.indexOf(this.data.relationships[relationshipName].elements.find(e => e.id == sUrn[1]));
                   this.data.relationships[relationshipName].elements[itemIndex] = response.data;
                 } else if (this.data.relationships[response.type]?.elements) {
-                  response.data.relationships = this.data.relationships[response.type].elements.find(e => e.id == response.id).relationships;
-                  const itemIndex = this.data.relationships[response.type].elements.indexOf(this.data.relationships[response.type].elements.find(e => e.id == response.id));
-                  this.data.relationships[response.type].elements[itemIndex] = response.data;
+                  const relElement = this.data.relationships[response.type].elements.find(e => e.id == response.id);
+                  if (relElement) {
+                    response.data.relationships = relElement.relationships;
+                    const itemIndex = this.data.relationships[response.type].elements.indexOf(relElement);
+                    this.data.relationships[response.type].elements[itemIndex] = response.data;
+                  } else {
+                    this.data.relationships[response.type].data.push({type: response.type, id: response.id});
+                    this.data.relationships[response.type].elements.push(response.data);
+                  }
                 } else if (this.data.relationships[response.type]) {
                   this.data.relationships[response.type].elements = [response.data];
                 }
