@@ -242,9 +242,16 @@ class CasperTabbedItems extends LitElement {
       border-radius: 50%;
       transition: background-color 0.5s ease;
       margin: var(--header-vertical-padding) 0;
+      opacity: 0;
+      pointer-events: none;
     }
 
-    .header__add:hover {
+    .header__add.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .header__add.visible:hover {
       background-color: rgba(var(--dark-primary-color-rgb), 0.2);
     }
 
@@ -295,12 +302,22 @@ class CasperTabbedItems extends LitElement {
       font-size: 0.875rem;
       margin-top: 2.28em;
       gap: 0.357em;
-      padding: 0 0 0.25em 0;
-      border-bottom: solid 1px var(--primary-color);
+      padding: 0.14em 0.57em;
+      border: solid 1px transparent;
+      border-bottom-color: var(--primary-color);
       color: var(--primary-color);
       opacity: 0.9;
       transform: none;
-      transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+      outline: solid 2px transparent;
+      border-radius: 0px;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .content__placeholder-button:focus,
+    .content__placeholder-button:focus-visible {
+      outline-color: rgba(var(--primary-color-rgb), 0.5);
+      border: solid 1px var(--primary-color);
+      border-radius: 0.21em;
     }
 
     .content__placeholder-button:hover {
@@ -309,7 +326,6 @@ class CasperTabbedItems extends LitElement {
     }
 
     .content__placeholder-button casper-icon {
-      border-radius: 50%;
       width: 1em;
       height: 1em;
     }
@@ -390,6 +406,7 @@ class CasperTabbedItems extends LitElement {
     this._activeIndex = 0;
     this._invalidTabsIndexes = new Set();
     this._tabsWrapperClasses = { 'shadow-left': false, 'shadow-right': false };
+    this._headerAddClasses = { 'visible': false };
     this.resourceName = '';
   }
 
@@ -416,7 +433,7 @@ class CasperTabbedItems extends LitElement {
 
         ${this.showNewItemsAction
           ? html`
-            <button class="header__add tabbed-items__action" @click=${this._addNewItem} ?disabled=${!this.allowNewItems}>
+            <button class="header__add tabbed-items__action ${classMap(this._headerAddClasses)}" @click=${event => this._addNewItem()} ?disabled=${!this.allowNewItems}>
               <casper-icon icon="fa-regular/plus"></casper-icon>
             </button>`
           : ''
@@ -439,6 +456,10 @@ class CasperTabbedItems extends LitElement {
         }
       </div>
     `;
+  }
+
+  willUpdate (changedProperties) {
+    this._headerAddClasses['visible'] = this.items?.length > 0 ? true : false;
   }
 
   firstUpdated () {
@@ -554,7 +575,12 @@ class CasperTabbedItems extends LitElement {
 
   async focusFirstOrLastEditableField (position = 'first', index = this._activeIndex) {
     const itemEl = this._getItem(index);
-    if (!itemEl) return;
+    if (!itemEl) {
+      const placeholderButton = this.shadowRoot.querySelector('.content__placeholder-button');
+      if (!this.items.length > 0 && placeholderButton) placeholderButton.focus({preventScroll: true});
+      
+      return;
+    }
     
     const childEl = this._uiHelper.findFocusableField(Array.from(itemEl.children), position);
     if (!childEl) return;
@@ -809,7 +835,7 @@ class CasperTabbedItems extends LitElement {
         <h3 class="content__placeholder-title">Não existe nada aqui!</h3>
         ${this.showNewItemsAction ? html`
           <p class="content__placeholder-description">Carregue no botão para começar a adicionar novos itens.</p>
-          <button class="content__placeholder-button" @click=${this._addNewItem} ?disabled=${!this.allowNewItems}>
+          <button class="content__placeholder-button" @click=${event => this._addNewItem(true)} ?disabled=${!this.allowNewItems}>
             <casper-icon icon="fa-regular/plus"></casper-icon>
             Criar novo item
           </button>
@@ -826,11 +852,10 @@ class CasperTabbedItems extends LitElement {
     `;
   }
 
-  async _addNewItem () {
+  async _addNewItem (manualFocus = false) {
     this.items = [...this.items, this.addNewItem()];
 
     const itemIndex = this.items.length - 1;
-    this.activateItem(itemIndex);
     this.requestUpdate();
     await this.updateComplete;
     this._setDefaultData(this.items[itemIndex]);
@@ -843,6 +868,13 @@ class CasperTabbedItems extends LitElement {
         for (const el of elements) { this._uiHelper.addErrorMessageClearListener(el); }
       }
     }
+
+    this.activateItem(itemIndex);
+
+    // A click on the placeholder button won't trigger an update for the activeIndex, so we have to call the focus method ourselves
+    if (manualFocus) {
+      this.focusFirstOrLastEditableField('first', this._activeIndex);
+    }
   }
 
   async _deleteItem () {
@@ -854,7 +886,7 @@ class CasperTabbedItems extends LitElement {
   }
 
   async _loadFromResource () {
-    let tabs = [];
+    const tempArr = [];
     
     if (this.resourceItems?.data?.length) {
       // Set relationship elements
@@ -879,10 +911,10 @@ class CasperTabbedItems extends LitElement {
         });
       }
 
-      tabs.push(...items);
+      tempArr.push(...items);
     }
 
-    await this._setTabbedItems(tabs);
+    await this._setTabbedItems(tempArr);
   }
 
   async _setTabbedItems (data) {
@@ -897,10 +929,10 @@ class CasperTabbedItems extends LitElement {
     });
 
     this.items = items;
-    if (this._activeIndex > this.items.length - 1) this.activateItem(0);
     await this.updateComplete;
     
     this._setBindingData(data);
+    if (this._activeIndex > this.items.length - 1) this.activateItem(0);
   }
 
   _setBindingData (data) {
@@ -992,8 +1024,18 @@ class CasperTabbedItems extends LitElement {
 
     if (event.key === 'Tab') {
       let reachedExtreme = false;
+      
+      // There are no items, so there are no focusable fields
+      if (event.target?.classList?.contains('content__placeholder-button')) {
+        // These prevent the browser from ruining transitions
+        event.preventDefault();
+        event.stopPropagation();
+
+        reachedExtreme = true;
+      } else {
         const itemChildren = Array.from(this._getItem(this._activeIndex).children);
         reachedExtreme = this._uiHelper.fieldTabHandler(event, itemChildren);
+      }
 
       if (reachedExtreme) {
         // Necessary for CasperEditDialog and other components, so that the previous / next field is focused when the user presses shift+tab / tab
