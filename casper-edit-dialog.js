@@ -798,8 +798,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this.focusPageFirstOrLastEditableField('first', 0);
   }
 
-  close () {
-    const allowClose = !this.hasUnsavedChanges();
+  async close () {
+    const allowClose = !(await this.hasUnsavedChanges());
 
     if (allowClose) {
       if (this.options.promise) this.options.promise.resolve(this._userHasSavedData ? 'user-saved-data' : '');
@@ -1224,11 +1224,11 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     return valid;
   }
 
-  hasUnsavedChanges () {
+  async hasUnsavedChanges () {
     for (let i = 0; i < this._pagesContainerEl.children.length; i++) {
       const page = this._pagesContainerEl.children[i];
       if (!this._isCasperEditDialogPage(page)) continue;
-      if (page.hasUnsavedChanges()) return true;
+      if (await page.hasUnsavedChanges()) return true;
     }
 
     return false;
@@ -1248,7 +1248,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       }
 
       for (let i = 0; i < this._pagesContainerEl.children.length; i++) {
-        this._pagesContainerEl.children[i].save(saveData, this.data);
+        await this._pagesContainerEl.children[i].save(saveData, this.data);
       }
 
       await this._processSaveData(saveData);

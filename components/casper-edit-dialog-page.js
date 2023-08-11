@@ -216,12 +216,12 @@ export class CasperEditDialogPage extends LitElement {
     this.afterLoad(data);
   }
 
-  checkBindings (bindedElements, data) {
+  async checkBindings (bindedElements, data) {
     for (const elem of bindedElements) {
       let hasNewValue, elemValue;
       const binding = elem.getAttribute('binding');
       const relAttribute = elem.getAttribute('relationshipAttribute');
-      const initialValue = this.isCreate() ? null : this._getValue(binding, relAttribute, data);
+      const initialValue = this.isCreate() ? null : await this._getValue(binding, relAttribute, data);
       switch (elem.tagName.toLowerCase()) {
         case 'paper-checkbox':
           hasNewValue = elem.checked != (initialValue || false);
@@ -232,7 +232,7 @@ export class CasperEditDialogPage extends LitElement {
           for (const key in address) {
             if (!hasNewValue) {
               const addrValue = address[key] || null;
-              const dataValue = this._getValue(key, relAttribute, data) || null;
+              const dataValue = await this._getValue(key, relAttribute, data) || null;
               hasNewValue = addrValue != dataValue;
             }
           }
@@ -258,17 +258,20 @@ export class CasperEditDialogPage extends LitElement {
     return false;
   }
 
-  hasUnsavedChanges () {
+  async hasUnsavedChanges () {
     let unsavedChanges = false;
-    unsavedChanges = this.checkBindings(this.shadowRoot.querySelectorAll('[binding]'), this.editDialog.data);
+    unsavedChanges = await this.checkBindings(this.shadowRoot.querySelectorAll('[binding]'), this.editDialog.data);
     if (!unsavedChanges) {
-      this.shadowRoot.querySelectorAll('casper-tabbed-items').forEach((cti) => {
+      const tabbedItems = this.shadowRoot.querySelectorAll('casper-tabbed-items');
+      for (let i = 0; i < tabbedItems.length; i++) {
+        const cti = tabbedItems[i];
         const tabs = cti._contentEl.querySelectorAll('.content__item');
         if (tabs.length !== (this.editDialog.data?.relationships?.[cti.relationshipName]?.elements?.length || 0)) unsavedChanges = true;
-        tabs.forEach((tab,idx) => {
-          if (!unsavedChanges) unsavedChanges = this.checkBindings(tab.querySelectorAll('[binding]'), this.editDialog.data?.relationships?.[cti.relationshipName]?.elements?.[idx]);
-        });
-      });
+        for (let idx = 0; idx < tabs.length; idx++) {
+          const tab = tabs[idx];
+          if (!unsavedChanges) unsavedChanges = await this.checkBindings(tab.querySelectorAll('[binding]'), this.editDialog.data?.relationships?.[cti.relationshipName]?.elements?.[idx]);
+        }
+      }
     }
     return unsavedChanges;
   }
@@ -277,7 +280,7 @@ export class CasperEditDialogPage extends LitElement {
     return this.editDialog.getDialogAction() === 'create';
   }
 
-  save (saveData, data) {
+  async save (saveData, data) {
     const request = this.isCreate() ? 'post' : 'patch';
     if (this.isCreate()) data = { relationships: {} };
 
@@ -287,7 +290,7 @@ export class CasperEditDialogPage extends LitElement {
       let elemValue, newValue;
       const binding = elem.getAttribute('binding');
       const relAttribute = elem.getAttribute('relationshipAttribute');
-      const initialValue = this.isCreate() ? null : this._getValue(binding, relAttribute, data);
+      const initialValue = this.isCreate() ? null : await this._getValue(binding, relAttribute, data);
 
       switch (elem.tagName.toLowerCase()) {
         case 'paper-checkbox':
@@ -409,7 +412,7 @@ export class CasperEditDialogPage extends LitElement {
   //                              ~~~ Private methods  ~~~                                 //
   //***************************************************************************************//
 
-  _getValue (binding, relAttribute, data) {
+  async _getValue (binding, relAttribute, data) {
     if (data === undefined) return;
     let value = null;
 
@@ -427,7 +430,16 @@ export class CasperEditDialogPage extends LitElement {
           } else if (data.relationships[binding]?.elements?.[0]?.[binding] != null) {
             value = data.relationships[binding].elements[0][binding];
           } else if (data?.relationships?.[binding]?.data?.id){
-            value = data.relationships[binding].data.id;
+            try {
+              const response = await app.broker.get(`${data.relationships[binding].data.type}/${data.relationships[binding].data.id}`, 10000);
+              value = response.data[binding] ? response.data[binding] : response.data[relAttribute];
+            } catch (error) {
+              console.error(error); 
+            } finally {
+              if (value == undefined || value == null) {
+                value = data.relationships[binding].data.id;
+              }
+            }
           }
         }
       }
