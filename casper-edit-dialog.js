@@ -892,7 +892,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   }
 
   async activatePage (newIndex, beforeShowModal = false) {
-    if (+newIndex === +this._activeIndex && !beforeShowModal) return;
+    if ((+newIndex === +this._activeIndex && !beforeShowModal) || !this._pages[+newIndex]) return;
 
     const previousIndex = this._activeIndex;
     const previousPage = this.getPage(previousIndex);
@@ -1018,9 +1018,27 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
             </div>
             <span class="shortcut__description">Saltar para a página seguinte.</span>
           </li>
-        </ul>
+          <li class="shortcuts-list__item">
+            <div class="shortcut__keys-wrapper">
+              <span class="shortcut__key">${altKey}</span> + <span class="shortcut__key">1 - 9</span>
+            </div>
+            <span class="shortcut__description">Saltar para a página número X.</span>
+          </li>
+          <li class="shortcuts-list__item divider">
+            <h2 class="shortcuts-list__category">Geral</h2>
+          </li>
+          <li class="shortcuts-list__item">
+            <span class="shortcut__key">F1</span>
+            <span class="shortcut__description">Abrir este ecrã de ajuda.</span>
+          </li>
+          <li class="shortcuts-list__item">
+            <span class="shortcut__key">Esc</span>
+            <span class="shortcut__description">Fechar este ecrã de ajuda ou diálogo.</span>
+          </li>
       `
     };
+
+    options.custom += '</ul>';
 
     this.openConfirmationDialog(options);
   }
@@ -1380,13 +1398,41 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   _generalKeydownHandler (event) {
     if (!event) return;
 
-    const previousKey = this.mode === 'dialog' ? 'ArrowUp' : 'ArrowLeft';
-    const nextKey = this.mode === 'dialog' ? 'ArrowDown' : 'ArrowRight';
+    if (event.altKey) {
+      const previousKey = this.mode === 'dialog' ? 'ArrowUp' : 'ArrowLeft';
+      const nextKey = this.mode === 'dialog' ? 'ArrowDown' : 'ArrowRight';
 
-    if (event.key === nextKey && event.altKey) {
-      if (+this._activeIndex < this._pages.length - 1) this._gotoNextPage();
-    } else if (event.key === previousKey && event.altKey) {
-      if (this._pages[+this._activeIndex - 1]) this._gotoPreviousPage();
+      switch (event.key) {
+        case previousKey:
+          // This prevents the dialog from being accidentally saved
+          if (this._pages[+this._activeIndex - 1]) this._gotoPreviousPage();
+          break;
+
+        case nextKey:
+          // This prevents the dialog from being accidentally saved
+          if (+this._activeIndex < this._pages.length - 1) this._gotoNextPage();
+          break;
+
+        default:
+          const pageNumbers = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8', 'Digit9'];
+
+          if (pageNumbers.includes(event.code)) {
+            // Prevents character from being written
+            event.preventDefault();
+            this.activatePage(+event.code?.slice(-1) - 1);
+          }
+          break;
+      }
+
+    } else {
+      switch (event.key) {
+        case 'F1':
+          this.showKeyboardShortcuts();
+          break;
+      
+        default:
+          break;
+      }
     }
   }
 
