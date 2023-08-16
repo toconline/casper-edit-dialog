@@ -1251,8 +1251,12 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         await this._pagesContainerEl.children[i].save(saveData, this.data);
       }
 
-      await this._processSaveData(saveData);
-      this.openToast('As alterações foram gravadas com sucesso.', 'success', 3000, false);
+      let errors = await this._processSaveData(saveData);
+      if (errors.length === 0) {
+        this.openToast('As alterações foram gravadas com sucesso.', 'success', 3000, false);
+      } else {
+        this.openToast('Atenção! Apenas foram gravadas algumas alterações.', 'warning', 3000, false);
+      }
       this._userHasSavedData = true;
 
       for (let i = 0; i < this._pagesContainerEl.children.length; i++) {
@@ -1746,6 +1750,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   }
 
   async _processSaveData (saveData) {
+    let errors = [];
     for (const [operation, types] of Object.entries(saveData)) {
       for (const [relationshipName, data] of Object.entries(types)) {
         for (const entry of (data?.payloads|| [])) {
@@ -1754,7 +1759,17 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           if (entry.relationship) sUrn[0] = entry.relationship;
           if (operation !== 'delete') {
             if (Object.keys(entry.payload.data.attributes).length) {
-              const response = await window.app.broker[operation](entry.urn, entry.payload, 10000);
+              let response;
+              try {
+                response = await window.app.broker[operation](entry.urn, entry.payload, 10000);
+              } catch (error) {
+                console.error(error);
+                if (this.rootResource() === sUrn[0]) {
+                  throw error;
+                  return;
+                }
+                errors.push(error);
+              }
               if (response?.data && operation === 'patch') {
                 if (this.rootResource() === sUrn[0]) {
                   // Updating root element
@@ -1793,9 +1808,11 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
             }
           } else {
             await window.app.broker.delete(entry.urn, 30000);
-            const itemIndex = this.data.relationships[relationshipName].elements.indexOf(this.data.relationships[relationshipName].elements.find(e => e.id == sUrn[1]));
-            this.data.relationships[relationshipName].data.splice(itemIndex, 1);
-            this.data.relationships[relationshipName].elements.splice(itemIndex, 1);
+            const itemIndex = this.data.relationships[relationshipName].data.indexOf(this.data.relationships[relationshipName].data.find(e => e.id == sUrn[1]));
+            if (itemIndex >= 0) {
+              this.data.relationships[relationshipName].data?.splice(itemIndex, 1);
+              this.data.relationships[relationshipName].elements?.splice(itemIndex, 1);
+            }
           }
         }
       }
@@ -1823,7 +1840,13 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
                 entry.payload.data.id = this.data.relationships[relationshipName].data.id;
                 entry.urn = `${entry.urn}/${entry.payload.data.id}`;
               }
-              const response = await window.app.broker[operation](entry.urn, entry.payload, 10000);
+              let response
+              try {
+                response = await window.app.broker[operation](entry.urn, entry.payload, 10000);
+              } catch (error) {
+                errors.push(error);
+                console.error(error);
+              }
               if (response?.data) {
                 // Update dialog data with new values
                 if (this.data.relationships[relationshipName]?.elements?.length > -1) {
@@ -1844,6 +1867,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         }
       }  
     }
+    return errors;
   }
 }
 
