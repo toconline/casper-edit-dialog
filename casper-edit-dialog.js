@@ -1751,9 +1751,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       case 'failed':
       case 'error':
         this._setControlledSubmission();
-        if (typeof this._getCurrentPage().error === 'function') {
-          this._getCurrentPage().error(notification);
-        } else if (typeof this['errorOn' + this._getCurrentPage().id] === 'function') {
+
+        this._jobPromise.reject(notification);
+
+        if (typeof this['errorOn' + this._getCurrentPage().id] === 'function') {
           this['errorOn' + this._getCurrentPage().id].apply(this, [notification]);
         } else {
           if (!this._runJobInBackground) {
