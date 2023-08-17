@@ -70,6 +70,10 @@ export class CasperEditDialogStatusPage extends LitElement {
         --state-color-rgb: var(--status-blue-rgb);
       }
 
+      [hidden] {
+        display: none !important;
+      }
+
       * {
         box-sizing: border-box;
       }

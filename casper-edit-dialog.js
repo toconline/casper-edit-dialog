@@ -95,6 +95,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       pointer-events: none !important;
     }
 
+    [hidden] {
+      display: none !important;
+    }
+
     .edit-dialog {
       max-width: 90vw;
       max-height: 90vh;
@@ -484,7 +488,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     .edit-dialog__status-progress-page[hidden] {
       opacity: 0;
-      display: none;
     }
 
 

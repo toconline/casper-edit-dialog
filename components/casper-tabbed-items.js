@@ -44,6 +44,10 @@ class CasperTabbedItems extends LitElement {
       --header-before-height: 0;
     }
 
+    [hidden] {
+      display: none !important;
+    }
+
     paper-checkbox[invalid] {
       --paper-checkbox-label-color: var(--paper-checkbox-error-color, var(--error-color));
     }
@@ -54,10 +58,6 @@ class CasperTabbedItems extends LitElement {
       cursor: pointer;
       background-color: transparent;
       outline: none;
-    }
-
-    button[hidden] {
-      display: none !important;
     }
 
     .tabbed-items__action {
