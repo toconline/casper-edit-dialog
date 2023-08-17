@@ -56,7 +56,8 @@ export class CasperEditDialogStatusPage extends LitElement {
         color: var(--primary-text-color);
       }
 
-      :host([state="error"]) {
+      :host([state="error"]),
+      :host([state="fatal-error"]) {
         --state-color-rgb: var(--status-red-rgb);
       }
 
@@ -245,7 +246,7 @@ export class CasperEditDialogStatusPage extends LitElement {
             <casper-timed-status
               id="status"
               class="status-page__icon"
-              state=${this.state}
+              state=${this.state === 'fatal-error' ? 'error' : this.state}
               progress=${this.progress}
               ?no-reset
               timeout=${this.timeout}>
@@ -417,6 +418,12 @@ export class CasperEditDialogStatusPage extends LitElement {
         if (!this.title) this.title = 'Erro!';
         if (!this.description) this.description = 'Por favor contacte o suporte técnico.';
         this._hideButton = false;
+        break;
+
+      case 'fatal-error':
+        if (!this.title) this.title = 'Erro!';
+        if (!this.description) this.description = 'Por favor contacte o suporte técnico.';
+        this._hideButton = true;
         break;
 
       default:

@@ -886,9 +886,16 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }, value);
   }
 
+  
+
+  /**
+   * Shows an error that is considered fatal, i.e. the next button will close the wizard
+   *
+   * @param {Object} notification an error notification returned by the server
+   */
   showFatalError (notification) {
     this._nextClosesWizard = true;
-    this.showStatusPage(notification, 'error');
+    this.showStatusPage(notification, 'fatal-error');
   }
 
   async activatePage (newIndex, beforeShowModal = false) {
