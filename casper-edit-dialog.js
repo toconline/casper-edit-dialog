@@ -1291,9 +1291,9 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       if (close) this.close();
     } catch (error) {
       console.error(error);
-      this.openToast(error?.errors?.[0]?.detail ? error.errors[0].detail : 'Erro! Não foi possível gravar as alterações.', 'error', 3000, false);
+      if (!this._errorsAreFatal) this.openToast(error?.errors?.[0]?.detail ? error.errors[0].detail : 'Erro! Não foi possível gravar as alterações.', 'error', 3000, false);
     } finally {
-      this.hideStatusAndProgress();
+      if (!this._errorsAreFatal) this.hideStatusAndProgress();
     }
   }
 
