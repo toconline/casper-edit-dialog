@@ -1020,7 +1020,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           </li>
           <li class="shortcuts-list__item">
             <div class="shortcut__keys-wrapper">
-              <span class="shortcut__key">${altKey}</span> + <span class="shortcut__key">1 - 9</span>
+              <span class="shortcut__key">${altKey}</span> + <span class="shortcut__key">Shift</span> + <span class="shortcut__key">1 - 9</span>
             </div>
             <span class="shortcut__description">Saltar para a página número X.</span>
           </li>
@@ -1416,7 +1416,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         default:
           const pageNumbers = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8', 'Digit9'];
 
-          if (pageNumbers.includes(event.code)) {
+          if (event.shiftKey && pageNumbers.includes(event.code)) {
             // Prevents character from being written
             event.preventDefault();
             this.activatePage(+event.code?.slice(-1) - 1);
