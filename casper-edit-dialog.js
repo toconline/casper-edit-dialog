@@ -971,7 +971,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     if (this._pages[this._activeIndex + 1]) {
       this.activatePage(this._activeIndex + 1);
     } else {
-      if (this._isCasperEditDialogPage(currentPageEl)) {
+      if (this._isCasperEditDialogPage(this._getCurrentPage())) {
         this.save();
       // If the current page isn't an editDialogPage, then we simply close
       } else {
