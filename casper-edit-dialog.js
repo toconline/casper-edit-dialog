@@ -926,8 +926,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         if (newPage.style.transform) newPage.style.removeProperty('transform');
       }, 0);
     }
-
-    this._hideInfoIcon = !this._isCasperEditDialogPage(newPage);
     
     if (this.mode === 'wizard') newIndex === 0 ? this.disablePrevious() : this.enablePrevious();
 
@@ -971,6 +969,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   }
 
   showKeyboardShortcuts () {
+    if (this._hideInfoIcon) return;
+
     const altKey = this._isMacOs ? 'option' : 'Alt';
     const previousKey = this.mode === 'dialog' ? '&#8593;' : '&#8592;';
     const nextKey = this.mode === 'dialog' ? '&#8595;' : '&#8594;';
@@ -1130,6 +1130,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._hidePrevious = true;
   }
 
+  showPrevious () {
+    this._hidePrevious = false;
+  }
+
   changePreviousButtonToText (text) {
     this._changeButtonToText('previous', text);
   }
@@ -1152,6 +1156,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._hideNext = true;
   }
 
+  showNext () {
+    this._hideNext = false;
+  }
+
   changeNextButtonToText (text) {
     this._changeButtonToText('next', text);
   }
@@ -1172,6 +1180,15 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this.enableNext();
   }
 
+  /* --- Info icon --- */
+
+  hideInfoIcon () {
+    this._hideInfoIcon = true;
+  }
+
+  showInfoIcon () {
+    this._hideInfoIcon = false;
+  }
   
 
   /**
