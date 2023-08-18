@@ -486,6 +486,13 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       transition: opacity 0.3s ease;
     }
 
+    :host([mode="wizard"]) .edit-dialog__status-progress-page {
+      top: var(--ced-page-padding);
+      left: var(--ced-page-padding);
+      width: calc(100% - 2 * var(--ced-page-padding));
+      height: calc(100% - 2 * var(--ced-page-padding));
+    }
+
     .edit-dialog__status-progress-page[hidden] {
       opacity: 0;
     }
