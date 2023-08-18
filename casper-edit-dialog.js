@@ -953,6 +953,23 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._activeIndex = +newIndex;
   }
 
+  activatePreviousPage () {
+    this.activatePage(this._activeIndex - 1);
+  }
+
+  activateNextPage () {
+    if (this._pages[this._activeIndex + 1]) {
+      this.activatePage(this._activeIndex + 1);
+    } else {
+      if (this._isCasperEditDialogPage(currentPageEl)) {
+        this.save();
+      // If the current page isn't an editDialogPage, then we simply close
+      } else {
+        this.close();
+      }
+    }
+  }
+
   showKeyboardShortcuts () {
     const altKey = this._isMacOs ? 'option' : 'Alt';
     const previousKey = this.mode === 'dialog' ? '&#8593;' : '&#8592;';
@@ -1567,39 +1584,22 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   _gotoPreviousPage () {
     const currentPageEl = this._getCurrentPage();
 
-    const goToPrevious = () => {
-      if (this._pages[this._activeIndex - 1]) this.activatePage(this._activeIndex - 1);
-    };
-
     if (this.mode === 'wizard') {
       if (typeof currentPageEl.previous === 'function') {
         currentPageEl.previous();
       } else if (typeof this['previousOn' + currentPageEl.id] === 'function') {
         this['previousOn' + currentPageEl.id].apply(this);
       } else {
-        goToPrevious(); 
+        this.activatePreviousPage(); 
       }
 
     } else if (this.mode === 'dialog') {
-      goToPrevious();
+      this.activatePreviousPage();
     }
   }
 
   _gotoNextPage () {
     const currentPageEl = this._getCurrentPage();
-
-    const goToNext = () => {
-      if (this._pages[this._activeIndex + 1]) {
-        this.activatePage(this._activeIndex + 1);
-      } else {
-        if (this._isCasperEditDialogPage(currentPageEl)) {
-          this.save();
-        // If the current page isn't an editDialogPage, then we simply close
-        } else {
-          this.close();
-        }
-      }
-    };
 
     if (this.mode === 'wizard') {
       if (this._nextClosesWizard) {
@@ -1612,11 +1612,11 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       } else if (typeof this['nextOn' + currentPageEl.id] === 'function') {
         this['nextOn' + currentPageEl.id].apply(this);
       } else {
-        goToNext();
+        this.activateNextPage();
       }
 
     } else if (this.mode === 'dialog') {
-      goToNext();
+      this.activateNextPage();
     }
   }
 
