@@ -958,104 +958,117 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     const previousKey = this.mode === 'dialog' ? '&#8593;' : '&#8592;';
     const nextKey = this.mode === 'dialog' ? '&#8595;' : '&#8594;';
 
+    let html = `
+      <style>
+        .confirmation-dialog__title {
+          margin-bottom: 1.5rem !important;
+        }
+
+        .shortcuts-list {
+          --list-gap: 1em;
+
+          list-style-type: none;
+          margin: 0;
+          padding: 0;
+          font-size: 0.875rem;
+          display: flex;
+          flex-direction: column;
+          gap: var(--list-gap);
+          color: #808080;
+        }
+
+        .shortcuts-list__item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1em;
+        }
+
+        .shortcuts-list__item.divider:not(:first-child) {
+          padding-top: var(--list-gap);
+          border-top: solid 1px rgb(217, 217, 217);
+        }
+
+        .shortcuts-list__category {
+          margin: 0;
+          font-size: inherit;
+        }
+
+        .shortcut__key {
+          display: inline-flex;
+          background-color: #f3f3f3;
+          padding: 0.28em 0.57em;
+          border-radius: 0.21em;
+        }
+      </style>
+
+      <h1 class="confirmation-dialog__title">Atalhos</h1>
+      <ul class="shortcuts-list">
+        <li class="shortcuts-list__item divider">
+          <h2 class="shortcuts-list__category">Campos</h2>
+        </li>
+        <li class="shortcuts-list__item">
+          <span class="shortcut__key">Tab</span>
+          <span class="shortcut__description">Saltar para o campo seguinte.</span>
+        </li>
+        <li class="shortcuts-list__item">
+          <div class="shortcut__keys-wrapper">
+            <span class="shortcut__key">Shift</span> + <span class="shortcut__key">Tab</span>
+          </div>
+          <span class="shortcut__description">Saltar para o campo anterior.</span>
+        </li>
+        <li class="shortcuts-list__item divider">
+          <h2 class="shortcuts-list__category">Páginas</h2>
+        </li>
+        <li class="shortcuts-list__item">
+          <div class="shortcut__keys-wrapper">
+            <span class="shortcut__key">${altKey}</span> + <span class="shortcut__key">${previousKey}</span>
+          </div>
+          <span class="shortcut__description">Saltar para a página anterior.</span>
+        </li>
+        <li class="shortcuts-list__item">
+          <div class="shortcut__keys-wrapper">
+            <span class="shortcut__key">${altKey}</span> + <span class="shortcut__key">${nextKey}</span>
+          </div>
+          <span class="shortcut__description">Saltar para a página seguinte.</span>
+        </li>
+    `;
+
+    if (this.mode === 'dialog') {
+      html += `
+        <li class="shortcuts-list__item">
+          <div class="shortcut__keys-wrapper">
+            <span class="shortcut__key">${altKey}</span> + <span class="shortcut__key">Shift</span> + <span class="shortcut__key">1 - 9</span>
+          </div>
+          <span class="shortcut__description">Saltar para a página número X.</span>
+        </li>
+      `;
+    }
+
+    html += `
+      <li class="shortcuts-list__item divider">
+        <h2 class="shortcuts-list__category">Geral</h2>
+      </li>
+      <li class="shortcuts-list__item">
+        <div class="shortcut__keys-wrapper">
+          <span class="shortcut__key">${altKey}</span> + <span class="shortcut__key">F1</span>
+        </div>
+        <span class="shortcut__description">Abrir este ecrã de ajuda.</span>
+      </li>
+      <li class="shortcuts-list__item">
+        <span class="shortcut__key">Esc</span>
+        <span class="shortcut__description">Fechar este ecrã de ajuda ou diálogo.</span>
+      </li>
+    `;
+
+    html += '</ul>';
+
     const options = {
       reject: '',
       accept: 'Fechar',
-      custom: `
-        <style>
-          .confirmation-dialog__title {
-            margin-bottom: 1.5rem !important;
-          }
-
-          .shortcuts-list {
-            --list-gap: 1em;
-
-            list-style-type: none;
-            margin: 0;
-            padding: 0;
-            font-size: 0.875rem;
-            display: flex;
-            flex-direction: column;
-            gap: var(--list-gap);
-            color: #808080;
-          }
-
-          .shortcuts-list__item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1em;
-          }
-
-          .shortcuts-list__item.divider:not(:first-child) {
-            padding-top: var(--list-gap);
-            border-top: solid 1px rgb(217, 217, 217);
-          }
-
-          .shortcuts-list__category {
-            margin: 0;
-            font-size: inherit;
-          }
-
-          .shortcut__key {
-            display: inline-flex;
-            background-color: #f3f3f3;
-            padding: 0.28em 0.57em;
-            border-radius: 0.21em;
-          }
-        </style>
-
-        <h1 class="confirmation-dialog__title">Atalhos</h1>
-        <ul class="shortcuts-list">
-          <li class="shortcuts-list__item divider">
-            <h2 class="shortcuts-list__category">Campos</h2>
-          </li>
-          <li class="shortcuts-list__item">
-            <span class="shortcut__key">Tab</span>
-            <span class="shortcut__description">Saltar para o campo seguinte.</span>
-          </li>
-          <li class="shortcuts-list__item">
-            <div class="shortcut__keys-wrapper">
-              <span class="shortcut__key">Shift</span> + <span class="shortcut__key">Tab</span>
-            </div>
-            <span class="shortcut__description">Saltar para o campo anterior.</span>
-          </li>
-          <li class="shortcuts-list__item divider">
-            <h2 class="shortcuts-list__category">Páginas</h2>
-          </li>
-          <li class="shortcuts-list__item">
-            <div class="shortcut__keys-wrapper">
-              <span class="shortcut__key">${altKey}</span> + <span class="shortcut__key">${previousKey}</span>
-            </div>
-            <span class="shortcut__description">Saltar para a página anterior.</span>
-          </li>
-          <li class="shortcuts-list__item">
-            <div class="shortcut__keys-wrapper">
-              <span class="shortcut__key">${altKey}</span> + <span class="shortcut__key">${nextKey}</span>
-            </div>
-            <span class="shortcut__description">Saltar para a página seguinte.</span>
-          </li>
-          <li class="shortcuts-list__item">
-            <div class="shortcut__keys-wrapper">
-              <span class="shortcut__key">${altKey}</span> + <span class="shortcut__key">Shift</span> + <span class="shortcut__key">1 - 9</span>
-            </div>
-            <span class="shortcut__description">Saltar para a página número X.</span>
-          </li>
-          <li class="shortcuts-list__item divider">
-            <h2 class="shortcuts-list__category">Geral</h2>
-          </li>
-          <li class="shortcuts-list__item">
-            <span class="shortcut__key">F1</span>
-            <span class="shortcut__description">Abrir este ecrã de ajuda.</span>
-          </li>
-          <li class="shortcuts-list__item">
-            <span class="shortcut__key">Esc</span>
-            <span class="shortcut__description">Fechar este ecrã de ajuda ou diálogo.</span>
-          </li>
-      `
+      custom: html
     };
 
-    options.custom += '</ul>';
 
     this.openConfirmationDialog(options);
   }
@@ -1430,6 +1443,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           if (+this._activeIndex < this._pages.length - 1) this._gotoNextPage();
           break;
 
+        case 'F1':
+          this.showKeyboardShortcuts();
+          break;
+
         default:
           const pageNumbers = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8', 'Digit9'];
 
@@ -1441,15 +1458,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           break;
       }
 
-    } else {
-      switch (event.key) {
-        case 'F1':
-          this.showKeyboardShortcuts();
-          break;
-      
-        default:
-          break;
-      }
     }
   }
 
