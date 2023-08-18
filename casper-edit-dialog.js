@@ -452,14 +452,18 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       width: 100%;
       height: 100%;
       background-color: var(--ced-background-color);
-      transform: translateY(-100%);
       transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.5s;
       overflow: auto;
+    }
+
+    :host([mode="dialog"]) [name^="page"] {
+      transform: translateY(-100%);
       /* This prevents layout shifts when switching pages */
       scrollbar-gutter: stable;
     }
 
     :host([mode="wizard"]) [name^="page"] {
+      transform: translateX(-100%);
       scrollbar-gutter: auto;
     }
 
@@ -467,13 +471,21 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       position: relative;
       opacity: 1;
       pointer-events: auto;
-      transform: none;
       transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0s;
       z-index: 1;
     }
 
-    [name^="page"][active] ~ * {
+    :host([mode="dialog"]) [name^="page"][active],
+    :host([mode="wizard"]) [name^="page"][active] {
+      transform: none;
+    }
+
+    :host([mode="dialog"]) [name^="page"][active] ~ * {
       transform: translateY(100%);
+    }
+
+    :host([mode="wizard"]) [name^="page"][active] ~ * {
+      transform: translateX(100%);
     }
 
     .edit-dialog__status-progress-page {
@@ -1411,7 +1423,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       this._pagesContainerEl.appendChild(newPage);
     }
 
-    if (index > this._activeIndex) newPage.style.transform = 'translateY(100%)';
+    if (index > this._activeIndex) newPage.style.transform =  this.mode === 'dialog' ? 'translateY(100%)' : 'translateX(100%)';
 
     await newPage.updateComplete;
     if (!this._isCasperEditDialogPage(newPage)) return newPage;
