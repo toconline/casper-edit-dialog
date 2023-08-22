@@ -523,6 +523,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       /* Needed so that the shadow displays above the previous sibling */
       z-index: 1;
       border-bottom-left-radius: var(--ced-border-radius);
+      position: relative;
     }
 
     :host([mode="dialog"]) .edit-dialog__footer {
@@ -601,6 +602,54 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       .edit-dialog__label-text {
         display: none;
       }
+    }
+
+    .edit-dialog__progress-list {
+      margin: 0;
+      padding: 0;
+      list-style-type: none;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(2px, 1fr));
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      transform: translateY(-50%);
+    }
+
+    .edit-dialog__progress-item {
+      font-size: 1rem;
+      width: 100%;
+      height: 0.09375em;
+      background-color: var(--primary-color);
+      position: relative;
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .edit-dialog__progress-item:not(:last-child)::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      right: auto;
+      left: 0;
+      transform: translate(50%, -50%);
+      width: 0.5em;
+      height: 0.5em;
+      border-radius: 50%;
+      border: solid 0.09375em transparent;
+      background-color: transparent;
+    }
+
+    .edit-dialog__progress-item:not(:last-child)[active]::before {
+      right: 0;
+      left: auto;
+      border: solid 0.09375em var(--primary-color);
+      background-color: var(--ced-background-color);
+    }
+
+    .edit-dialog__progress-item[active] ~ * {
+      background-color: transparent;
+      width: 0;
     }
   `;
 
@@ -700,6 +749,15 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
               <div class="edit-dialog__info" @click=${this.showKeyboardShortcuts.bind(this)} tooltip="Atalhos de teclado" ?hidden=${this._hideInfoIcon}>
                 <casper-icon icon="fa-solid/info"></casper-icon>
               </div>
+            ` : ''}
+
+            ${(this._pages.length > 0 && this.mode === 'wizard') ? html`
+              <ol class="edit-dialog__progress-list">
+                ${ this._pages.map((page, index) => html`
+                  <li class="edit-dialog__progress-item" ?active=${index === this._activeIndex} ?invalid=${this._invalidPagesIndexes.has(index)} .index=${index}>
+                  </li>
+                `)}
+              </ol>
             ` : ''}
 
             <div class="edit-dialog__buttons-wrapper">
