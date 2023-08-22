@@ -642,12 +642,15 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       background-color: var(--ced-background-color);
       width: 0;
       height: 0;
-      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1), height 1s cubic-bezier(0.4, 0, 0.2, 1);
+      opacity: 0;
+      transition: width 0.1s cubic-bezier(0.4, 0, 0.2, 1) 0.9s, height 0.1s cubic-bezier(0.4, 0, 0.2, 1) 0.9s;
     }
 
     .edit-dialog__progress-item:not(:last-child)[active]::before {
       width: 0.5em;
       height: 0.5em;
+      opacity: 1;
+      z-index: 1;
     }
 
   `;
