@@ -626,31 +626,30 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
+    .edit-dialog__progress-item[active] ~ * {
+      width: 0;
+    }
+
     .edit-dialog__progress-item:not(:last-child)::before {
       content: '';
       position: absolute;
       top: 50%;
-      right: auto;
-      left: 0;
+      right: 0;
+      left: auto;
       transform: translate(50%, -50%);
-      width: 0.5em;
-      height: 0.5em;
       border-radius: 50%;
-      border: solid 0.09375em transparent;
-      background-color: transparent;
+      border: solid 0.09375em var(--primary-color);
+      background-color: var(--ced-background-color);
+      width: 0;
+      height: 0;
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1), height 1s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .edit-dialog__progress-item:not(:last-child)[active]::before {
-      right: 0;
-      left: auto;
-      border: solid 0.09375em var(--primary-color);
-      background-color: var(--ced-background-color);
+      width: 0.5em;
+      height: 0.5em;
     }
 
-    .edit-dialog__progress-item[active] ~ * {
-      background-color: transparent;
-      width: 0;
-    }
   `;
 
   get statusProgressPageTag () {
