@@ -534,6 +534,55 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       justify-content: space-between;
     }
 
+    .edit-dialog__progress-list {
+      margin: 0;
+      padding: 0;
+      list-style-type: none;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(2px, 1fr));
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      transform: translateY(-50%);
+    }
+
+    .edit-dialog__progress-item {
+      font-size: 1rem;
+      width: 100%;
+      height: 0.09375em;
+      background-color: var(--primary-color);
+      position: relative;
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .edit-dialog__progress-item[active] ~ * {
+      width: 0;
+    }
+
+    .edit-dialog__progress-item:not(:last-child)::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      right: 0;
+      transform: translate(50%, -50%);
+      border-radius: 50%;
+      border: solid 0.09375em var(--primary-color);
+      background-color: var(--ced-background-color);
+      width: 0;
+      height: 0;
+      opacity: 0;
+      transition: width 0.1s cubic-bezier(0.4, 0, 0.2, 1) 0.9s, height 0.1s cubic-bezier(0.4, 0, 0.2, 1) 0.9s;
+    }
+
+
+    .edit-dialog__progress-item:not(:last-child)[active]::before {
+      width: 0.5em;
+      height: 0.5em;
+      opacity: 1;
+      z-index: 1;
+    }
+
     .edit-dialog__buttons-wrapper {
       display: flex;
       gap: 0.5rem;
@@ -604,54 +653,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       }
     }
 
-    .edit-dialog__progress-list {
-      margin: 0;
-      padding: 0;
-      list-style-type: none;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(2px, 1fr));
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      transform: translateY(-50%);
-    }
 
-    .edit-dialog__progress-item {
-      font-size: 1rem;
-      width: 100%;
-      height: 0.09375em;
-      background-color: var(--primary-color);
-      position: relative;
-      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
-    }
 
-    .edit-dialog__progress-item[active] ~ * {
-      width: 0;
-    }
 
-    .edit-dialog__progress-item:not(:last-child)::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      right: 0;
-      left: auto;
-      transform: translate(50%, -50%);
-      border-radius: 50%;
-      border: solid 0.09375em var(--primary-color);
-      background-color: var(--ced-background-color);
-      width: 0;
-      height: 0;
-      opacity: 0;
-      transition: width 0.1s cubic-bezier(0.4, 0, 0.2, 1) 0.9s, height 0.1s cubic-bezier(0.4, 0, 0.2, 1) 0.9s;
-    }
 
-    .edit-dialog__progress-item:not(:last-child)[active]::before {
-      width: 0.5em;
-      height: 0.5em;
-      opacity: 1;
-      z-index: 1;
-    }
 
   `;
 
@@ -711,11 +716,11 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           <ol class="edit-dialog__labels-list" ?disabled=${this._disableLabels}>
             ${(this._pages.length > 0 && this.mode === 'dialog')
               ? this._pages.map((page, index) => html`
-                <li class="edit-dialog__label" ?active=${index === this._activeIndex} ?invalid=${this._invalidPagesIndexes.has(index)} .index=${index} @click=${this._labelClickHandler}>
-                  <span class="edit-dialog__label-number">${index + 1}</span>
-                  <span class="edit-dialog__label-text" text=${page.label}>${page.label}</span>
-                </li>
-              `)
+                  <li class="edit-dialog__label" ?active=${index === this._activeIndex} ?invalid=${this._invalidPagesIndexes.has(index)} .index=${index} @click=${this._labelClickHandler}>
+                    <span class="edit-dialog__label-number">${index + 1}</span>
+                    <span class="edit-dialog__label-text" text=${page.label}>${page.label}</span>
+                  </li>
+                `)
               : ''}
 
             ${this.mode === 'dialog' ? html`
@@ -747,19 +752,19 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           </div>
 
           <div class="edit-dialog__footer">
-            ${this.mode === 'wizard' ? html`
-              <div class="edit-dialog__info" @click=${this.showKeyboardShortcuts.bind(this)} tooltip="Atalhos de teclado" ?hidden=${this._hideInfoIcon}>
-                <casper-icon icon="fa-solid/info"></casper-icon>
-              </div>
-            ` : ''}
-
-            ${(this._pages.length > 0 && this.mode === 'wizard') ? html`
+            ${(this._pages.length > 1 && this.mode === 'wizard') ? html`
               <ol class="edit-dialog__progress-list">
                 ${ this._pages.map((page, index) => html`
                   <li class="edit-dialog__progress-item" ?active=${index === this._activeIndex} ?invalid=${this._invalidPagesIndexes.has(index)} .index=${index}>
                   </li>
                 `)}
               </ol>
+            ` : ''}
+
+            ${this.mode === 'wizard' ? html`
+              <div class="edit-dialog__info" @click=${this.showKeyboardShortcuts.bind(this)} tooltip="Atalhos de teclado" ?hidden=${this._hideInfoIcon}>
+                <casper-icon icon="fa-solid/info"></casper-icon>
+              </div>
             ` : ''}
 
             <div class="edit-dialog__buttons-wrapper">
