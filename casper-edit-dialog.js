@@ -1306,8 +1306,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this.socket.submitJob(job, this._submitJobResponse.bind(this), { validity: job.validity, ttr: lttr, timeout: ltimeout, hideTimeout: !!hideTimeout });
   }
 
-  subscribeJob (jobId, timeout) {
-    if (!this._runJobInBackground) this.showProgressPage(timeout);
+  subscribeJob (jobId, timeout, showStatusPage = !this._runJobInBackground) {
+    if (showStatusPage) this.showProgressPage(timeout);
     this.socket.subscribeJob(jobId, this._subscribeJobResponse.bind(this), timeout);
   }
 
@@ -1843,16 +1843,11 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           } else {
             this.jobCompleted(notification);
 
-            if (notification.custom === true) {
-              if (!this._runJobInBackground) this.showCustomNotification(notification);
-            } else {
-              if (!this._runJobInBackground) this.showStatusPage(notification, 'success');
-              if (this.mode === 'wizard') {
-                if (this._activeIndex === this._pages.length - 1) {
-                  this.close();
-                } else {
-                  this.activatePage(this._activeIndex + 1);
-                }
+            if (!this._runJobInBackground) {
+              if (notification.custom === true) {
+                this.showCustomNotification(notification);
+              } else {
+                this.showStatusPage(notification, 'success');
               }
             }
           }
