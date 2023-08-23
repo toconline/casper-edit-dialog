@@ -85,6 +85,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       --ced-page-padding: calc((var(--paper-checkbox-ink-size, 48px) - var(--paper-checkbox-size, 18px)) / 2);
       --ced-wrapper-vertical-padding: calc(var(--ced-content-vertical-padding) - var(--ced-page-padding));
       --ced-wrapper-horizontal-padding: calc(var(--ced-content-horizontal-padding) - var(--ced-page-padding));
+      --ced-progress-line-width: 0;
     }
 
     * {
@@ -534,6 +535,34 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       justify-content: space-between;
     }
 
+    .edit-dialog__progress-line {
+      font-size: 1rem;
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform: translateY(-50%);
+      background-color: var(--primary-color);
+      width: var(--ced-progress-line-width);
+      height: 0.0625em;
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .edit-dialog__progress-line::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      right: 0;
+      transform: translate(50%, -50%);
+      border-radius: 50%;
+      border: solid 0.09375em var(--primary-color);
+      background-color: var(--ced-background-color);
+      width: 0.5em;
+      height: 0.5em;
+      outline: solid 0.09375em var(--ced-background-color);
+      transition: width 0.1s cubic-bezier(0.4, 0, 0.2, 1) 0.9s, height 0.1s cubic-bezier(0.4, 0, 0.2, 1) 0.9s;
+    }
+
+
     .edit-dialog__progress-list {
       margin: 0;
       padding: 0;
@@ -550,37 +579,40 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     .edit-dialog__progress-item {
       font-size: 1rem;
       width: 100%;
-      height: 0.09375em;
-      background-color: var(--primary-color);
+      height: 0.0625em;
       position: relative;
-      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .edit-dialog__progress-item[active] ~ * {
-      width: 0;
     }
 
-    .edit-dialog__progress-item:not(:last-child)::before {
-      content: '';
+    .edit-dialog__progress-item::after {
+      font-size: 0.5rem;
+      font-weight: 600;
+      content: "!";
       position: absolute;
       top: 50%;
       right: 0;
       transform: translate(50%, -50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
       border-radius: 50%;
-      border: solid 0.09375em var(--primary-color);
-      background-color: var(--ced-background-color);
+      border: solid 0.09375em var(--ced-background-color);
+      background-color: var(--status-red);
+      color: #FFF;
       width: 0;
       height: 0;
       opacity: 0;
-      transition: width 0.1s cubic-bezier(0.4, 0, 0.2, 1) 0.9s, height 0.1s cubic-bezier(0.4, 0, 0.2, 1) 0.9s;
+      z-index: 1;
+      transition: opacity 0.1s linear 0.9s, width 0.1s linear 0.9s, height 0.1s linear 0.9s;
     }
 
 
-    .edit-dialog__progress-item:not(:last-child)[active]::before {
+    .edit-dialog__progress-item:not([invalid][active])::after {
       width: 0.5em;
       height: 0.5em;
       opacity: 1;
-      z-index: 1;
     }
 
     .edit-dialog__buttons-wrapper {
@@ -753,6 +785,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
           <div class="edit-dialog__footer">
             ${(this._pages.length > 1 && this.mode === 'wizard') ? html`
+              <div class="edit-dialog__progress-line"></div>
               <ol class="edit-dialog__progress-list">
                 ${ this._pages.map((page, index) => html`
                   <li class="edit-dialog__progress-item" ?active=${index === this._activeIndex} ?invalid=${this._invalidPagesIndexes.has(index)} .index=${index}>
@@ -783,6 +816,12 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
       <casper-confirmation-dialog id="confirmationDialog"></casper-confirmation-dialog>
     `;
+  }
+
+  willUpdate (changedProperties) {
+    if (changedProperties.has('_activeIndex') && changedProperties.get('_activeIndex') !== undefined) {
+      this.style.setProperty('--ced-progress-line-width', `calc(100% / ${this._pages.length} * (${+this._activeIndex + 1}))`);
+    }
   }
 
   firstUpdated () {
@@ -878,6 +917,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       window.app.openToast({'text': 'Erro ao tentar abrir o diálogo. Por favor contacte o suporte técnico.', 'duration': 3500, 'backgroundColor': 'var(--status-red)'});
       return;
     }
+
+    this.style.setProperty('--ced-progress-line-width', `calc(100% / ${this._pages.length} * (${+this._activeIndex + 1}))`);
 
     // Then we create only the first page
     await this.activatePage(0, true);
