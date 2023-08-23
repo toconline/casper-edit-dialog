@@ -970,11 +970,11 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   async showProgressPage (timeout = 3000, count = 1) {
     if (this._state === 'show-progress') return;
 
-    this.disableAllActions();
-    if (!this._statusProgressPageEl) await this._createStatusProgressPage();
-
-    this._statusProgressPageEl.setProgressCount(count, true, timeout);
     this._state = 'show-progress';
+    this.disableAllActions();
+
+    if (!this._statusProgressPageEl) await this._createStatusProgressPage();
+    this._statusProgressPageEl.setProgressCount(count, true, timeout);
     this._statusProgressPageEl.hidden = false;
   }
 
@@ -985,13 +985,12 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   async showStatusPage (notification, status) {
     if (!notification) return;
 
+    this._state = 'show-status';
     this.disableAllActions();
     if (this._nextClosesWizard) this.changeNextButtonToText('Sair');
     
     if (!this._statusProgressPageEl) await this._createStatusProgressPage();
-
     this._statusProgressPageEl.showNotificationStatus(notification, status);
-    this._state = 'show-status';
     this._statusProgressPageEl.hidden = false;
 
     if (this._nextClosesWizard) this.enableNext();
@@ -999,11 +998,11 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
   async showFreeStatusPage (options) {
 
-    this.disableAllActions();
-    if (!this._statusProgressPageEl) await this._createStatusProgressPage();
-
-    this._statusProgressPageEl.showFreeStatus(options);
     this._state = 'show-status';
+    this.disableAllActions();
+
+    if (!this._statusProgressPageEl) await this._createStatusProgressPage();
+    this._statusProgressPageEl.showFreeStatus(options);
     this._statusProgressPageEl.hidden = false;
   }
 
