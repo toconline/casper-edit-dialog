@@ -604,9 +604,9 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       transition: opacity 0.1s linear 0s, width 0.1s linear 0s, height 0.1s linear 0s, color 0.1s linear 0s, background-color 0.1s linear 0.9s;
     }
 
-    .edit-dialog__progress-list.invalid .edit-dialog__progress-item::after {
+    /* .edit-dialog__progress-list.invalid .edit-dialog__progress-item::after {
       opacity: 1;
-    }
+    } */
 
     .edit-dialog__progress-item[invalid]::after {
       background-color: var(--status-red);
@@ -618,15 +618,17 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       height: 1.5em;
       color: #FFF;
       transition: opacity 0.1s linear 0.9s, width 0.1s linear 0.9s, height 0.1s linear 0.9s, color 0.1s linear 0.9s, background-color 0.1s linear 0.9s;
+
+      opacity: 1;
     }
 
-    .edit-dialog__progress-item[active]:not([invalid])::after {
+    /* .edit-dialog__progress-item[active]:not([invalid])::after {
       background-color: transparent;
     }
 
     .edit-dialog__progress-item[active] ~ *:not([invalid])::after {
       background-color: rgb(191, 191, 191);
-    }
+    } */
 
     .edit-dialog__buttons-wrapper {
       display: flex;
