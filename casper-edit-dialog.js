@@ -1305,12 +1305,14 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     if (this.mode === 'dialog') this.disableLabels();
     this.disablePrevious();
     this.disableNext();
+    this._getCurrentPage()?.setAttribute('disabled', '');
   }
 
   enableAllActions () {
     if (this.mode === 'dialog') this.enableLabels();
     this.enablePrevious();
     this.enableNext();
+    this._getCurrentPage()?.removeAttribute('disabled');
   }
 
   /* --- Info icon --- */
@@ -1601,11 +1603,15 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
       switch (event.key) {
         case previousKey:
+          if (this._state !== 'normal' || (this.mode === 'wizard' && this._disablePrevious)) break;
+
           // This prevents the dialog from being accidentally saved
           if (this._pages[+this._activeIndex - 1]) this._gotoPreviousPage();
           break;
 
         case nextKey:
+          if (this._state !== 'normal' || (this.mode === 'wizard' && this._disableNext)) break;
+
           // This prevents the dialog from being accidentally saved
           if (+this._activeIndex < this._pages.length - 1) this._gotoNextPage();
           break;
@@ -1618,9 +1624,11 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           const pageNumbers = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8', 'Digit9'];
 
           if (event.shiftKey && pageNumbers.includes(event.code)) {
-            // Prevents character from being written
-            event.preventDefault();
-            this.activatePage(+event.code?.slice(-1) - 1);
+            if (this.mode === 'dialog' && this._state === 'normal' && !this._disableLabels) {
+              // Prevents character from being written
+              event.preventDefault();
+              this.activatePage(+event.code?.slice(-1) - 1);
+            }
           }
           break;
       }
@@ -1641,10 +1649,18 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   }
 
   _pagesContainerKeydownHandler (event) {
-    if (!event) return;
+    const currentPage = this._getCurrentPage();
+    if (!event || !currentPage) return;
 
     if (event.key === 'Tab') {
-      const pageChildren = Array.from(this._getCurrentPage().shadowRoot.children);
+      if (currentPage.hasAttribute('disabled')) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        return;
+      }
+
+      const pageChildren = Array.from(currentPage.shadowRoot.children);
 
       const reachedExtreme = this._uiHelper.fieldTabHandler(event, pageChildren);
       if (reachedExtreme) {
@@ -1658,10 +1674,17 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
    * @param {Event} event
    */
   _csTabWasPressedHandler (event) {
-    if (!event?.detail?.element || !Object.hasOwn(event?.detail, 'pressed_shift_key')) return;
+    const currentPage = this._getCurrentPage();
+    if (!event?.detail?.element || !Object.hasOwn(event?.detail, 'pressed_shift_key') || !currentPage) return;
+
+    if (currentPage.hasAttribute('disabled')) {
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      return;
+    }
 
     const currentField = event.detail.element;
-    const pageChildrenArr = Array.from(this._getCurrentPage().shadowRoot.children);
+    const pageChildrenArr = Array.from(currentPage.shadowRoot.children);
     if (!pageChildrenArr.includes(currentField)) return;
 
     const reachedExtreme = this._uiHelper.casperSelectTabHandler(event, pageChildrenArr);
