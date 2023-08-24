@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@cloudware-casper/casper-timed-status": "^0.x",
+    "@cloudware-casper/casper-tooltip": "^1.x",
     "lit": "^2.x"
   }
 }

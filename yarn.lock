@@ -10,12 +10,20 @@
     ink-ripple alex-saunders/ink-ripple
     lit "^2.x"
 
-"@cloudware-casper/casper-timed-status@^0.0.14":
+"@cloudware-casper/casper-timed-status@^0.x":
   version "0.0.14"
   resolved "https://npm.pkg.github.com/download/@cloudware-casper/casper-timed-status/0.0.14/0c9ced21661334e394e0b4ea0009bb125989f4ec#0c9ced21661334e394e0b4ea0009bb125989f4ec"
   integrity sha512-r5zfNjZoOg0NydZVVvFI4ig5CO+OvSGiG56wT+0bUNbxdmiMAZIEBjD1dZhdxPkEufLH1K3IOCpCbv5gsEuVYg==
   dependencies:
     "@cloudware-casper/casper-icons" "^3.x"
+
+"@cloudware-casper/casper-tooltip@^1.x":
+  version "1.6.0"
+  resolved "https://npm.pkg.github.com/download/@cloudware-casper/casper-tooltip/1.6.0/0f855a19042f1f5ebc1b32d157c7945d425717b8#0f855a19042f1f5ebc1b32d157c7945d425717b8"
+  integrity sha512-YIKSy7MOxhxDGJWYU25rYoHv2Me3nMz+3vtMMOy1gpUdDcdyUf6arOdNAbW6jW2fRC1FuBVhV7ucRUTDtqp3Kg==
+  dependencies:
+    dompurify "^2.x"
+    lit "^2.x"
 
 "@lit-labs/ssr-dom-shim@^1.0.0", "@lit-labs/ssr-dom-shim@^1.1.0":
   version "1.1.0"
@@ -34,7 +42,12 @@
   resolved "https://registry.yarnpkg.com/@types/trusted-types/-/trusted-types-2.0.3.tgz#a136f83b0758698df454e328759dbd3d44555311"
   integrity sha512-NfQ4gyz38SL8sDNrSixxU2Os1a5xcdFxipAFxYEuLUlvU2uDwS4NUpsImcf1//SlWItCVMMLiylsxbmNMToV/g==
 
-"ink-ripple@github:alex-saunders/ink-ripple":
+dompurify@^2.x:
+  version "2.4.7"
+  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-2.4.7.tgz#277adeb40a2c84be2d42a8bcd45f582bfa4d0cfc"
+  integrity sha512-kxxKlPEDa6Nc5WJi+qRgPbOAbgTpSULL+vI3NUXsZMlkJxTqYI9wg5ZTay2sFrdZRWHPWNi+EdAhcJf81WtoMQ==
+
+ink-ripple@alex-saunders/ink-ripple:
   version "0.0.0"
   resolved "https://codeload.github.com/alex-saunders/ink-ripple/tar.gz/88e4d753bba9f7b57b372c62a4517bb091c7f713"
 

@@ -12,6 +12,8 @@ import './components/casper-edit-dialog-status-page.js';
 import './components/casper-confirmation-dialog.js';
 import './components/casper-toast-lit.js';
 
+import '@cloudware-casper/casper-tooltip/casper-tooltip.js';
+
 export class CasperEditDialog extends Casper.I18n(LitElement) {
   static properties = {
     mode: {
@@ -828,6 +830,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
             </div>
           </div>
         </div>
+        <casper-tooltip id="dialogTooltip"></casper-tooltip>
       </dialog>
 
       <casper-confirmation-dialog id="confirmationDialog"></casper-confirmation-dialog>
@@ -872,6 +875,14 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       this._nextButtonEl.addEventListener('click', () => this.save());
       this._errorsAreFatal = false;
     }
+
+    // Tooltip
+    this._dialogTooltip = this.shadowRoot.getElementById('dialogTooltip');
+    this._dialogTooltip.fitInto = this._dialogEl;
+    this.addEventListener('mousemove', (event) => {
+      this._dialogTooltip.mouseMoveToolip(event); 
+      app.tooltip.hide();
+    });
   }
 
   updated (changedProperties) {
