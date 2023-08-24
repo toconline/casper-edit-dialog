@@ -18,9 +18,9 @@
     "@cloudware-casper/casper-icons" "^3.x"
 
 "@cloudware-casper/casper-tooltip@^1.x":
-  version "1.6.0"
-  resolved "https://npm.pkg.github.com/download/@cloudware-casper/casper-tooltip/1.6.0/0f855a19042f1f5ebc1b32d157c7945d425717b8#0f855a19042f1f5ebc1b32d157c7945d425717b8"
-  integrity sha512-YIKSy7MOxhxDGJWYU25rYoHv2Me3nMz+3vtMMOy1gpUdDcdyUf6arOdNAbW6jW2fRC1FuBVhV7ucRUTDtqp3Kg==
+  version "1.6.1"
+  resolved "https://npm.pkg.github.com/download/@cloudware-casper/casper-tooltip/1.6.1/0d00338118ecf1e2fd509b32796f9ee92c5e5ea0#0d00338118ecf1e2fd509b32796f9ee92c5e5ea0"
+  integrity sha512-j3O+MPIM3YusnwwidMO9140RBZyCG8pyXgJOJRypZ2sofg1xxA1AYXFYEDlYaFfk9zobmpDaL1BH0lVEr7AqBw==
   dependencies:
     dompurify "^2.x"
     lit "^2.x"
