@@ -162,28 +162,18 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
 
     .edit-dialog__label,
-    :host([mode="dialog"]) .edit-dialog__info {
+    .edit-dialog__label--info {
       font-size: 1rem;
       cursor: pointer;
       opacity: 0.6;
       transition: opacity var(--ced-labels-buttons-transition-duration);
     }
 
-    :host([mode="dialog"]) .edit-dialog__info {
+    .edit-dialog__label--info {
       position: absolute;
       left: var(--ced-horizontal-padding);
       bottom: var(--ced-horizontal-padding);
       width: calc(100% - var(--ced-horizontal-padding) - var(--ced-labels-list-padding-right));
-    }
-
-    :host([mode="wizard"]) .edit-dialog__info {
-      font-size: 1rem;
-      cursor: pointer;
-      color: var(--primary-color);
-    }
-
-    .edit-dialog__info casper-icon {
-      padding: 0.375em;
     }
 
     .edit-dialog__label {
@@ -198,7 +188,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     .edit-dialog__label:hover,
     .edit-dialog__label[active],
-    :host([mode="dialog"]) .edit-dialog__info:hover {
+    .edit-dialog__label--info:hover {
       opacity: 1;
     }
 
@@ -224,25 +214,20 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
 
     .edit-dialog__label-number,
-    .edit-dialog__info casper-icon {
+    .edit-dialog__label--info casper-icon {
       background-color: transparent;
       width: 1.875em;
       height: 1.875em;
       border-radius: 50%;
     }
 
+    .edit-dialog__label--info casper-icon {
+      padding: 0.375em;
+    }
+
     .edit-dialog__label-number,
-    :host([mode="dialog"]) .edit-dialog__info casper-icon {
+    .edit-dialog__label--info casper-icon {
       border: solid 1px rgba(var(--ced-label-number-color-rgb), 56%);
-    }
-
-    :host([mode="wizard"]) .edit-dialog__info casper-icon {
-      border: solid 2px var(--primary-color);
-      transition: background-color var(--ced-labels-buttons-transition-duration);
-    }
-
-    :host([mode="wizard"]) .edit-dialog__info:hover casper-icon {
-      background-color: var(--light-primary-color);
     }
 
     .edit-dialog__label[active] .edit-dialog__label-number {
@@ -632,6 +617,25 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       background-color: rgb(191, 191, 191);
     } */
 
+    .edit-dialog__footer-info {
+      display: flex;
+      font-size: 1rem;
+      color: var(--primary-color);
+    }
+
+    .edit-dialog__footer-info casper-icon {
+      width: 1.875em;
+      height: 1.875em;
+      border-radius: 50%;
+      background-color: transparent;
+      transition: background-color var(--ced-labels-buttons-transition-duration);
+    }
+
+    .edit-dialog__footer-info:hover casper-icon {
+      cursor: pointer;
+      background-color: var(--light-primary-color);
+    }
+
     .edit-dialog__buttons-wrapper {
       display: flex;
       gap: 0.5rem;
@@ -774,7 +778,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
               : ''}
 
             ${this.mode === 'dialog' ? html`
-              <li class="edit-dialog__info" @click=${this.showKeyboardShortcuts.bind(this)} tooltip="Atalhos de teclado" ?hidden=${this._hideInfoIcon}>
+              <li class="edit-dialog__label--info" @click=${this.showKeyboardShortcuts.bind(this)} tooltip="Atalhos de teclado" ?hidden=${this._hideInfoIcon}>
                 <casper-icon icon="fa-solid/info"></casper-icon>
               </li>
             ` : ''}
@@ -813,8 +817,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
             ` : ''}
 
             ${this.mode === 'wizard' ? html`
-              <div class="edit-dialog__info" @click=${this.showKeyboardShortcuts.bind(this)} tooltip="Atalhos de teclado" ?hidden=${this._hideInfoIcon}>
-                <casper-icon icon="fa-solid/info"></casper-icon>
+              <div class="edit-dialog__footer-info" @click=${this.showKeyboardShortcuts.bind(this)} tooltip="Atalhos de teclado" ?hidden=${this._hideInfoIcon}>
+                <casper-icon icon="fa-light/info-circle"></casper-icon>
               </div>
             ` : ''}
 
