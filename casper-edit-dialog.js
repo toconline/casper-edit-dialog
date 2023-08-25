@@ -877,10 +877,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
 
     // Tooltip
-    this._dialogTooltip = this.shadowRoot.getElementById('dialogTooltip');
-    this._dialogTooltip.fitInto = this._dialogEl;
+    this._dialogTooltipEl = this.shadowRoot.getElementById('dialogTooltip');
+    this._dialogTooltipEl.fitInto = this._dialogEl;
     this.addEventListener('mousemove', (event) => {
-      this._dialogTooltip.mouseMoveToolip(event); 
+      this._dialogTooltipEl.mouseMoveToolip(event); 
       app.tooltip.hide();
     });
   }
