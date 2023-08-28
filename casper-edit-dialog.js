@@ -478,19 +478,18 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     .edit-dialog__status-progress-page {
       position: absolute;
-      top: var(--ced-wrapper-vertical-padding);
-      left: var(--ced-wrapper-horizontal-padding);
-      width: calc(100% - 2 * var(--ced-wrapper-horizontal-padding));
-      height: calc(100% - 2 * var(--ced-wrapper-vertical-padding));
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: solid var(--ced-background-color);
+      border-width: var(--ced-wrapper-vertical-padding) var(--ced-wrapper-horizontal-padding);
       z-index: var(--status-page-z-index);
       transition: opacity 0.3s ease;
     }
 
     :host([mode="wizard"]) .edit-dialog__status-progress-page {
-      top: var(--ced-page-padding);
-      left: var(--ced-page-padding);
-      width: calc(100% - 2 * var(--ced-page-padding));
-      height: calc(100% - 2 * var(--ced-page-padding));
+      border-width: var(--ced-page-padding);
     }
 
     .edit-dialog__status-progress-page[hidden] {
