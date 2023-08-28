@@ -1068,7 +1068,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       }, 0);
     }
     
-    if (this.mode === 'wizard') newIndex === 0 ? this.disablePrevious() : this.enablePrevious();
+    if (this.mode === 'wizard') +newIndex === 0 ? this.disablePrevious() : this.enablePrevious();
 
     if (typeof newPage.enter === 'function') {
       newPage.enter();
@@ -1079,9 +1079,17 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     if (this.mode === 'wizard') {
       newPage.hasAttribute('previous') ? this.changePreviousButtonToText(newPage.getAttribute('previous')) : this.changePreviousButtonToIcon();
-      newPage.hasAttribute('next') ? this.changeNextButtonToText(newPage.getAttribute('next')) : this.changeNextButtonToIcon();
+
+      if (newPage.hasAttribute('next')) {
+        this.changeNextButtonToText(newPage.getAttribute('next'));
+      } else {
+        const nextIcon = (+newIndex === this._pages.length - 1) 
+          ? 'fa-light:check' 
+          : 'fa-light:arrow-right';
+
+        this.changeNextButtonToIcon(nextIcon);
+      }
     }
-    
 
     // If the previous page was invalid, we check its validity again
     if (this._invalidPagesIndexes.has(previousIndex)) {
@@ -1754,14 +1762,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this[`_${type}Icon`] = icon;
   }
 
-  _updateButtons () {
-    const nextIcon = (this._activeIndex === this._pages.length - 1 && !this._getCurrentPage().hasAttribute('next')) 
-      ? 'fa-light:check' 
-      : 'fa-light:arrow-right';
-
-    this.changeNextButtonToIcon(nextIcon);
-  }
-
   _gotoPreviousPage () {
     const currentPageEl = this._getCurrentPage();
 
@@ -1915,7 +1915,13 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           this.subscribeJob(notification.response.channel, this._controlledSubmissionTTR);
           this._setControlledSubmission();
         } else {
-          if (this.mode === 'wizard') this._updateButtons();
+          if (this.mode === 'wizard') {
+            const nextIcon = (this._activeIndex === this._pages.length - 1 && !this._getCurrentPage().hasAttribute('next')) 
+              ? 'fa-light:check' 
+              : 'fa-light:arrow-right';
+
+            this.changeNextButtonToIcon(nextIcon);
+          }
 
           if (typeof  this._getCurrentPage().jobCompleted === 'function') {
             this._getCurrentPage().jobCompleted(notification);
