@@ -523,15 +523,21 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
 
     .edit-dialog__progress-line {
+      --ced-progress-line-color: var(--primary-color);
+
       font-size: 1rem;
       position: absolute;
       top: 0;
       left: 0;
       transform: translateY(-50%);
-      background-color: var(--primary-color);
+      background-color: var(--ced-progress-line-color);
       width: var(--ced-progress-line-width);
-      height: 0.0625em;
-      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+      height: 0.125em;
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1), background-color 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .edit-dialog__progress-line.invalid {
+      --ced-progress-line-color: var(--status-red);
     }
 
     .edit-dialog__progress-line::after {
@@ -541,14 +547,13 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       right: 0;
       transform: translate(50%, -50%);
       border-radius: 50%;
-      border: solid 0.09375em var(--primary-color);
+      border: solid 0.125em var(--ced-progress-line-color);
       background-color: var(--ced-background-color);
       width: 0.5em;
       height: 0.5em;
       outline: solid 0.09375em var(--ced-background-color);
-      transition: width 0.1s cubic-bezier(0.4, 0, 0.2, 1) 0.9s, height 0.1s cubic-bezier(0.4, 0, 0.2, 1) 0.9s;
+      transition: width 0.1s cubic-bezier(0.4, 0, 0.2, 1) 0.9s, height 0.1s cubic-bezier(0.4, 0, 0.2, 1) 0.9s, border-color 1s cubic-bezier(0.4, 0, 0.2, 1);
     }
-
 
     .edit-dialog__progress-list {
       margin: 0;
@@ -571,7 +576,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
 
     .edit-dialog__progress-item::after {
-      font-size: 0.5rem;
+      font-size: 0.75rem;
       font-weight: 600;
       content: "";
       position: absolute;
@@ -588,12 +593,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       width: 0.5em;
       height: 0.5em;
       z-index: 1;
-      transition: opacity 0.1s linear 0s, width 0.1s linear 0s, height 0.1s linear 0s, color 0.1s linear 0s, background-color 0.1s linear 0.9s;
+      transition: opacity 0.1s ease 0s, width 0.1s ease 0s, height 0.1s ease 0s, color 0.1s ease 0s, background-color 0.1s ease 0.9s;
     }
-
-    /* .edit-dialog__progress-list.invalid .edit-dialog__progress-item::after {
-      opacity: 1;
-    } */
 
     .edit-dialog__progress-item[invalid]::after {
       background-color: var(--status-red);
@@ -604,18 +605,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       width: 1.5em;
       height: 1.5em;
       color: #FFF;
-      transition: opacity 0.1s linear 0.9s, width 0.1s linear 0.9s, height 0.1s linear 0.9s, color 0.1s linear 0.9s, background-color 0.1s linear 0.9s;
+      transition: opacity 0.1s ease 0.9s, width 0.1s ease 0.9s, height 0.1s ease 0.9s, color 0.1s ease 0.9s, background-color 0.1s ease 0.9s;
 
       opacity: 1;
     }
-
-    /* .edit-dialog__progress-item[active]:not([invalid])::after {
-      background-color: transparent;
-    }
-
-    .edit-dialog__progress-item[active] ~ *:not([invalid])::after {
-      background-color: rgb(191, 191, 191);
-    } */
 
     .edit-dialog__footer-info {
       display: flex;
@@ -807,8 +800,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
           <div class="edit-dialog__footer">
             ${(this._pages.length > 1 && this.mode === 'wizard') ? html`
-              <div class="edit-dialog__progress-line"></div>
-              <ol class="edit-dialog__progress-list ${classMap(progressClasses)}">
+              <div class="edit-dialog__progress-line ${classMap(progressClasses)}"></div>
+              <ol class="edit-dialog__progress-list">
                 ${ this._pages.map((page, index) => html`
                   <li class="edit-dialog__progress-item" ?active=${index === this._activeIndex} ?invalid=${this._invalidPagesIndexes.has(index)} .index=${index}>
                   </li>
