@@ -14,6 +14,9 @@ class CasperTabbedItems extends LitElement {
     renderItem: {
       type: Function
     },
+    renderPlaceholer: {
+      type: Function
+    },
     items: {
       type: Array
     },
@@ -443,7 +446,7 @@ class CasperTabbedItems extends LitElement {
       <div class="content">
         ${(this.items.length > 0)
           ? this.items.map((item, index) => this._renderItem(item, index))
-          : this._renderPlaceholder()
+          : (this.renderPlaceholder ? this.renderPlaceholder() : this._renderPlaceholder())
         }
 
         ${this.showDeleteItemsAction 
