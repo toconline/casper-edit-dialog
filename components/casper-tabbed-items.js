@@ -328,6 +328,14 @@ class CasperTabbedItems extends LitElement {
       transform: scale(1.01);
     }
 
+    .content__placeholder-button[disabled] {
+      pointer-events: none !important;
+      background-color: var(--disabled-background-color) !important;
+      color: #767676 !important;
+      border-color: transparent !important;
+      opacity: 0.5 !important;
+    }
+
     .content__placeholder-button casper-icon {
       width: 1em;
       height: 1em;
