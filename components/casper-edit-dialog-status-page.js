@@ -110,7 +110,7 @@ export class CasperEditDialogStatusPage extends LitElement {
         width: 40vw;
         /* 2rem for breathing space */
         max-width: min(calc(100% - 2rem), 35rem);
-        height: 26.5vh;
+        height: 32.5vh;
         /* 1rem for breathing space */
         max-height: min(calc(100% - var(--icon-top-offset) - var(--frame-after-size) - 1rem), 15.75rem);
       }
@@ -144,7 +144,6 @@ export class CasperEditDialogStatusPage extends LitElement {
       }
 
       .status-page__icon {
-        
         width: 100%;
         height: 100%;
         --casper-timed-status-icon-check: /static/icons/check;
