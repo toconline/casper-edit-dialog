@@ -45,7 +45,9 @@ export class CasperEditDialogStatusPage extends LitElement {
         --status-orange-rgb: 243, 145, 42;
         --status-gray-rgb: 78, 77, 77;
 
-        --icon-height: 5rem;
+        --icon-height: clamp(3.5rem, 7vw, 5rem);
+        --icon-top-offset: calc(var(--icon-height) / 2.5);
+        --frame-after-size: 1.2rem;
         --state-color-rgb: var(--status-blue-rgb);
         --self-close-transition-duration: 4s;
 
@@ -98,13 +100,19 @@ export class CasperEditDialogStatusPage extends LitElement {
       }
 
       .status-page__frame {
-        max-height: calc(100% - 5rem);
-        max-width: calc(100% - 5rem);
         display: flex;
         flex-direction: column;
         position: relative;
-        height: 60%;
-        width: 70%;
+        border-radius: var(--radius-primary, 8px);
+        padding: 0.625rem;
+        background: radial-gradient(#ffffff 80%, #f5f4f4);
+        box-shadow: 0 5px 21px 3px rgba(0, 0, 0, 0.19);
+        width: 40vw;
+        /* 2rem for breathing space */
+        max-width: min(calc(100% - 2rem), 35rem);
+        height: 26.5vh;
+        /* 1rem for breathing space */
+        max-height: min(calc(100% - var(--icon-top-offset) - var(--frame-after-size) - 1rem), 15.75rem);
       }
 
       .status-page__frame::after {
@@ -114,43 +122,43 @@ export class CasperEditDialogStatusPage extends LitElement {
         bottom: 0;
         transform: translate(-50%, 50%);
         width: 78%;
-        height: 1.2rem;
+        height: var(--frame-after-size);
         background-color: rgb(var(--state-color-rgb));
         border-radius: var(--radius-primary, 8px);
-
         z-index: -1;
-      }
-
-      .status-page__message {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        border-radius: var(--radius-primary, 8px);
-        padding: 0.625rem;
-        background: radial-gradient(#ffffff 80%, #f5f4f4);
-        box-shadow: 0 5px 21px 3px rgba(0, 0, 0, 0.19);
+        transition: background-color 0.3s;
       }
 
       .status-page__icon-container {
-        --icon-top: calc(var(--icon-height) / 2.5 * -1);
-
+        width: var(--icon-height);
+        height: var(--icon-height);
         background-color: #FFF;
         border-radius: 50%;
         position: relative;
-        top: var(--icon-top);
-        margin-bottom: calc(var(--icon-top) + 1rem);
+        top: calc(var(--icon-top-offset) * -1);
+        margin-bottom: calc(var(--icon-top-offset) * -1 + 1rem);
         box-shadow: 0px 2px 20px 3px rgba(var(--state-color-rgb), 0.4);
+        align-self: center;
+        flex-shrink: 0;
+        transition: box-shadow 0.3s;
       }
 
       .status-page__icon {
-        width: var(--icon-height);
-        height: var(--icon-height);
         
+        width: 100%;
+        height: 100%;
         --casper-timed-status-icon-check: /static/icons/check;
         --casper-timed-status-icon-error: /static/icons/error;
         --casper-timed-status-progress-color: var(--primary-color);
         --casper-timed-status-countdown-color: rgba(0, 0, 0, 0.1);
+      }
+
+      .status-page__message {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex-grow: 1;
+        overflow: auto;
       }
 
       .status-page__text-container {
@@ -245,17 +253,17 @@ export class CasperEditDialogStatusPage extends LitElement {
   render () {
     return html`
       <div class="status-page__frame">
+        <div class="status-page__icon-container">
+          <casper-timed-status
+            id="status"
+            class="status-page__icon"
+            state=${this.state === 'fatal-error' ? 'error' : this.state}
+            progress=${this.progress}
+            ?no-reset
+            timeout=${this.timeout}>
+          </casper-timed-status>
+        </div>
         <div class="status-page__message">
-          <div class="status-page__icon-container">
-            <casper-timed-status
-              id="status"
-              class="status-page__icon"
-              state=${this.state === 'fatal-error' ? 'error' : this.state}
-              progress=${this.progress}
-              ?no-reset
-              timeout=${this.timeout}>
-            </casper-timed-status>
-          </div>
           <div class="status-page__text-container">
             ${this._custom 
               ? unsafeHTML(this._custom) 
