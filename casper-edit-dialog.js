@@ -1100,10 +1100,14 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   }
 
   activatePreviousPage () {
+    if (this.mode === 'wizard' && this._disablePrevious) return;
+
     this.activatePage(this._activeIndex - 1);
   }
 
   activateNextPage () {
+    if (this.mode === 'wizard' && this._disableNext) return;
+
     if (this._pages[this._activeIndex + 1]) {
       this.activatePage(this._activeIndex + 1);
     } else {
@@ -1621,7 +1625,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   }
 
   _generalKeydownHandler (event) {
-    if (!event) return;
+    if (!event || this._state !== 'normal') return;
 
     if (event.altKey) {
       const previousKey = this.mode === 'dialog' ? 'ArrowUp' : 'ArrowLeft';
@@ -1629,18 +1633,18 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
       switch (event.key) {
         case 'Enter':
-          if (this.mode === 'dialog' && this._state === 'normal' && !this._disablePrevious) this.save(false);
+          if (this.mode === 'dialog' && !this._disablePrevious) this.save(false);
           break;
 
         case previousKey:
-          if (this._state !== 'normal' || (this.mode === 'wizard' && this._disablePrevious)) break;
+          if (this.mode === 'wizard' && this._disablePrevious) break;
 
           // This prevents the dialog from being accidentally saved
           if (this._pages[+this._activeIndex - 1]) this._gotoPreviousPage();
           break;
 
         case nextKey:
-          if (this._state !== 'normal' || (this.mode === 'wizard' && this._disableNext)) break;
+          if (this.mode === 'wizard' && this._disableNext) break;
 
           // This prevents the dialog from being accidentally saved
           if (+this._activeIndex < this._pages.length - 1) this._gotoNextPage();
@@ -1655,7 +1659,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           const numpadCodes = ['Numpad1', 'Numpad2', 'Numpad3', 'Numpad4', 'Numpad5', 'Numpad6', 'Numpad7', 'Numpad8', 'Numpad9'];
 
           if (event.shiftKey && (digitCodes.includes(event.code) || numpadCodes.includes(event.code))) {
-            if (this.mode === 'dialog' && this._state === 'normal' && !this._disableLabels) {
+            if (this.mode === 'dialog' && !this._disableLabels) {
               // Prevents character from being written
               event.preventDefault();
               this.activatePage(+event.code?.slice(-1) - 1);
