@@ -1226,6 +1226,17 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       </li>
     `;
 
+    if (this.mode === 'dialog') {
+      html += `
+        <li class="shortcuts-list__item">
+          <div class="shortcut__keys-wrapper">
+            <span class="shortcut__key">${altKey}</span> + <span class="shortcut__key">Enter</span>
+          </div>
+          <span class="shortcut__description">Gravar.</span>
+        </li>
+      `;
+    }
+
     html += '</ul>';
 
     const options = {
@@ -1617,6 +1628,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       const nextKey = this.mode === 'dialog' ? 'ArrowDown' : 'ArrowRight';
 
       switch (event.key) {
+        case 'Enter':
+          if (this.mode === 'dialog' && this._state === 'normal' && !this._disablePrevious) this.save(false);
+          break;
+
         case previousKey:
           if (this._state !== 'normal' || (this.mode === 'wizard' && this._disablePrevious)) break;
 
