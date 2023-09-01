@@ -1636,9 +1636,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           break;
 
         default:
-          const pageNumbers = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8', 'Digit9'];
+          const digitCodes = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8', 'Digit9'];
+          const numpadCodes = ['Numpad1', 'Numpad2', 'Numpad3', 'Numpad4', 'Numpad5', 'Numpad6', 'Numpad7', 'Numpad8', 'Numpad9'];
 
-          if (event.shiftKey && pageNumbers.includes(event.code)) {
+          if (event.shiftKey && (digitCodes.includes(event.code) || numpadCodes.includes(event.code))) {
             if (this.mode === 'dialog' && this._state === 'normal' && !this._disableLabels) {
               // Prevents character from being written
               event.preventDefault();
