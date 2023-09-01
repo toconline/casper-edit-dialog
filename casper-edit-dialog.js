@@ -1369,7 +1369,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._runJobInBackground = !showStatusPage;
     this._jobPromise = new CasperSocketPromise();
 
-    await this._submitJobWithStrictValidity(job, timeout, ttr, true);
+    await this.submitJobWithStrictValidity(job, timeout, ttr, true);
     return this._jobPromise;
   }
 
@@ -1380,7 +1380,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
    * @param {Integer} ttr
    *
    */
-  async _submitJobWithStrictValidity (job, timeout, ttr, hideTimeout) {
+  async submitJobWithStrictValidity (job, timeout, ttr, hideTimeout) {
     const ltimeout = parseInt(timeout);
     const lttr = parseInt(ttr);
 
