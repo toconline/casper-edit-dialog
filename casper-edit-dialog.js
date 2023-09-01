@@ -684,10 +684,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
 
     #toastLit {
-      /* position: absolute;
-      bottom: calc(var(--ced-vertical-padding) * 2);
-      left: var(--ced-horizontal-padding);
-      width: calc(100% - var(--ced-horizontal-padding) * 2); */
       z-index: var(--toast-z-index);
     }
 
