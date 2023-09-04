@@ -45,6 +45,9 @@ export class CasperEditDialogPage extends LitElement {
 
     casper-tabbed-items {
       --header-top-offset: calc(var(--ced-page-padding) * -1);
+
+      /* This is the same value used for the paper-input, needed so that there is still breathing space when an input's error message is shown */
+      padding: 8px 0;
     }
 
     paper-checkbox[invalid] {

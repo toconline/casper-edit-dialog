@@ -45,6 +45,8 @@ class CasperTabbedItems extends LitElement {
       --tab-vertical-padding: 0.25rem;
       --tab-transition-duration: 0.5s;
       --header-top-offset: 0;
+
+      border-bottom: 1px solid rgb(217, 217, 217);
     }
 
     [hidden] {
@@ -259,7 +261,6 @@ class CasperTabbedItems extends LitElement {
       justify-content: center;
       padding: 2rem;
       color: var(--primary-text-color);
-      border-bottom: 1px solid rgb(217, 217, 217);
       text-align: center;
     }
 
@@ -337,7 +338,6 @@ class CasperTabbedItems extends LitElement {
       padding: var(--item-padding);
       /* Space needed so that an input's error message fits */
       padding-bottom: 3rem;
-      border-bottom: 1px solid rgb(217, 217, 217);
     }
 
     :host([layout="grid"]) .content__item {
