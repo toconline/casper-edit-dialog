@@ -44,7 +44,7 @@ class CasperTabbedItems extends LitElement {
       --cti-dark-grey: rgb(149, 149, 149);
       --tab-vertical-padding: 0.25rem;
       --tab-transition-duration: 0.5s;
-      --header-before-height: 0;
+      --header-top-offset: 0;
     }
 
     [hidden] {
@@ -91,21 +91,9 @@ class CasperTabbedItems extends LitElement {
       gap: 1rem;
       border-bottom: 1px solid rgb(217, 217, 217);
       position: sticky;
-      top: 0;
+      top: var(--header-top-offset);
       background-color: var(--header-background-color);
       z-index: 1;
-    }
-
-    /* Prevents elements from peeking through while scrolling */
-    .header::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: var(--header-before-height);
-      transform: translateY(-100%);
-      background-color: inherit;
     }
 
     .header__tabs-wrapper {

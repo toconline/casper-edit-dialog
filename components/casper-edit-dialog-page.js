@@ -44,7 +44,7 @@ export class CasperEditDialogPage extends LitElement {
     }
 
     casper-tabbed-items {
-      --header-before-height: var(--ced-page-padding);
+      --header-top-offset: calc(var(--ced-page-padding) * -1);
     }
 
     paper-checkbox[invalid] {
