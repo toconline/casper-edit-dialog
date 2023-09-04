@@ -53,6 +53,10 @@ class CasperTabbedItems extends LitElement {
       display: none !important;
     }
 
+    casper-address {
+      --ca-item-min-width: var(--item-min-width);
+    }
+
     paper-checkbox[invalid] {
       --paper-checkbox-label-color: var(--paper-checkbox-error-color, var(--error-color));
     }

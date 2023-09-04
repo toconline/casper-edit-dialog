@@ -1405,7 +1405,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   }
 
   /**
-   * Shows toast at the bottom of the pages-container.
+   * Shows toast at the bottom of the screen.
    *
    * @param {String} text the text to display.
    * @param {Boolean} type controls the style.

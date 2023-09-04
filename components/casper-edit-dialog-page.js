@@ -50,6 +50,10 @@ export class CasperEditDialogPage extends LitElement {
       padding: 8px 0;
     }
 
+    casper-address {
+      --ca-item-min-width: var(--item-min-width);
+    }
+
     paper-checkbox[invalid] {
       --paper-checkbox-label-color: var(--paper-checkbox-error-color, var(--error-color));
     }
