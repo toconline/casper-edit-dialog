@@ -833,6 +833,11 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     if (changedProperties.has('_activeIndex') && changedProperties.get('_activeIndex') !== undefined) {
       this.style.setProperty('--ced-progress-line-width', `calc(100% / ${this._pages.length} * (${+this._activeIndex + 1}))`);
     }
+
+    // This only executes after firstUpdated
+    if (changedProperties.has('_pagesContainerStyles') && this.hasUpdated) {
+      this.fixWizardOpacity();
+    }
   }
 
   firstUpdated () {
@@ -878,10 +883,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   }
 
   updated (changedProperties) {
-    if (changedProperties.has('_pagesContainerStyles')) {
-      setTimeout(() => this.fixWizardOpacity(), 300);
-    }
-
     if (changedProperties.has('_activeIndex') && changedProperties.get('_activeIndex') !== undefined) {
       const index = this._activeIndex;
 
