@@ -485,6 +485,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       border: solid var(--ced-background-color);
       border-width: var(--ced-wrapper-vertical-padding) var(--ced-wrapper-horizontal-padding);
       z-index: var(--status-page-z-index);
+      opacity: 1;
+      pointer-events: auto;
       transition: opacity 0.3s ease;
     }
 
@@ -493,7 +495,9 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
 
     .edit-dialog__status-progress-page[hidden] {
-      opacity: 0;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      display: flex !important;
     }
 
 
@@ -633,6 +637,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       gap: 0.5rem;
       flex-grow: 1;
       justify-content: flex-end;
+      flex-wrap: wrap;
     }
 
     .edit-dialog__button {
@@ -728,6 +733,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._hidePrevious = false;
     this._hideNext = false;
     this._hideInfoIcon = false;
+
+    this._setControlledSubmission();
   }
 
   connectedCallback() {
