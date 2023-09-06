@@ -90,6 +90,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       --ced-progress-line-width: 0;
     }
 
+    :host([mode="wizard"]) {
+      --ced-labels-max-width: 0;
+    }
+
     * {
       box-sizing: border-box;
     }
@@ -128,7 +132,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         "labels header"
         "labels page"
         "labels footer";
-      grid-template-columns: fit-content(var(--ced-labels-max-width)) minmax(calc(100% - var(--ced-labels-max-width)), auto);
+      grid-template-columns: min(30%, var(--ced-labels-max-width)) auto;
       grid-template-rows: min-content 1fr min-content;
     }
 
@@ -140,11 +144,12 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
       grid-area: labels;
       list-style-type: none;
+      width: calc(var(--ced-labels-max-width) + var(--ced-border-radius));
+      max-width: calc(100% + var(--ced-border-radius));
       margin: 0;
       padding: 5rem var(--ced-horizontal-padding);
       /* Trick to add shadow beneath the left rounded corners */
       padding-right: var(--ced-labels-list-padding-right);
-      margin-right: calc(var(--ced-border-radius) * -1);
       box-shadow: rgba(0, 0, 0, 6%) calc(-15px - var(--ced-border-radius)) -7px 10px inset;
       color: rgb(var(--ced-label-number-color-rgb));
       background-color: var(--ced-labels-background-color);
