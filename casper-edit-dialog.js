@@ -1245,7 +1245,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           <div class="shortcut__keys-wrapper">
             <span class="shortcut__key">${altKey}</span> + <span class="shortcut__key">Enter</span>
           </div>
-          <span class="shortcut__description">Gravar.</span>
+          <span class="shortcut__description">Gravar e sair.</span>
         </li>
       `;
     }
@@ -1642,7 +1642,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
       switch (event.key) {
         case 'Enter':
-          if (this.mode === 'dialog' && !this._disablePrevious) this.save(false);
+          if (this.mode === 'dialog' && !this._disablePrevious) this.save();
           break;
 
         case previousKey:
