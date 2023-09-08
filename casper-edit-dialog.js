@@ -326,8 +326,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       flex-direction: column;
       border-top-left-radius: var(--ced-border-radius);
       padding: var(--ced-vertical-padding) var(--ced-horizontal-padding) 0 var(--ced-horizontal-padding);
-      /* Needed to stay above the labels-list */
-      z-index: 0;
+      /* Needed to stay above the labels-list and to display the labels-select */
+      z-index: 1;
 
       --ced-close-button-width: 1.5625rem;
     }
