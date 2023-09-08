@@ -266,7 +266,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       transition: opacity var(--ced-labels-buttons-transition-duration), width var(--ced-labels-buttons-transition-duration), height var(--ced-labels-buttons-transition-duration);
     }
 
-    .edit-dialog__label[invalid] .edit-dialog__label-number::after {
+    .edit-dialog__label[invalid] .edit-dialog__label-number::after,
+    .edit-dialog__labels-select .edit-dialog__label-number[invalid]::after {
       height: 1.4em;
       width: 1.4em;
       opacity: 1;
@@ -424,7 +425,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
 
     .edit-dialog__labels-select::part(container) {
-      padding: 2px 0;
+      /* 5px to accommodate the "!" invalid mark */
+      padding: 5px 0 2px 0;
     }
 
     .edit-dialog__labels-select::part(label),
@@ -784,8 +786,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._state = 'normal';
     this._title = '';
     this._pages = [];
-    this._clsLabelsItems = [];
-    this._activeIndex = 0;
+    this._initialIndex = 0;
+    this._activeIndex = this._initialIndex;
     this._invalidPagesIndexes = new Set();
     this._userHasSavedData = false;
 
@@ -862,11 +864,11 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
                   noLabelFloat 
                   listHeight="250" 
                   label="Página atual"
-                  initialId="0"
-                  .items=${this._clsLabelsItems}
-                  .renderLine=${this._renderClsLabelsLine}
+                  .initialId=${this._initialIndex.toString()}
+                  .items=${this._pages}
+                  .renderLine=${this._renderClsLabelsLine.bind(this)}
                   @change=${this._selectedClsLabelChanged}>
-                    <span slot="cs-prefix" class="edit-dialog__label-number">${this._activeIndex + 1}</span>
+                    <span slot="cs-prefix" class="edit-dialog__label-number" ?invalid=${this._invalidPagesIndexes.has(this._activeIndex)}>${this._activeIndex + 1}</span>
                 </casper-select-lit>` 
               : ''}
             </hgroup>
@@ -916,6 +918,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   willUpdate (changedProperties) {
     if (changedProperties.has('_activeIndex') && changedProperties.get('_activeIndex') !== undefined) {
       this.style.setProperty('--ced-progress-line-width', `calc(100% / ${this._pages.length} * (${+this._activeIndex + 1}))`);
+
+      this._labelsSelectEl.setValue(this._activeIndex.toString());
     }
 
     // This only executes after firstUpdated
@@ -1008,15 +1012,18 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     // First we import the classes
     try {
-      for (const page of this.options.pages) {
-        const idx = page.lastIndexOf('/') + 1;
-        const module = await import(`/src/${page.slice(0,idx)}${window.app.digest ? `${window.app.digest}.` : ''}${page.slice(idx)}.js`);
+      for (let i = 0; i < this.options.pages.length; i++) {
+        const page = this.options.pages[i];
+        const sliceIndex = page.lastIndexOf('/') + 1;
+        const module = await import(`/src/${page.slice(0,sliceIndex)}${window.app.digest ? `${window.app.digest}.` : ''}${page.slice(sliceIndex)}.js`);
 
         this._pages.push({
           label: module.label ? module.label : '',
           title: module.title ? module.title : module.label,
-          tag_name: module.tag_name ? module.tag_name : page.slice(idx),
-          has_required_fields: !!module.hasRequiredFields
+          tag_name: module.tag_name ? module.tag_name : page.slice(sliceIndex),
+          has_required_fields: !!module.hasRequiredFields,
+          id: i.toString(),
+          name: module.label ? module.label : ''
         });
       }
 
@@ -1768,14 +1775,14 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           border-color: #f8f8f8;
         }
 
-        .cvs__item-row[invalid] .cvs-item-row__number::after {
+        .cvs-item-row__number[invalid]::after {
           height: 1.4em;
           width: 1.4em;
           opacity: 1;
         }
       </style>
 
-      <span class="cvs-item-row__number">${item.id + 1}</span>
+      <span class="cvs-item-row__number" ?invalid=${this._invalidPagesIndexes.has(+item.id)}>${+item.id + 1}</span>
       <span class="cvs-item-row__text">${item.name}</span>
     `;
   }
@@ -1955,7 +1962,13 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     if (!this.noCancelOnEscKey) this.close();
   }
 
-  async _labelClickHandler (event) {
+  _selectedClsLabelChanged (event) {
+    if (!event?.detail?.item?.id) return;
+    
+    this.activatePage(+event.detail.item.id);
+  }
+
+  _labelClickHandler (event) {
     if (!event?.currentTarget) return;
     
     this.activatePage(+event.currentTarget.index);
