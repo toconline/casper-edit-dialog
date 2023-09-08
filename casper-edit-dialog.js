@@ -935,6 +935,11 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._previousButtonEl = this.shadowRoot.querySelector('.edit-dialog__button.previous');
     this._nextButtonEl = this.shadowRoot.querySelector('.edit-dialog__button.next');
 
+    if (this.mode === 'dialog') {
+      this._labelsSelectEl = this.shadowRoot.querySelector('.edit-dialog__labels-select');
+      this._setLabelsSelectStyles();
+    }
+
     // Needed to hide jumps caused by changes in the wizard's dimensions
     if (this.options.hasOwnProperty('initial_opacity')) {
       this._dialogEl.style.opacity = this.options.initial_opacity;
@@ -1773,6 +1778,25 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       <span class="cvs-item-row__number">${item.id + 1}</span>
       <span class="cvs-item-row__text">${item.name}</span>
     `;
+  }
+
+  async _setLabelsSelectStyles () {
+    await this._labelsSelectEl.updateComplete;
+
+    const input = this._labelsSelectEl.shadowRoot?.getElementById('cs-input');
+    const container = input?.shadowRoot?.getElementById('container');
+    const label = input?.shadowRoot?.querySelector('label');
+    const ironInput = input?.shadowRoot?.querySelector('.input-element');
+    const underline = container?.shadowRoot?.querySelector('.underline');
+
+    underline?.setAttribute('part', 'underline');
+    ironInput?.setAttribute('part', 'iron-input');
+    label?.setAttribute('part', 'label');
+    container?.setAttribute('exportparts', 'underline');
+    container?.setAttribute('part', 'container');
+    input?.setAttribute('exportparts', 'label, container, iron-input, underline');
+    input?.setAttribute('part', 'outer-input');
+    this._labelsSelectEl.setAttribute('exportparts', 'outer-input, container, iron-input, underline');
   }
 
   async _createStatusProgressPage () {
