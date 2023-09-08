@@ -1689,6 +1689,91 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   //                              ~~~ Private methods  ~~~                                 //
   //***************************************************************************************//
 
+  _renderClsLabelsLine (item) {
+    return html`
+      <style>
+        .cvs__item-row {
+          background-color: #FFF !important;
+          display: flex;
+          align-items: center;
+          gap: 0.357em;
+          margin: 0.357em;
+          margin-bottom: 0.1785em;
+          border-radius: 0.1785em;
+          position: relative;
+          transition: opacity var(--ced-labels-buttons-transition-duration);
+        }
+
+        .cvs__item-row[selectable][active] {
+          font-weight: var(--ced-label-bold);
+        }
+
+        .cvs__item-row[selectable]:hover,
+        .cvs__item-row[selectable][active] {
+          color: var(--primary-color) !important;
+          background-color: #f8f8f8 !important;
+        }
+
+        .cvs-item-row__number {
+          position: relative;
+          flex-shrink: 0;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          /* Removes top white-space, centering the number */
+          line-height: 0;
+          width: 1.875em;
+          height: 1.875em;
+          border-radius: 50%;
+          background-color: transparent;
+          border: solid 1px;
+          transition: all var(--ced-labels-buttons-transition-duration);
+        }
+
+        .cvs__item-row[selectable][active] .cvs-item-row__number {
+          background-color: var(--primary-color);
+          border-color: transparent;
+          box-shadow: rgba(0, 0, 0, 5%) 1px 1px 4px;
+          color: #FFF;
+        }
+
+        .cvs-item-row__number::after {
+          content: "!";
+          position: absolute;
+          top: 0;
+          right: 0;
+          font-size: 0.75rem;
+          box-sizing: border-box;
+          transform: translate(40%, -40%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          border: solid 1px #FFF;
+          background-color: var(--status-red);
+          color: #FFF;
+          opacity: 0;
+          width: 0;
+          height: 0;
+          transition: opacity var(--ced-labels-buttons-transition-duration), width var(--ced-labels-buttons-transition-duration), height var(--ced-labels-buttons-transition-duration);
+        }
+
+        .cvs__item-row[selectable]:hover .cvs-item-row__number::after,
+        .cvs__item-row[selectable][active] .cvs-item-row__number::after {
+          border-color: #f8f8f8;
+        }
+
+        .cvs__item-row[invalid] .cvs-item-row__number::after {
+          height: 1.4em;
+          width: 1.4em;
+          opacity: 1;
+        }
+      </style>
+
+      <span class="cvs-item-row__number">${item.id + 1}</span>
+      <span class="cvs-item-row__text">${item.name}</span>
+    `;
+  }
 
   async _createStatusProgressPage () {
     this._statusProgressPageEl = document.createElement(this.statusProgressPageTag);
