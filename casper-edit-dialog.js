@@ -13,6 +13,7 @@ import './components/casper-confirmation-dialog.js';
 import './components/casper-toast-lit.js';
 
 import '@cloudware-casper/casper-tooltip/casper-tooltip.js';
+import '@cloudware-casper/casper-select-lit/casper-select-lit.js';
 
 export class CasperEditDialog extends Casper.I18n(LitElement) {
   static properties = {
@@ -81,6 +82,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       --ced-labels-background-color: var(--primary-color);
       --ced-labels-max-width: 13.75rem;
       --ced-labels-buttons-transition-duration: 0.5s;
+      --ced-label-number-color-rgb: 255, 255, 255;
+      --ced-label-bold: 500;
 
       --ced-content-vertical-padding: calc(var(--ced-vertical-padding) * 3);
       --ced-content-horizontal-padding: calc(var(--ced-horizontal-padding) * 2);
@@ -139,7 +142,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     /* LABELS */
 
     .edit-dialog__labels-list {
-      --ced-label-number-color-rgb: 255, 255, 255;
       --ced-labels-list-padding-right: calc(var(--ced-border-radius) + var(--ced-horizontal-padding));
 
       grid-area: labels;
@@ -187,8 +189,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       display: flex;
       align-items: center;
       gap: 0.625em;
-
-      --ced-label-bold: 500;
     }
 
     .edit-dialog__label:hover,
@@ -235,10 +235,14 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       border: solid 1px rgba(var(--ced-label-number-color-rgb), 56%);
     }
 
-    .edit-dialog__label[active] .edit-dialog__label-number {
+    .edit-dialog__label[active] .edit-dialog__label-number,
+    .edit-dialog__labels-select .edit-dialog__label-number {
       background: rgba(var(--ced-label-number-color-rgb), 28%);
       border: solid 1px transparent;
       box-shadow: rgba(0, 0, 0, 5%) 1px 1px 4px;
+    }
+
+    .edit-dialog__label[active] .edit-dialog__label-number {
       transform: scale(1.1);
     }
 
@@ -360,6 +364,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
 
     .edit-dialog__header-text {
+      --ced-header-text-padding-right: calc(var(--ced-close-button-width) + 0.625rem);
+
       font-size: 1rem;
       display: flex;
       flex-direction: column;
@@ -367,7 +373,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       padding-bottom: 0.3125rem;
       border-bottom: solid 1px var(--primary-color);
       /* Space reserved to prevent text from colliding with the button */
-      padding-right: calc(var(--ced-close-button-width) + 0.625rem);
+      padding-right: var(--ced-header-text-padding-right);
     }
 
     :host([mode="wizard"]) .edit-dialog__header-text {
@@ -399,6 +405,36 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     :host([mode="wizard"]) .edit-dialog__page-title,
     :host([mode="wizard"]) .edit-dialog__general-title {
       color: inherit;
+    }
+
+    /* HEADER - LABELS */
+
+    .edit-dialog__labels-select {
+      --paper-input-container-color: #FFF;
+      --paper-input-container-input-color: #FFF;
+
+      color: var(--secondary-text-color);
+      width: calc(100% + var(--ced-header-text-padding-right));
+      display: none;
+    }
+
+    .edit-dialog__labels-select::part(virtual-scroller) {
+      border-color: transparent;
+      margin-top: 2px;
+    }
+
+    .edit-dialog__labels-select::part(container) {
+      padding: 2px 0;
+    }
+
+    .edit-dialog__labels-select::part(label),
+    .edit-dialog__labels-select::part(iron-input),
+    .edit-dialog__labels-select .edit-dialog__label-number {
+      font-weight: var(--ced-label-bold);
+    }
+
+    .edit-dialog__labels-select::part(underline) {
+      display: none;
     }
 
 
@@ -697,17 +733,37 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       z-index: var(--toast-z-index);
     }
 
+    
+    @media (max-width: 41.25rem) {
+      :host([mode="dialog"]) {
+        --ced-labels-max-width: 0;
+      }
 
-    @media (max-width: ${mediaQueriesBreakpoints.mobile}) {
-      .edit-dialog__label-text {
+      :host([mode="dialog"]) .edit-dialog__header {
+        background-color: var(--primary-color);
+        color: #FFF;
+      }
+
+      :host([mode="dialog"]) .edit-dialog__general-title {
+        color: inherit;
+      }
+
+      :host([mode="dialog"]) .edit-dialog__page-title {
+        display: none;
+      }
+
+      :host([mode="dialog"]) .edit-dialog__header-text {
+        margin-top: calc(var(--ced-close-button-width) * -1);
+      }
+
+      :host([mode="dialog"]) .edit-dialog__labels-select {
+        display: block;
+      }
+
+      :host([mode="dialog"]) .edit-dialog__labels-list {
         display: none;
       }
     }
-
-
-
-
-
 
   `;
 
@@ -728,6 +784,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._state = 'normal';
     this._title = '';
     this._pages = [];
+    this._clsLabelsItems = [];
     this._activeIndex = 0;
     this._invalidPagesIndexes = new Set();
     this._userHasSavedData = false;
@@ -797,6 +854,21 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
                 ? html`<h2 class="edit-dialog__page-title">${this._pages[this._activeIndex].title}</h2>`
                 : ''
               }
+
+              ${this.mode === 'dialog' ? html`
+                <casper-select-lit 
+                  class="edit-dialog__labels-select"
+                  disableClear 
+                  noLabelFloat 
+                  listHeight="250" 
+                  label="Página atual"
+                  initialId="0"
+                  .items=${this._clsLabelsItems}
+                  .renderLine=${this._renderClsLabelsLine}
+                  @change=${this._selectedClsLabelChanged}>
+                    <span slot="cs-prefix" class="edit-dialog__label-number">${this._activeIndex + 1}</span>
+                </casper-select-lit>` 
+              : ''}
             </hgroup>
           </div>
 
@@ -855,7 +927,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   firstUpdated () {
     this._dialogEl = this.shadowRoot.getElementById('editDialog');
     this._closeButtonEl = this.shadowRoot.querySelector('.edit-dialog__close');
-    this._labelsList = this.shadowRoot.querySelector('.edit-dialog__labels-list');
+    this._labelsListEl = this.shadowRoot.querySelector('.edit-dialog__labels-list');
     this._contentWrapperEl = this.shadowRoot.querySelector('.edit-dialog__content-wrapper');
     this._pagesContainerEl = this.shadowRoot.querySelector('.edit-dialog__pages-container');
     this._confirmationDialogEl = this.shadowRoot.getElementById('confirmationDialog');
