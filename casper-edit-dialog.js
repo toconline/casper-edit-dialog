@@ -164,6 +164,14 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       --ced-label-number-color-rgb: var(--ced-disabled-light-color-rgb);
     }
 
+    /* Firefox by default doesn't support :has() */
+    @supports selector(:has(a, b)) {
+      .edit-dialog__header:has(.edit-dialog__labels-select[disabled]) {
+        --ced-labels-background-color: rgb(var(--ced-disabled-dark-color-rgb));
+        --ced-label-number-color-rgb: var(--ced-disabled-light-color-rgb);
+      }
+    }
+
     :host([mode="wizard"]) .edit-dialog__labels-list {
       padding: 0;
     }
@@ -352,7 +360,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       width: var(--ced-close-button-width);
       height: var(--ced-close-button-width);
       outline: none;
-      transition: all 1s;
+      transition: all var(--ced-labels-buttons-transition-duration);
     }
 
     :host([mode="wizard"]) .edit-dialog__close {
@@ -412,11 +420,23 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     .edit-dialog__labels-select {
       --paper-input-container-color: #FFF;
-      --paper-input-container-input-color: #FFF;
+      --paper-input-container-input-color: rgb(var(--ced-label-number-color-rgb));
 
       color: var(--secondary-text-color);
       width: calc(100% + var(--ced-header-text-padding-right));
       display: none;
+      transition: opacity var(--ced-labels-buttons-transition-duration);
+    }
+
+    .edit-dialog__labels-select[disabled] {
+      opacity: 0.5;
+    }
+
+    /* Firefox by default doesn't support :has() */
+    @supports selector(:has(a, b)) {
+      .edit-dialog__labels-select[disabled] {
+        opacity: 1;
+      }
     }
 
     .edit-dialog__labels-select::part(virtual-scroller) {
@@ -427,6 +447,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     .edit-dialog__labels-select::part(container) {
       /* 5px to accommodate the "!" invalid mark */
       padding: 5px 0 2px 0;
+      opacity: 1 !important;
     }
 
     .edit-dialog__labels-select::part(label),
@@ -742,31 +763,30 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       }
 
       :host([mode="dialog"]) .edit-dialog__header {
-        background-color: var(--primary-color);
+        background-color: var(--ced-labels-background-color);
         color: #FFF;
+
+        transition: background-color var(--ced-labels-buttons-transition-duration);
+      }
+
+      :host([mode="dialog"]) .edit-dialog__header-text {
+        margin-top: calc(var(--ced-close-button-width) * -1);
+        border-color: transparent;
       }
 
       :host([mode="dialog"]) .edit-dialog__general-title {
         color: inherit;
       }
 
-      :host([mode="dialog"]) .edit-dialog__page-title {
+      :host([mode="dialog"]) .edit-dialog__page-title,
+      :host([mode="dialog"]) .edit-dialog__labels-list {
         display: none;
-      }
-
-      :host([mode="dialog"]) .edit-dialog__header-text {
-        margin-top: calc(var(--ced-close-button-width) * -1);
       }
 
       :host([mode="dialog"]) .edit-dialog__labels-select {
         display: block;
       }
-
-      :host([mode="dialog"]) .edit-dialog__labels-list {
-        display: none;
-      }
     }
-
   `;
 
   get statusProgressPageTag () {
@@ -867,7 +887,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
                   .initialId=${this._initialIndex.toString()}
                   .items=${this._pages}
                   .renderLine=${this._renderClsLabelsLine.bind(this)}
-                  @change=${this._selectedClsLabelChanged}>
+                  @change=${this._selectedClsLabelChanged}
+                  ?disabled=${this._disableLabels}>
                     <span slot="cs-prefix" class="edit-dialog__label-number" ?invalid=${this._invalidPagesIndexes.has(this._activeIndex)}>${this._activeIndex + 1}</span>
                 </casper-select-lit>` 
               : ''}
@@ -1726,6 +1747,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           background-color: #f8f8f8 !important;
         }
 
+        .cvs__item-row[disabled] {
+          opacity: 0.3 !important;
+        }
+
         .cvs-item-row__number {
           position: relative;
           flex-shrink: 0;
@@ -1834,14 +1859,14 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           break;
 
         case previousKey:
-          if (this.mode === 'wizard' && this._disablePrevious) break;
+          if ((this.mode === 'wizard' && this._disablePrevious) || (this.mode === 'dialog' && this._disableLabels)) break;
 
           // This prevents the dialog from being accidentally saved
           if (this._pages[+this._activeIndex - 1]) this._gotoPreviousPage();
           break;
 
         case nextKey:
-          if (this.mode === 'wizard' && this._disableNext) break;
+          if ((this.mode === 'wizard' && this._disableNext) || (this.mode === 'dialog' && this._disableLabels)) break;
 
           // This prevents the dialog from being accidentally saved
           if (+this._activeIndex < this._pages.length - 1) this._gotoNextPage();
