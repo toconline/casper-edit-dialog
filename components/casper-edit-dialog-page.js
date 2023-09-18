@@ -351,12 +351,20 @@ export class CasperEditDialogPage extends LitElement {
     this.editDialog.hideStatusAndProgress();
   }
 
-  disableLabels () {
-    this.editDialog.disableLabels();
+  disableLabel (index) {
+    this.editDialog.disableLabel(index);
   }
 
-  enableLabels () {
-    this.editDialog.enableLabels();
+  enableLabel (index) {
+    this.editDialog.enableLabel(index);
+  }
+
+  disableLabelsList () {
+    this.editDialog.disableLabelsList();
+  }
+
+  enableLabelsList () {
+    this.editDialog.enableLabelsList();
   }
 
   disablePrevious () {

@@ -36,7 +36,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     _activeIndex: {
       type: Number
     },
-    _disableLabels: {
+    _disableLabelsList: {
       type: Boolean
     },
     _disablePrevious: {
@@ -180,8 +180,12 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     .edit-dialog__label--info {
       font-size: 1rem;
       cursor: pointer;
-      opacity: 0.6;
+      opacity: 0.7;
       transition: opacity var(--ced-labels-buttons-transition-duration);
+    }
+
+    .edit-dialog__labels-list:not([disabled]) .edit-dialog__label[disabled] {
+      opacity: 0.3;
     }
 
     .edit-dialog__label--info {
@@ -208,11 +212,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     .edit-dialog__label[active] {
       font-weight: var(--ced-label-bold);
       pointer-events: none;
-    }
-
-    .edit-dialog__label[disabled] {
-      color: rgb(var(--ced-disabled-light-color-rgb));
-      --ced-label-number-color-rgb: var(--ced-disabled-light-color-rgb);
     }
 
     .edit-dialog__label-number {
@@ -811,7 +810,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._invalidPagesIndexes = new Set();
     this._userHasSavedData = false;
 
-    this._disableLabels = false;
+    this._disableLabelsList = false;
+    this._disabledLabelsIndexes = new Set();
     this._disablePrevious = false;
     this._disableNext = false;
     this._hidePrevious = false;
@@ -846,10 +846,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     return html`
       <dialog id="editDialog" class="edit-dialog">
         <div class="edit-dialog__inner">
-          <ol class="edit-dialog__labels-list" ?disabled=${this._disableLabels}>
+          <ol class="edit-dialog__labels-list" ?disabled=${this._disableLabelsList}>
             ${(this._pages.length > 0 && this.mode === 'dialog')
               ? this._pages.map((page, index) => html`
-                  <li class="edit-dialog__label" ?active=${index === this._activeIndex} ?invalid=${this._invalidPagesIndexes.has(index)} .index=${index} @click=${this._labelClickHandler}>
+                  <li class="edit-dialog__label" ?active=${index === this._activeIndex} ?invalid=${this._invalidPagesIndexes.has(index)} ?disabled=${this._disabledLabelsIndexes.has(index)} .index=${index} @click=${this._labelClickHandler}>
                     <span class="edit-dialog__label-number">${index + 1}</span>
                     <span class="edit-dialog__label-text" text=${page.label}>${page.label}</span>
                   </li>
@@ -888,7 +888,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
                   .items=${this._pages}
                   .renderLine=${this._renderClsLabelsLine.bind(this)}
                   @change=${this._selectedClsLabelChanged}
-                  ?disabled=${this._disableLabels}>
+                  ?disabled=${this._disableLabelsList}>
                     <span slot="cs-prefix" class="edit-dialog__label-number" ?invalid=${this._invalidPagesIndexes.has(this._activeIndex)}>${this._activeIndex + 1}</span>
                 </casper-select-lit>` 
               : ''}
@@ -1163,7 +1163,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   }
 
   async activatePage (newIndex, beforeShowModal = false) {
-    if ((+newIndex === +this._activeIndex && !beforeShowModal) || !this._pages[+newIndex]) return;
+    if ((+newIndex === +this._activeIndex && !beforeShowModal) || !this._pages[+newIndex] || this._disabledLabelsIndexes.has(+newIndex)) return;
 
     const previousIndex = this._activeIndex;
     const previousPage = this.getPage(previousIndex);
@@ -1385,12 +1385,24 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
   /* --- Labels --- */
 
-  disableLabels () {
-    this._disableLabels = true;
+  disableLabel (index) {
+    this._disabledLabelsIndexes.add(index);
+    this.requestUpdate();
   }
 
-  enableLabels () {
-    this._disableLabels = false;
+  enableLabel (index) {
+    if (!this._disabledLabelsIndexes.has(index)) return;
+
+    this._disabledLabelsIndexes.delete(index);
+    this.requestUpdate();
+  }
+
+  disableLabelsList () {
+    this._disableLabelsList = true;
+  }
+
+  enableLabelsList () {
+    this._disableLabelsList = false;
   }
 
   /* --- Previous button --- */
@@ -1446,14 +1458,14 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   }
 
   disableAllActions () {
-    if (this.mode === 'dialog') this.disableLabels();
+    if (this.mode === 'dialog') this.disableLabelsList();
     this.disablePrevious();
     this.disableNext();
     this._getCurrentPage()?.setAttribute('disabled', '');
   }
 
   enableAllActions () {
-    if (this.mode === 'dialog') this.enableLabels();
+    if (this.mode === 'dialog') this.enableLabelsList();
     this.enablePrevious();
     this.enableNext();
     this._getCurrentPage()?.removeAttribute('disabled');
@@ -1723,6 +1735,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   //***************************************************************************************//
 
   _renderClsLabelsLine (item) {
+    item.disabled = this._disabledLabelsIndexes.has(+item.id);
+
     return html`
       <style>
         .cvs__item-row {
@@ -1859,14 +1873,14 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           break;
 
         case previousKey:
-          if ((this.mode === 'wizard' && this._disablePrevious) || (this.mode === 'dialog' && this._disableLabels)) break;
+          if ((this.mode === 'wizard' && this._disablePrevious) || (this.mode === 'dialog' && this._disableLabelsList)) break;
 
           // This prevents the dialog from being accidentally saved
           if (this._pages[+this._activeIndex - 1]) this._gotoPreviousPage();
           break;
 
         case nextKey:
-          if ((this.mode === 'wizard' && this._disableNext) || (this.mode === 'dialog' && this._disableLabels)) break;
+          if ((this.mode === 'wizard' && this._disableNext) || (this.mode === 'dialog' && this._disableLabelsList)) break;
 
           // This prevents the dialog from being accidentally saved
           if (+this._activeIndex < this._pages.length - 1) this._gotoNextPage();
@@ -1881,7 +1895,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           const numpadCodes = ['Numpad1', 'Numpad2', 'Numpad3', 'Numpad4', 'Numpad5', 'Numpad6', 'Numpad7', 'Numpad8', 'Numpad9'];
 
           if (event.shiftKey && (digitCodes.includes(event.code) || numpadCodes.includes(event.code))) {
-            if (this.mode === 'dialog' && !this._disableLabels) {
+            if (this.mode === 'dialog' && !this._disableLabelsList) {
               // Prevents character from being written
               event.preventDefault();
               this.activatePage(+event.code?.slice(-1) - 1);
