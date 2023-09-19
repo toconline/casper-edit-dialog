@@ -1387,14 +1387,14 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
   disableLabel (index) {
     this._disabledLabelsIndexes.add(index);
-    this.requestUpdate();
+    this._pages = JSON.parse(JSON.stringify(this._pages));
   }
 
   enableLabel (index) {
     if (!this._disabledLabelsIndexes.has(index)) return;
 
     this._disabledLabelsIndexes.delete(index);
-    this.requestUpdate();
+    this._pages = JSON.parse(JSON.stringify(this._pages));
   }
 
   disableLabelsList () {
@@ -1589,7 +1589,20 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     if (this._invalidPagesIndexes.size > 0) {
       valid = false;
-      if (!this._invalidPagesIndexes.has(this._activeIndex)) this.activatePage(this._invalidPagesIndexes.values().next().value);
+      
+      if (!this._invalidPagesIndexes.has(this._activeIndex)) {
+        if (this.mode === 'dialog') {
+          for (const index of this._invalidPagesIndexes.values()){
+            if (!this._disabledLabelsIndexes.has(index)) {
+              this.activatePage(index);
+              break;
+            }
+          }
+        } else {
+          this.activatePage(this._invalidPagesIndexes.values().next().value);
+        }
+      }
+
       this.openToast('Não foi possível gravar as alterações. Por favor verifique se preencheu os campos corretamente.', 'error', 3000, false);
     }
 
@@ -2036,7 +2049,15 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       }
 
     } else if (this.mode === 'dialog') {
-      this.activatePreviousPage();
+      if (this._disabledLabelsIndexes.has(this._activeIndex - 1)) {
+        const previousPageIndex = this._pages.findLastIndex((page, index) => {
+          return (index < this._activeIndex - 1) && !this._disabledLabelsIndexes.has(index);
+        });
+
+        if (previousPageIndex !== -1) this.activatePage(previousPageIndex);
+      } else {
+        this.activatePreviousPage();
+      }
     }
   }
 
@@ -2058,7 +2079,15 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       }
 
     } else if (this.mode === 'dialog') {
-      this.activateNextPage();
+      if (this._disabledLabelsIndexes.has(this._activeIndex + 1)) {
+        const nextPageIndex = this._pages.findIndex((page, index) => {
+          return (index > this._activeIndex + 1) && !this._disabledLabelsIndexes.has(index);
+        });
+
+        if (nextPageIndex !== -1) this.activatePage(nextPageIndex);
+      } else {
+        this.activateNextPage();
+      }
     }
   }
 
