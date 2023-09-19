@@ -107,12 +107,12 @@ export class CasperEditDialogStatusPage extends LitElement {
         padding: 0.625rem;
         background: radial-gradient(#ffffff 80%, #f5f4f4);
         box-shadow: 0 5px 21px 3px rgba(0, 0, 0, 0.19);
-        width: 40vw;
-        /* 2rem for breathing space */
-        max-width: min(calc(100% - 2rem), 35rem);
+        /* 3rem for breathing space */
+        width: max(100% - 3rem, 50vw);
+        max-width: 35rem;
         height: 32.5vh;
         /* 1rem for breathing space */
-        max-height: min(calc(100% - var(--icon-top-offset) - var(--frame-after-size) - 1rem), 15.75rem);
+        max-height: min(100% - var(--icon-top-offset) - var(--frame-after-size) - 1rem, 15.75rem);
       }
 
       .status-page__frame::after {
