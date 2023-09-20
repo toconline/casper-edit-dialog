@@ -786,6 +786,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       :host([mode="dialog"]) .edit-dialog__labels-select {
         display: block;
       }
+
+      :host([mode="dialog"]) .edit-dialog__content-wrapper {
+        padding: var(--ced-wrapper-vertical-padding);
+      }
     }
   `;
 
