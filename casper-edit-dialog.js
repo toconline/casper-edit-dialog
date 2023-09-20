@@ -142,6 +142,9 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     /* LABELS */
 
     .edit-dialog__labels-list {
+      --ced-labels-list-padding-top: min(5rem, 11vh);
+      --ced-labels-list-padding-left: var(--ced-horizontal-padding);
+      /* Trick to add shadow beneath the left rounded corners */
       --ced-labels-list-padding-right: calc(var(--ced-border-radius) + var(--ced-horizontal-padding));
 
       grid-area: labels;
@@ -149,14 +152,25 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       width: calc(var(--ced-labels-max-width) + var(--ced-border-radius));
       max-width: calc(100% + var(--ced-border-radius));
       margin: 0;
-      padding: 5rem var(--ced-horizontal-padding);
-      /* Trick to add shadow beneath the left rounded corners */
-      padding-right: var(--ced-labels-list-padding-right);
+      padding: var(--ced-labels-list-padding-top) var(--ced-labels-list-padding-right) var(--ced-labels-list-padding-left) var(--ced-labels-list-padding-left);
       box-shadow: rgba(0, 0, 0, 6%) calc(-15px - var(--ced-border-radius)) -7px 10px inset;
       color: rgb(var(--ced-label-number-color-rgb));
       background-color: var(--ced-labels-background-color);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      overflow-y: auto;
+      overflow-x: hidden;
+      /* Hides scrollbar for Edge and Firefox */
+      -ms-overflow-style: none;
+      scrollbar-width: none;
       position: relative;
       transition: all var(--ced-labels-buttons-transition-duration);
+    }
+    
+    /* Hides scrollbar for Chrome, Safari and Opera */
+    .edit-dialog__labels-list::-webkit-scrollbar {
+      display: none;
     }
 
     .edit-dialog__labels-list[disabled] {
@@ -176,10 +190,36 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       padding: 0;
     }
 
+    /* Shadows which indicate the content is scrollable */
+    .edit-dialog__labels-list::before,
+    .edit-dialog__labels-list::after {
+      content: ' ';
+      position: sticky;
+      width: calc(100% + var(--ced-labels-list-padding-left) + var(--ced-labels-list-padding-right));
+      height: var(--height);
+      pointer-events: none;
+      flex-shrink: 0;
+      margin-top: calc(var(--height) * -1);
+      z-index: 1;
+    }
+
+    .edit-dialog__labels-list::before {
+      --height: var(--ced-labels-list-padding-top);
+      top: 0;
+      transform: translate(calc(var(--ced-labels-list-padding-left) * -1), -100%);
+      background: linear-gradient(180deg, var(--ced-labels-background-color) 50%, transparent);
+    }
+
+    .edit-dialog__labels-list::after {
+      --height: var(--ced-labels-list-padding-left);
+      bottom: 0;
+      transform: translate(calc(var(--ced-labels-list-padding-left) * -1), 100%);
+      background: linear-gradient(0deg, var(--ced-labels-background-color) 50%, transparent);
+    }
+
     .edit-dialog__label,
     .edit-dialog__label--info {
       font-size: 1rem;
-      cursor: pointer;
       opacity: 0.7;
       transition: opacity var(--ced-labels-buttons-transition-duration);
     }
@@ -189,10 +229,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
 
     .edit-dialog__label--info {
-      position: absolute;
-      left: var(--ced-horizontal-padding);
-      bottom: var(--ced-horizontal-padding);
-      width: calc(100% - var(--ced-horizontal-padding) - var(--ced-labels-list-padding-right));
+      flex-grow: 1;
+      display: flex;
     }
 
     .edit-dialog__label {
@@ -201,6 +239,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       display: flex;
       align-items: center;
       gap: 0.625em;
+      cursor: pointer;
     }
 
     .edit-dialog__label:hover,
@@ -234,6 +273,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }
 
     .edit-dialog__label--info casper-icon {
+      cursor: pointer;
+      align-self: flex-end;
       padding: 0.375em;
     }
 
@@ -862,8 +903,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
               : ''}
 
             ${this.mode === 'dialog' ? html`
-              <li class="edit-dialog__label--info" @click=${this.showKeyboardShortcuts.bind(this)} tooltip="Atalhos de teclado" ?hidden=${this._hideInfoIcon}>
-                <casper-icon icon="fa-solid/info"></casper-icon>
+              <li class="edit-dialog__label--info" ?hidden=${this._hideInfoIcon}>
+                <casper-icon icon="fa-solid/info" tooltip="Atalhos de teclado" @click=${this.showKeyboardShortcuts.bind(this)}></casper-icon>
               </li>
             ` : ''}
           </ol>
