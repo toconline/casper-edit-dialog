@@ -938,9 +938,9 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
   willUpdate (changedProperties) {
     if (changedProperties.has('_activeIndex') && changedProperties.get('_activeIndex') !== undefined) {
-      this.style.setProperty('--ced-progress-line-width', `calc(100% / ${this._pages.length} * (${+this._activeIndex + 1}))`);
+      if (this.mode === 'wizard') this.style.setProperty('--ced-progress-line-width', `calc(100% / ${this._pages.length} * (${+this._activeIndex + 1}))`);
 
-      this._labelsSelectEl.setValue(this._activeIndex.toString());
+      if (this.mode === 'dialog') this._labelsSelectEl.setValue(this._activeIndex.toString());
     }
 
     // This only executes after firstUpdated
@@ -1055,7 +1055,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       return;
     }
 
-    this.style.setProperty('--ced-progress-line-width', `calc(100% / ${this._pages.length} * (${+this._activeIndex + 1}))`);
+    if (this.mode === 'wizard') this.style.setProperty('--ced-progress-line-width', `calc(100% / ${this._pages.length} * (${+this._activeIndex + 1}))`);
 
     // Then we create only the first page
     await this.activatePage(0, true);
@@ -2016,13 +2016,11 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
   _selectedClsLabelChanged (event) {
     if (!event?.detail?.item?.id) return;
-    
     this.activatePage(+event.detail.item.id);
   }
 
   _labelClickHandler (event) {
     if (!event?.currentTarget) return;
-    
     this.activatePage(+event.currentTarget.index);
   }
 
