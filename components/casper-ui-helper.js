@@ -68,11 +68,11 @@ export class CasperUiHelper {
     if (!this.focusableFields.includes(elNodeName)) return;
 
     if (elNodeName === 'casper-select-lit' || elNodeName === 'casper-select') {
-      element.searchInput.focus({preventScroll: true});
+      element.searchInput.focus({preventScroll: false});
     } else if (elNodeName === 'casper-date-picker') {
-      element.__datePickerInput.focus({preventScroll: true});
+      element.__datePickerInput.focus({preventScroll: false});
     } else {
-      element.focus({preventScroll: true});
+      element.focus({preventScroll: false});
     }
   }
 

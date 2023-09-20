@@ -505,6 +505,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       background-color: var(--ced-background-color);
       transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.5s;
       overflow: auto;
+      scroll-behavior: smooth;
     }
 
     :host([mode="dialog"]) [name^="page"] {
