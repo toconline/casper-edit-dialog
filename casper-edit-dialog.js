@@ -1193,13 +1193,13 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     }, 300);
   }
 
-  async hideStatusAndProgressWithTimeout (value) {
+  async selfCloseStatusAndProgress (delay) {
     await this._statusProgressPageEl.updateComplete;
-    this._statusProgressPageEl.selfClose(value / 1000);
+    this._statusProgressPageEl.setSelfCloseStyles(delay);
 
     this._hideSPPTimeoutId = setTimeout(() => {
       this.hideStatusAndProgress();
-    }, value);
+    }, delay);
   }
 
   
@@ -2291,7 +2291,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         if (this._runJobInBackground) {
           this._runJobInBackground = false;
         } else {
-          this.hideStatusAndProgressWithTimeout(5000);
+          this.selfCloseStatusAndProgress(5000);
         }
 
         break;

@@ -49,7 +49,7 @@ export class CasperEditDialogStatusPage extends LitElement {
         --icon-top-offset: calc(var(--icon-height) / 2.5);
         --frame-after-size: 1.2rem;
         --state-color-rgb: var(--status-blue-rgb);
-        --self-close-transition-duration: 4s;
+        --self-close-transition-duration: 4000ms;
 
         display: flex;
         justify-content: center;
@@ -221,7 +221,7 @@ export class CasperEditDialogStatusPage extends LitElement {
         border-right-color: rgba(var(--state-color-rgb), 1);
         border-top-right-radius: calc(var(--radius-primary, 8px) - 2px);
         border-bottom-right-radius: calc(var(--radius-primary, 8px) - 2px);
-        transition: width var(--self-close-transition-duration), border-right-color 0.15s linear calc(var(--self-close-transition-duration) - 0.15s), border-radius 1s linear calc(var(--self-close-transition-duration) - 1s);
+        transition: width var(--self-close-transition-duration) linear, border-right-color 150ms linear calc(var(--self-close-transition-duration) - 150ms), border-radius 1000ms linear calc(var(--self-close-transition-duration) - 1000ms);
       }
 
       .status-page__button-text {
@@ -309,8 +309,8 @@ export class CasperEditDialogStatusPage extends LitElement {
     this.clearCustom();
   }
 
-  selfClose (value) {
-    this.style.setProperty('--self-close-transition-duration', `${value}s`);
+  setSelfCloseStyles (value) {
+    this.style.setProperty('--self-close-transition-duration', `${value}ms`);
     this._selfClose = true;
   }
 
@@ -361,7 +361,7 @@ export class CasperEditDialogStatusPage extends LitElement {
     if (Object.hasOwn(options, 'hide_button')) this._hideButton = options.hide_button;
     if (Object.hasOwn(options, 'self_close_duration')) {
       await this.updateComplete;
-      this.selfClose(options.self_close_duration);
+      this.setSelfCloseStyles(options.self_close_duration);
     }
 
     if (Object.hasOwn(options, 'timeout')) this.timeout = options.timeout;
