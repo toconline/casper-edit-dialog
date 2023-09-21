@@ -1176,6 +1176,12 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   hideStatusAndProgress () {
     if (!this._statusProgressPageEl) return;
 
+    // Clears timeout when user presses the button
+    if (this._hideSPPTimeoutId !== undefined) {
+      clearTimeout(this._hideSPPTimeoutId);
+      this._hideSPPTimeoutId = undefined;
+    }
+
     this._statusProgressPageEl.style.opacity = 0;
     this.enableAllActions();
 
@@ -1191,7 +1197,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     await this._statusProgressPageEl.updateComplete;
     this._statusProgressPageEl.selfClose(value / 1000);
 
-    setTimeout(() => {
+    this._hideSPPTimeoutId = setTimeout(() => {
       this.hideStatusAndProgress();
     }, value);
   }
