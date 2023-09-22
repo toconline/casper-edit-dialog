@@ -8,9 +8,9 @@ import { CasperEditDialogPage } from './components/casper-edit-dialog-page.js';
 import { CasperUiHelper } from './components/casper-ui-helper.js';
 import '@cloudware-casper/casper-icons/casper-icon.js';
 import '@cloudware-casper/casper-icons/casper-icon-button.js';
+import '@cloudware-casper/casper-toast/casper-toast.js';
 import './components/casper-edit-dialog-status-page.js';
 import './components/casper-confirmation-dialog.js';
-import './components/casper-toast-lit.js';
 
 import '@cloudware-casper/casper-tooltip/casper-tooltip.js';
 import '@cloudware-casper/casper-select-lit/casper-select-lit.js';
@@ -797,7 +797,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       border: 2px solid rgb(var(--ced-disabled-light-color-rgb));
     }
 
-    #toastLit {
+    #dialogToast {
       z-index: var(--toast-z-index);
     }
 
@@ -947,7 +947,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
           <div class="edit-dialog__content-wrapper">
             <div class="edit-dialog__pages-container" style=${this._pagesContainerStyles !== undefined ? styleMap(this._pagesContainerStyles) : ''}></div>
-            <casper-toast-lit id="toastLit"></casper-toast-lit>
+            <casper-toast id="dialogToast"></casper-toast>
           </div>
 
           <div class="edit-dialog__footer">
@@ -1006,7 +1006,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._contentWrapperEl = this.shadowRoot.querySelector('.edit-dialog__content-wrapper');
     this._pagesContainerEl = this.shadowRoot.querySelector('.edit-dialog__pages-container');
     this._confirmationDialogEl = this.shadowRoot.getElementById('confirmationDialog');
-    this._toastLitEl = this.shadowRoot.getElementById('toastLit');
+    this._toastEl = this.shadowRoot.getElementById('dialogToast');
     this._previousButtonEl = this.shadowRoot.querySelector('.edit-dialog__button.previous');
     this._nextButtonEl = this.shadowRoot.querySelector('.edit-dialog__button.next');
 
@@ -1599,28 +1599,15 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
    * @param {Boolean} forced controls whether the toast is displayed or not, if there is already an open toast
    */
   openToast (text, type = '', duration = 3000, forced = true) {
-    if (this._toastLitEl.isOpen() && !forced) return;
+    if (this._toastEl.isOpen() && !forced) return;
 
-    let color = '';
+    const options = {
+      text: text,
+      duration: duration,
+      type: type
+    };
 
-    switch (type) {
-      case true:
-      case 'success':
-        color = 'var(--status-green)';
-        break;
-      case false:
-      case 'error':
-        color = 'var(--status-red)';
-        break;
-      case 'warning':
-        color = 'var(--status-orange)';
-        break;
-      case 'info':
-      default:
-        color = 'var(--status-blue)';
-    }
-
-    this._toastLitEl.open({'text': text, 'duration': duration, 'backgroundColor': color});
+    this._toastEl.open(options);
   }
 
   async validateAllPages () {
