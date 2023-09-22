@@ -208,6 +208,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       top: 0;
       transform: translate(calc(var(--ced-labels-list-padding-left) * -1), -100%);
       background: linear-gradient(180deg, var(--ced-labels-background-color) 50%, transparent);
+      box-shadow: rgba(0, 0, 0, 2%) calc(-15px - var(--ced-border-radius)) 7px 10px inset;
+      clip-path: inset(0 0 1px 0);
     }
 
     .edit-dialog__labels-list::after {
@@ -215,6 +217,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       bottom: 0;
       transform: translate(calc(var(--ced-labels-list-padding-left) * -1), 100%);
       background: linear-gradient(0deg, var(--ced-labels-background-color) 50%, transparent);
+      box-shadow: rgba(0, 0, 0, 2%) calc(-15px - var(--ced-border-radius)) -9px 10px inset;
+      clip-path: inset(1px 0 0 0);
     }
 
     .edit-dialog__label,
