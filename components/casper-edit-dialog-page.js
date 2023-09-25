@@ -43,6 +43,13 @@ export class CasperEditDialogPage extends LitElement {
       margin-top: 0;
     }
 
+    /* <hr> element */
+    .ced-page__content-separator {
+      border: none;
+      border-bottom: dotted 2px #d3d3d3;
+      width: 100%;
+    }
+
     casper-tabbed-items {
       --header-top-offset: calc(var(--ced-page-padding) * -1);
 
@@ -72,6 +79,7 @@ export class CasperEditDialogPage extends LitElement {
     }
 
     :host([layout="grid"]) .ced-page__heading,
+    :host([layout="grid"]) .ced-page__content-separator,
     :host([layout="grid"]) .ced-page__span-all,
     :host([layout="grid"]) casper-tabbed-items {
       grid-column: 1 / -1;
@@ -94,7 +102,7 @@ export class CasperEditDialogPage extends LitElement {
       width: 100%;
     }
 
-    :host([layout="flex"]) > *:not(.ced-page__heading) {
+    :host([layout="flex"]) > *:not(.ced-page__heading, .ced-page__content-separator) {
       width: calc((100% - var(--column-gap) * 2) / 3 );
       min-width: var(--item-min-width);
       max-width: 100%;
@@ -102,7 +110,7 @@ export class CasperEditDialogPage extends LitElement {
     }
 
     @media (max-width: ${mediaQueriesBreakpoints.tablet}) {
-      :host([layout="grid"]) > *:not(.ced-page__heading, .ced-page__span-all, .ced-page__span-2, casper-tabbed-items) {
+      :host([layout="grid"]) > *:not(.ced-page__heading, .ced-page__content-separator, .ced-page__span-all, .ced-page__span-2, casper-tabbed-items) {
         grid-column: auto !important;
       }
 
