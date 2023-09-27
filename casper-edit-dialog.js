@@ -1239,8 +1239,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
     if (typeof newPage.enter === 'function') {
       newPage.enter();
-    } else if (typeof this['enterOn' + newPage.id] === 'function') {
-      this['enterOn' + newPage.id].apply(this);
     }
     
 
@@ -2234,10 +2232,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           this.updateProgressPage(notification.index, this.i18n.apply(this, notification.message), notification.progress);
         }
 
-        if (typeof this['jobProgressOn' + this._getCurrentPage().id] === 'function') {
-          this['jobProgressOn' + this._getCurrentPage().id].apply(this, [notification.status_code, notification, notification.response]);
-        }
-
         break;
 
       case 'completed':
@@ -2255,14 +2249,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
           if (typeof this._getCurrentPage().jobCompleted === 'function') {
             this._getCurrentPage().jobCompleted(notification);
-          } else if (typeof this['jobCompletedOn' + this._getCurrentPage().id] === 'function') {
-            if (notification.custom === true) {
-              // ... Pass the full notification to allow more flexible custom handling ...
-              this['jobCompletedOn' + this._getCurrentPage().id].apply(this, [notification.status_code, notification, notification.response]);
-            } else {
-              // ... passes only the notification message, it's an array that can be i18n'ed ...
-              this['jobCompletedOn' + this._getCurrentPage().id].apply(this, [notification.status_code, notification.message, notification.response]);
-            }
           } else {
             this.jobCompleted(notification);
 
@@ -2291,17 +2277,14 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         this._setControlledSubmission();
         this._jobPromise.reject(notification);
 
-        if (typeof this['errorOn' + this._getCurrentPage().id] === 'function') {
-          this['errorOn' + this._getCurrentPage().id].apply(this, [notification]);
-        } else {
-          if (!this._runJobInBackground) {
-            if (this._errorsAreFatal) {
-              this.showFatalError(notification);
-            } else {
-              this.showStatusPage(notification, 'error');
-            }
+        if (!this._runJobInBackground) {
+          if (this._errorsAreFatal) {
+            this.showFatalError(notification);
+          } else {
+            this.showStatusPage(notification, 'error');
           }
         }
+        
         this._clearJob();
         if (this._runJobInBackground) this._runJobInBackground = false;
         break;
