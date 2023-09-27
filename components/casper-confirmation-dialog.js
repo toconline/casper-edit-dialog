@@ -52,6 +52,7 @@ class CasperConfirmationDialog extends LitElement {
       padding: 1.875rem var(--ccd-horizontal-padding);
       display: flex;
       flex-direction: column;
+      overflow: auto;
     }
 
     .confirmation-dialog__title {
