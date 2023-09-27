@@ -2079,8 +2079,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     if (this.mode === 'wizard') {
       if (typeof currentPageEl.previous === 'function') {
         currentPageEl.previous();
-      } else if (typeof this['previousOn' + currentPageEl.id] === 'function') {
-        this['previousOn' + currentPageEl.id].apply(this);
       } else {
         this.activatePreviousPage(); 
       }
@@ -2109,8 +2107,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
       if (typeof currentPageEl.next === 'function') {
         currentPageEl.next();
-      } else if (typeof this['nextOn' + currentPageEl.id] === 'function') {
-        this['nextOn' + currentPageEl.id].apply(this);
       } else {
         this.activateNextPage();
       }
