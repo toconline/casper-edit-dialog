@@ -163,7 +163,6 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       /* Hides scrollbar for Edge and Firefox */
       -ms-overflow-style: none;
       scrollbar-width: none;
-      position: relative;
       transition: all var(--ced-labels-buttons-transition-duration);
     }
     
@@ -2240,6 +2239,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         }
 
         break;
+
       case 'completed':
         if (this._controlledSubmission === true) {
           this.subscribeJob(notification.response.channel, this._controlledSubmissionTTR);
@@ -2253,7 +2253,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
             this.changeNextButtonToIcon(nextIcon);
           }
 
-          if (typeof  this._getCurrentPage().jobCompleted === 'function') {
+          if (typeof this._getCurrentPage().jobCompleted === 'function') {
             this._getCurrentPage().jobCompleted(notification);
           } else if (typeof this['jobCompletedOn' + this._getCurrentPage().id] === 'function') {
             if (notification.custom === true) {
@@ -2285,10 +2285,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         }
 
         break;
+
       case 'failed':
       case 'error':
         this._setControlledSubmission();
-
         this._jobPromise.reject(notification);
 
         if (typeof this['errorOn' + this._getCurrentPage().id] === 'function') {
@@ -2305,8 +2305,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         this._clearJob();
         if (this._runJobInBackground) this._runJobInBackground = false;
         break;
+
       case 'reset':
         break;
+
       default:
         this._setControlledSubmission();
         break;
