@@ -1234,27 +1234,15 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
         if (newPage.style.transform) newPage.style.removeProperty('transform');
       }, 0);
     }
-    
-    if (this.mode === 'wizard') +newIndex === 0 ? this.disablePrevious() : this.enablePrevious();
-
-    if (typeof newPage.enter === 'function') {
-      newPage.enter();
-    }
-    
 
     if (this.mode === 'wizard') {
-      newPage.hasAttribute('previous') ? this.changePreviousButtonToText(newPage.getAttribute('previous')) : this.changePreviousButtonToIcon();
+      +newIndex === 0 ? this.disablePrevious() : this.enablePrevious();
 
-      if (newPage.hasAttribute('next')) {
-        this.changeNextButtonToText(newPage.getAttribute('next'));
-      } else {
-        const nextIcon = (+newIndex === this._pages.length - 1) 
-          ? 'fa-light:check' 
-          : 'fa-light:arrow-right';
-
-        this.changeNextButtonToIcon(nextIcon);
-      }
+      this.changePreviousButtonToIcon();
+      this._updateNextButtonIcon(newIndex);
     }
+
+    if (typeof newPage.enter === 'function') newPage.enter();
 
     // If the previous page was invalid, we check its validity again
     if (this._invalidPagesIndexes.has(previousIndex)) {
@@ -1584,6 +1572,16 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
   jobCompleted (notification) {
     this._jobPromise.resolve(Object.keys(notification.response).length ? notification.response : notification);
+
+    if (!this._runJobInBackground) {
+      if (notification.custom === true) {
+        this.showCustomNotification(notification);
+      } else {
+        this.showStatusPage(notification, 'success');
+      }
+
+      this.selfCloseStatusAndProgress(5000);
+    }
   }
 
   /**
@@ -2243,54 +2241,24 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
           this.subscribeJob(notification.response.channel, this._controlledSubmissionTTR);
           this._setControlledSubmission();
         } else {
-          if (this.mode === 'wizard') {
-            const nextIcon = (this._activeIndex === this._pages.length - 1 && !this._getCurrentPage().hasAttribute('next')) 
-              ? 'fa-light:check' 
-              : 'fa-light:arrow-right';
-
-            this.changeNextButtonToIcon(nextIcon);
-          }
+          if (this.mode === 'wizard') this._updateNextButtonIcon(this._activeIndex);
 
           if (typeof this._getCurrentPage().jobCompleted === 'function') {
             this._getCurrentPage().jobCompleted(notification);
           } else {
             this.jobCompleted(notification);
-
-            if (!this._runJobInBackground) {
-              if (notification.custom === true) {
-                this.showCustomNotification(notification);
-              } else {
-                this.showStatusPage(notification, 'success');
-              }
-            }
           }
 
           this._clearJob();
         }
-
-        if (this._runJobInBackground) {
-          this._runJobInBackground = false;
-        } else {
-          this.selfCloseStatusAndProgress(5000);
-        }
-
         break;
 
       case 'failed':
       case 'error':
         this._setControlledSubmission();
         this._jobPromise.reject(notification);
-
-        if (!this._runJobInBackground) {
-          if (this._errorsAreFatal) {
-            this.showFatalError(notification);
-          } else {
-            this.showStatusPage(notification, 'error');
-          }
-        }
-        
+        if (!this._runJobInBackground) this._errorsAreFatal ? this.showFatalError(notification) : this.showStatusPage(notification, 'error');
         this._clearJob();
-        if (this._runJobInBackground) this._runJobInBackground = false;
         break;
 
       case 'reset':
@@ -2305,6 +2273,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   _clearJob () {
     this._jobId = undefined;
     this._jobChannel = undefined;
+    if (this._runJobInBackground) this._runJobInBackground = false;
     this.noCancelOnEscKey = false;
   }
 
