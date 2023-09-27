@@ -359,6 +359,8 @@ export class CasperEditDialogPage extends LitElement {
     this.editDialog.hideStatusAndProgress();
   }
 
+  /* --- Labels --- */
+
   disableLabel (index) {
     this.editDialog.disableLabel(index);
   }
@@ -375,6 +377,8 @@ export class CasperEditDialogPage extends LitElement {
     this.editDialog.enableLabelsList();
   }
 
+  /* --- Previous button --- */
+
   disablePrevious () {
     this.editDialog.disablePrevious();
   }
@@ -383,6 +387,24 @@ export class CasperEditDialogPage extends LitElement {
     this.editDialog.enablePrevious();
   }
 
+  hidePrevious () {
+    this.editDialog.hidePrevious();
+  }
+
+  showPrevious () {
+    this.editDialog.showPrevious();
+  }
+
+  changePreviousButtonToText (text) {
+    this.editDialog.changePreviousButtonToText(text);
+  }
+
+  changePreviousButtonToIcon (icon = 'fa-light:arrow-left') {
+    this.editDialog.changePreviousButtonToIcon(icon);
+  }
+
+  /* --- Next button --- */
+
   disableNext () {
     this.editDialog.disableNext();
   }
@@ -390,6 +412,24 @@ export class CasperEditDialogPage extends LitElement {
   enableNext () {
     this.editDialog.enableNext();
   }
+
+  hideNext () {
+    this.editDialog.hideNext();
+  }
+
+  showNext () {
+    this.editDialog.showNext();
+  }
+
+  changeNextButtonToText (text) {
+    this.editDialog.changeNextButtonToText(text);
+  }
+
+  changeNextButtonToIcon (icon = 'fa-light:arrow-right') {
+    this.editDialog.changeNextButtonToIcon(icon);
+  }
+
+  /* --- All actions --- */
 
   disableAllActions () {
     this.editDialog.disableAllActions();

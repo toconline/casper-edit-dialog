@@ -2073,6 +2073,14 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this[`_${type}Icon`] = icon;
   }
 
+  _updateNextButtonIcon (pageIndex) {
+    const nextIcon = (+pageIndex === this._pages.length - 1) 
+      ? 'fa-light:check' 
+      : 'fa-light:arrow-right';
+
+    this.changeNextButtonToIcon(nextIcon);
+  }
+
   _gotoPreviousPage () {
     const currentPageEl = this._getCurrentPage();
 
