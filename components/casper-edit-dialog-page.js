@@ -256,8 +256,13 @@ export class CasperEditDialogPage extends LitElement {
         case 'paper-input':
         default:
           elemValue = elem.value ?? null;
-          if (elem.hasAttribute('multi-selection') && elemValue) elemValue = elemValue.split(','); // casper-select multi-selection
-          if (elemValue || initialValue) {
+          if (elem.hasAttribute('multi-selection') && elemValue) { // casper-select multi-selection
+            elemValue = elemValue.split(',');
+
+            if (initialValue) {
+              hasNewValue = !this._simpleArrayEqual(initialValue, elemValue);
+            }
+          } else if (elemValue || initialValue) {
             hasNewValue = elemValue != initialValue;
           }
           break;
@@ -535,6 +540,18 @@ export class CasperEditDialogPage extends LitElement {
 
   _validate () {
     console.warn('A _validate method should be defined for the page.');
+    return true;
+  }
+
+  _simpleArrayEqual (arr1, arr2) {
+    if (arr1.length != arr2.length) {
+      return false;
+    }
+    for (let i = 0, l = arr1.length; i < l; i++) {
+      if (arr1[i] != arr2[i]) {
+        return false;
+      }
+    }
     return true;
   }
 }
