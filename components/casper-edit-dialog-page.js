@@ -256,7 +256,7 @@ export class CasperEditDialogPage extends LitElement {
         case 'paper-input':
         default:
           elemValue = elem.value ?? null;
-          if (elem.getAttribute('multi-selection') && elemValue) elemValue = elemValue.split(','); // casper-select multi-selection
+          if (elem.hasAttribute('multi-selection') && elemValue) elemValue = elemValue.split(','); // casper-select multi-selection
           if (elemValue || initialValue) {
             hasNewValue = elemValue != initialValue;
           }
