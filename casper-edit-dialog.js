@@ -29,6 +29,9 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     _generalTitle: {
       type: String
     },
+    _pageTitle: {
+      type: String
+    },
     _pages: {
       type: Array
     },
@@ -852,6 +855,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     
     this._state = 'normal';
     this._generalTitle = '';
+    this._pageTitle = '';
     this._pages = [];
     this._initialIndex = 0;
     this._activeIndex = this._initialIndex;
@@ -920,8 +924,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
                 ? html`<h1 class="edit-dialog__general-title">${this._generalTitle}</h1>`
                 : ''
               }
-              ${(this._pages.length > 0 && this._pages[this._activeIndex].title)
-                ? html`<h2 class="edit-dialog__page-title">${this._pages[this._activeIndex].title}</h2>`
+              ${(this._pageTitle)
+                ? html`<h2 class="edit-dialog__page-title">${this._pageTitle}</h2>`
                 : ''
               }
 
@@ -1250,6 +1254,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       if (isValid) this._invalidPagesIndexes.delete(previousIndex);
     }
 
+    this._pageTitle = this._pages[+newIndex].title ? this._pages[+newIndex].title : '';
     this._activeIndex = +newIndex;
   }
 
