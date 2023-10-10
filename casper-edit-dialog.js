@@ -26,7 +26,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       reflect: true,
       attribute: 'no-white-space'
     },
-    _title: {
+    _generalTitle: {
       type: String
     },
     _pages: {
@@ -851,7 +851,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this.noCancelOnEscKey = false;
     
     this._state = 'normal';
-    this._title = '';
+    this._generalTitle = '';
     this._pages = [];
     this._initialIndex = 0;
     this._activeIndex = this._initialIndex;
@@ -916,8 +916,8 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
             <casper-icon-button tabindex="-1" tooltip="Fechar" class="edit-dialog__close" icon="fa-light:times-circle" @click=${this.close.bind(this)}></casper-icon-button>
 
             <hgroup class="edit-dialog__header-text">
-              ${(this._title)
-                ? html`<h1 class="edit-dialog__general-title">${this._title}</h1>`
+              ${(this._generalTitle)
+                ? html`<h1 class="edit-dialog__general-title">${this._generalTitle}</h1>`
                 : ''
               }
               ${(this._pages.length > 0 && this._pages[this._activeIndex].title)
@@ -1065,7 +1065,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
   }
 
   async open () {
-    if (this.options.title) this._title = this.options.title;
+    if (this.options.title) this._generalTitle = this.options.title;
     if (this.options.mode) this.mode = this.options.mode;
 
     if (this.mode === 'wizard') {
