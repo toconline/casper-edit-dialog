@@ -762,6 +762,9 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       text-transform: uppercase;
       transition: all var(--ced-labels-buttons-transition-duration);
       font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 0.35em;
     }
 
     .edit-dialog__button.secondary {
@@ -1009,6 +1012,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this._pagesContainerEl = this.shadowRoot.querySelector('.edit-dialog__pages-container');
     this._confirmationDialogEl = this.shadowRoot.getElementById('confirmationDialog');
     this._toastEl = this.shadowRoot.getElementById('dialogToast');
+    this._buttonsWrapperEl = this.shadowRoot.querySelector('.edit-dialog__buttons-wrapper');
     this._previousButtonEl = this.shadowRoot.querySelector('.edit-dialog__button.previous');
     this._nextButtonEl = this.shadowRoot.querySelector('.edit-dialog__button.next');
 
@@ -1066,6 +1070,11 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
   setOptions (options) {
     this.options = options;
+  }
+
+  setPageTitle (tagName, text) {
+    const page = this._pages.find(item => item.tag_name === tagName.toLowerCase());
+    if (page) page.title = text;
   }
 
   async open () {
@@ -1134,6 +1143,10 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
 
       this.openConfirmationDialog(options);
     }
+  }
+
+  insertAdjacentButton (buttonEl, position = 'afterbegin') {
+    this._buttonsWrapperEl.insertAdjacentElement(position, buttonEl);
   }
 
   openConfirmationDialog (options) {
