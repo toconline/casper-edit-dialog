@@ -26,6 +26,11 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       reflect: true,
       attribute: 'no-white-space'
     },
+    _showingOldWizard: {
+      type: Boolean,
+      reflect: true,
+      attribute: 'showing-old-wizard'
+    },
     _generalTitle: {
       type: String
     },
@@ -93,6 +98,16 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
       --ced-wrapper-vertical-padding: calc(var(--ced-content-vertical-padding) - var(--ced-page-padding));
       --ced-wrapper-horizontal-padding: calc(var(--ced-content-horizontal-padding) - var(--ced-page-padding));
       --ced-progress-line-width: 0;
+    }
+
+    :host([showing-old-wizard]) .edit-dialog {
+      box-shadow: rgba(0, 0, 0, 0%) 0 5px 20px !important;
+      background-color: transparent !important;
+    }
+
+    :host([showing-old-wizard]) .edit-dialog__inner {
+      opacity: 0 !important;
+      pointer-events: none !important;
     }
 
     :host([mode="wizard"]) {
@@ -856,6 +871,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     this.mode = 'dialog';
     this.noCancelOnEscKey = false;
     
+    this._showingOldWizard = false;
     this._state = 'normal';
     this._generalTitle = '';
     this._pageTitle = '';
@@ -1796,6 +1812,28 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     return newPage;
   }
 
+  async appendAndShowOldWizard (options) {
+    options.append = true;
+    options.initial_opacity = 0;
+    await window.app.showWizard(options);
+
+    this._oldWizardEl = window.app.shadowRoot.querySelector(options.tag_name);
+    if (!this._oldWizardEl) return;
+
+    this._oldWizardEl.addEventListener('opened-changed', function (event) {
+      if (this._showingOldWizard && event?.detail?.value === false) {
+        this._showingOldWizard = false;
+        this._dialogEl.removeChild(this._oldWizardEl);
+        this._oldWizardEl = null;
+      }
+    }.bind(this));
+
+    this._oldWizardEl.style.transition = 'opacity 0.3s ease';
+    this._oldWizardEl.fixWizardOpacity();
+    this._showingOldWizard = true;
+    this._dialogEl.appendChild(this._oldWizardEl);
+  }
+
 
 
   //***************************************************************************************//
@@ -2057,7 +2095,7 @@ export class CasperEditDialog extends Casper.I18n(LitElement) {
     if (!event?.detail?.element) return;
 
     event.stopPropagation();
-    this._contentWrapperEl.appendChild(event.detail.element);
+    this._dialogEl.appendChild(event.detail.element);
   }
 
   // Fired when user presses the 'esc' key
