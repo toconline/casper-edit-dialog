@@ -18,15 +18,15 @@
 import { html, css, LitElement } from 'lit';
 import {styleMap} from 'lit/directives/style-map.js';
 import {classMap} from 'lit/directives/class-map.js';
-import { CasperSocketPromise } from  '@cloudware-casper/casper-socket/casper-socket.js';
-import { Casper } from '@cloudware-casper/casper-common-ui/casper-i18n-behavior.js';
+import { CasperSocketPromise } from  '@toconline/casper-socket/casper-socket.js';
+import { Casper } from '@toconline/casper-common-ui/casper-i18n-behavior.js';
 import { CasperEditDialogPage } from './components/casper-edit-dialog-page.js';
 import { CasperUiHelper } from './components/casper-ui-helper.js';
-import '@cloudware-casper/casper-icons/casper-icon.js';
-import '@cloudware-casper/casper-icons/casper-icon-button.js';
-import '@cloudware-casper/casper-toast/casper-toast.js';
-import '@cloudware-casper/casper-tooltip/casper-tooltip.js';
-import '@cloudware-casper/casper-select-lit/casper-select-lit.js';
+import '@toconline/casper-icons/casper-icon.js';
+import '@toconline/casper-icons/casper-icon-button.js';
+import '@toconline/casper-toast/casper-toast.js';
+import '@toconline/casper-tooltip/casper-tooltip.js';
+import '@toconline/casper-select-lit/casper-select-lit.js';
 import './components/casper-edit-dialog-status-page.js';
 import './components/casper-confirmation-dialog.js';
 

@@ -1,5 +1,5 @@
 {
-  "name": "@cloudware-casper/casper-edit-dialog",
+  "name": "@toconline/casper-edit-dialog",
   "main": "casper-edit-dialog.js",
   "version": "1.3.35",
   "description": "Casper edit dialog",
@@ -7,8 +7,8 @@
     "registry": "https://npm.pkg.github.com/"
   },
   "dependencies": {
-    "@cloudware-casper/casper-timed-status": "^0.x",
-    "@cloudware-casper/casper-tooltip": "^1.x",
+    "@toconline/casper-timed-status": "^0.x",
+    "@toconline/casper-tooltip": "^1.x",
     "lit": "^2.x"
   }
 }
