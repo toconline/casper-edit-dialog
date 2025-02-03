@@ -18,8 +18,8 @@
 import { LitElement, html, css } from 'lit';
 import {classMap} from 'lit-html/directives/class-map.js';
 import { CasperUiHelper } from './casper-ui-helper.js';
-import { mediaQueriesBreakpoints } from '@cloudware-casper/casper-edit-dialog/components/casper-edit-dialog-constants.js';
-import '@cloudware-casper/casper-icons/casper-icon.js';
+import { mediaQueriesBreakpoints } from '@toconline/casper-edit-dialog/components/casper-edit-dialog-constants.js';
+import '@toconline/casper-icons/casper-icon.js';
 
 
 class CasperTabbedItems extends LitElement {

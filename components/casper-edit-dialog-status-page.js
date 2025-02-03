@@ -18,7 +18,7 @@
 import { html, css, LitElement } from 'lit';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 
-import '@cloudware-casper/casper-timed-status/casper-timed-status.js';
+import '@toconline/casper-timed-status/casper-timed-status.js';
 
 
 export class CasperEditDialogStatusPage extends LitElement {

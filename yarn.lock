@@ -2,29 +2,6 @@
 # yarn lockfile v1
 
 
-"@cloudware-casper/casper-icons@^3.x":
-  version "3.2.6"
-  resolved "https://npm.pkg.github.com/download/@cloudware-casper/casper-icons/3.2.6/28daa19537ea59d79ad2a345eb4719140845c7f6#28daa19537ea59d79ad2a345eb4719140845c7f6"
-  integrity sha512-6oX//1iJDU2DS8kO9vSk/wdCEFLNMXDrnnp1Qx6iHpuwmY/pWgzx9I7plWSRQzo655E9eNLAw0hStfzLwZyVpw==
-  dependencies:
-    ink-ripple alex-saunders/ink-ripple
-    lit "^2.x"
-
-"@cloudware-casper/casper-timed-status@^0.x":
-  version "0.0.14"
-  resolved "https://npm.pkg.github.com/download/@cloudware-casper/casper-timed-status/0.0.14/0c9ced21661334e394e0b4ea0009bb125989f4ec#0c9ced21661334e394e0b4ea0009bb125989f4ec"
-  integrity sha512-r5zfNjZoOg0NydZVVvFI4ig5CO+OvSGiG56wT+0bUNbxdmiMAZIEBjD1dZhdxPkEufLH1K3IOCpCbv5gsEuVYg==
-  dependencies:
-    "@cloudware-casper/casper-icons" "^3.x"
-
-"@cloudware-casper/casper-tooltip@^1.x":
-  version "1.6.1"
-  resolved "https://npm.pkg.github.com/download/@cloudware-casper/casper-tooltip/1.6.1/0d00338118ecf1e2fd509b32796f9ee92c5e5ea0#0d00338118ecf1e2fd509b32796f9ee92c5e5ea0"
-  integrity sha512-j3O+MPIM3YusnwwidMO9140RBZyCG8pyXgJOJRypZ2sofg1xxA1AYXFYEDlYaFfk9zobmpDaL1BH0lVEr7AqBw==
-  dependencies:
-    dompurify "^2.x"
-    lit "^2.x"
-
 "@lit-labs/ssr-dom-shim@^1.0.0", "@lit-labs/ssr-dom-shim@^1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@lit-labs/ssr-dom-shim/-/ssr-dom-shim-1.1.0.tgz#3361d6b8c4cb2ac426d5794ac7cd9776cd2f0814"
@@ -36,6 +13,29 @@
   integrity sha512-va15kYZr7KZNNPZdxONGQzpUr+4sxVu7V/VG7a8mRfPPXUyhEYj5RzXCQmGrlP3tAh0L3HHm5AjBMFYRqlM9SA==
   dependencies:
     "@lit-labs/ssr-dom-shim" "^1.0.0"
+
+"@toconline/casper-icons@^3.x":
+  version "3.2.6"
+  resolved "https://npm.pkg.github.com/download/@toconline/casper-icons/3.2.6/157a96d60ac922bbc38294b02c1de2b7617e4f36#157a96d60ac922bbc38294b02c1de2b7617e4f36"
+  integrity sha512-zl1H4WLCQP7poxEi5Uq1ZAY1EmbGUlAh0QoTloZ7f8ErVKg66/Q70GkgRuL7jnCySa7TWwOxj2wtHktuouksUw==
+  dependencies:
+    ink-ripple alex-saunders/ink-ripple
+    lit "^2.x"
+
+"@toconline/casper-timed-status@^0.x":
+  version "0.0.15"
+  resolved "https://npm.pkg.github.com/download/@toconline/casper-timed-status/0.0.15/adeae9151b49d32f856c0143db053f189d7c7d4c#adeae9151b49d32f856c0143db053f189d7c7d4c"
+  integrity sha512-1tMN8un0eVrJkrUgVUs4Vuhw9tA5R2YSQkC4CldJV16xG0LAnipSbpHYbra5ln2VQEhMltg5Nti/lYQn4iiDsg==
+  dependencies:
+    "@toconline/casper-icons" "^3.x"
+
+"@toconline/casper-tooltip@^1.x":
+  version "1.6.1"
+  resolved "https://npm.pkg.github.com/download/@toconline/casper-tooltip/1.6.1/5e54d325b1f751239389cacdaea66fb1942000aa#5e54d325b1f751239389cacdaea66fb1942000aa"
+  integrity sha512-BDE0BPX7V5BcdvurVCFuinOEatX8VNiLV0JJIuzL8S93g19K9IoltlwrgvWlNjYCRst4Zv8J4SsZrQ9F7+tnTw==
+  dependencies:
+    dompurify "^2.x"
+    lit "^2.x"
 
 "@types/trusted-types@^2.0.2":
   version "2.0.3"
